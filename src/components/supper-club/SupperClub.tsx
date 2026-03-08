@@ -59,6 +59,29 @@ export default function SupperClub() {
     ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
     : [];
 
+  // Google Places search state
+  const [gpQuery, setGpQuery] = useState("");
+  const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
+  const [gpLoading, setGpLoading] = useState(false);
+  const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
+  const [gpFreeLoading, setGpFreeLoading] = useState(false);
+
+  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
+    if (query.length < 2) { setter([]); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-restaurants', {
+        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius },
+      });
+      if (error) throw error;
+      setter(data?.restaurants || []);
+    } catch {
+      setter([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeGroup.city, searchRadius]);
+
   const [searchRadius, setSearchRadius] = useState(10);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
