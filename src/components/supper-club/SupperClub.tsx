@@ -21,7 +21,7 @@ interface GooglePlace {
 import { S, tabPill, chip } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
-  NavBar, CalendarGrid, MealTypeSelector,
+  NavBar, CalendarGrid, MealTypeSelector, ShareRow,
 } from "./shared";
 
 export default function SupperClub() {
