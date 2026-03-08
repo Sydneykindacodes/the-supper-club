@@ -46,6 +46,8 @@ export default function SupperClub() {
     ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
     : [];
 
+  const [searchRadius, setSearchRadius] = useState(10);
+
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
@@ -125,6 +127,15 @@ export default function SupperClub() {
             <input style={S.input} defaultValue="Marisol"/>
             <label style={S.label}>City</label>
             <input style={S.input} defaultValue="New York, NY"/>
+            <label style={S.label}>Search Radius</label>
+            <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
+              {[5, 10, 15, 25, 50].map(r => (
+                <div key={r} onClick={() => setSearchRadius(r)} style={chip(searchRadius === r)}>{r} mi</div>
+              ))}
+            </div>
+            <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
+              Restaurants within {searchRadius} miles of your city will appear in your pool.
+            </div>
             <div style={{ height:"12px" }}/>
             <button style={S.primaryBtn} onClick={() => { setScreen("club_home"); setActiveTab("home"); }}>Create &amp; Get Invite Code</button>
           </>) : (<>
@@ -152,13 +163,6 @@ export default function SupperClub() {
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={{ padding:"52px 24px 16px", background:"linear-gradient(180deg,#2d1208 0%,transparent 100%)" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Your Groups</div>
-            <div style={{ display:"flex", gap:"8px", marginBottom:"16px", overflowX:"auto" }}>
-              {groups.map(g => (
-                <div key={g.id} onClick={() => setActiveGroup(g)} style={chip(activeGroup.id === g.id)}>{g.name}</div>
-              ))}
-              <div onClick={() => { setJoinMode("create"); setScreen("join_create"); }} style={{ flexShrink:0, padding:"8px 14px", borderRadius:"20px", cursor:"pointer", border:"1px dashed rgba(201,149,106,0.25)", fontSize:"12px", color:"#4a2e18" }}>+ New Group</div>
-            </div>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
             <div style={{ fontSize:"13px", color:"#7a5a40", marginTop:"4px", fontStyle:"italic" }}>
               {noDate ? WITTY_NO_DATE[wittyIdx] : pending ? "Your group has a proposed date. Waiting on confirmations." : "Your next supper is coming. Try not to look up the restaurant."}
