@@ -1030,11 +1030,8 @@ export default function SupperClub() {
               </div>
               <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", textAlign:"center", marginBottom:"20px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>{activeGroup.name}</div>
-                <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{gEarned}<span style={{ fontSize:"18px", fontWeight:"400", color:"#7a5a40" }}> / {GROUP_BADGES.length}</span></div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"6px", fontStyle:"italic" }}>Earned together, or not at all.</div>
-                <div style={{ height:"3px", background:"rgba(201,149,106,0.12)", borderRadius:"2px", margin:"14px 0 0", overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:`${(gEarned/GROUP_BADGES.length)*100}%`, background:"linear-gradient(90deg,#c9956a,#9a6040)", borderRadius:"2px" }}/>
-                </div>
+                <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{gEarned}</div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"6px", fontStyle:"italic" }}>badge{gEarned !== 1 ? "s" : ""} earned together</div>
               </div>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Earned</div>
               <BadgeList list={GROUP_BADGES} earned={true}/>
