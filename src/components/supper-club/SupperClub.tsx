@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
   WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS,
   Group, Restaurant,
 } from "@/data/supper-club-data";
+import { supabase } from "@/integrations/supabase/client";
+
+interface GooglePlace {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  address: string;
+  price: number;
+  googleRating: number | null;
+  googleReviewCount: number;
+  googlePlaceId: string;
+}
 import { S, tabPill, chip } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
@@ -47,6 +60,28 @@ export default function SupperClub() {
     : [];
 
   const [searchRadius, setSearchRadius] = useState(10);
+
+  // Google Places search state
+  const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
+  const [gpLoading, setGpLoading] = useState(false);
+  const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
+  const [gpFreeLoading, setGpFreeLoading] = useState(false);
+
+  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
+    if (query.length < 2) { setter([]); return; }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('search-restaurants', {
+        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius },
+      });
+      if (error) throw error;
+      setter(data?.restaurants || []);
+    } catch {
+      setter([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeGroup.city, searchRadius]);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
@@ -386,7 +421,44 @@ export default function SupperClub() {
 
           {poolView === "pool" && (<>
             <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Suggest a restaurant. The app decides. No lobbying allowed.</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for a restaurant to add to your group's pool.</div>
+              <label style={S.label}>Search Restaurants</label>
+              <div style={{ position:"relative" }}>
+                <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
+                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
+                />
+                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants…</div>}
+                {gpResults.length > 0 && (
+                  <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
+                    {gpResults.map(r => (
+                      <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
+                        onClick={() => {
+                          setRName(r.name); setRCuisine(r.cuisine); setRCity(r.city); setRPrice(r.price);
+                          setGpResults([]);
+                          // Auto-add with Google data
+                          setPoolRestaurants(p => [...p, {
+                            id: p.length + 100, name: r.name, cuisine: r.cuisine, suggested_by: "You",
+                            city: r.city, price: r.price, visited: false, visitedDate: null, visitedRating: null,
+                            googleRating: r.googleRating, googleReviewCount: r.googleReviewCount, scRating: null, scReviewCount: 0,
+                          }]);
+                          setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
+                          showToast(`${r.name} added to the pool.`);
+                        }}>
+                        <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
+                        <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
+                          {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
+                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                          {r.price && <span style={{ marginLeft:"6px" }}>{PRICE_LABELS[r.price]}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"12px" }}>
+                Searching within {searchRadius} mi of {activeGroup.city}
+              </div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px", marginTop:"16px" }}>Or add manually</div>
               <label style={S.label}>Restaurant Name</label>
               <input style={S.input} placeholder="e.g. Le Bernardin" value={rName} onChange={e => setRName(e.target.value)}/>
               <label style={S.label}>Cuisine Type</label>
@@ -405,7 +477,7 @@ export default function SupperClub() {
                   setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
                   showToast("Added to the pool.");
                 }
-              }}>Add to Pool</button>
+              }}>Add Manually</button>
             </div>
             <div style={{ padding:"0 16px 0" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Active Pool · {poolRestaurants.length}</div>
@@ -735,12 +807,17 @@ export default function SupperClub() {
           <label style={S.label}>Restaurant Name</label>
           <div style={{ position:"relative" }}>
             <input style={S.input} placeholder="e.g. Don Angie" value={freeReviewRestaurant}
-              onChange={e => { setFreeReviewRestaurant(e.target.value); setFreeReviewShowSuggestions(true); }}
+              onChange={e => {
+                setFreeReviewRestaurant(e.target.value);
+                setFreeReviewShowSuggestions(true);
+                searchGooglePlaces(e.target.value, freeReviewCity || activeGroup.city, setGpFreeResults, setGpFreeLoading);
+              }}
               onFocus={() => setFreeReviewShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 150)}
+              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 200)}
             />
-            {freeReviewShowSuggestions && restaurantSuggestions.length > 0 && (
-              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"180px", overflowY:"auto" }}>
+            {gpFreeLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching…</div>}
+            {freeReviewShowSuggestions && (gpFreeResults.length > 0 || restaurantSuggestions.length > 0) && (
+              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
                 {restaurantSuggestions.map(r => (
                   <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)", fontSize:"13px", color:"#f5e6d3" }}
                     onMouseDown={() => {
@@ -749,9 +826,28 @@ export default function SupperClub() {
                       setFreeReviewCuisine(r.cuisine);
                       setRPrice(r.price);
                       setFreeReviewShowSuggestions(false);
+                      setGpFreeResults([]);
                     }}>
                     <span style={{ fontWeight:600 }}>{r.name}</span>
                     <span style={{ color:"#7a5a40", marginLeft:"8px" }}>{r.cuisine} · {r.city}</span>
+                    <span style={{ color:"#c9956a", marginLeft:"6px", fontSize:"10px" }}>In pool</span>
+                  </div>
+                ))}
+                {gpFreeResults.filter(g => !restaurantSuggestions.some(r => r.name === g.name)).map(r => (
+                  <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
+                    onMouseDown={() => {
+                      setFreeReviewRestaurant(r.name);
+                      setFreeReviewCity(r.city);
+                      setFreeReviewCuisine(r.cuisine);
+                      setRPrice(r.price);
+                      setFreeReviewShowSuggestions(false);
+                      setGpFreeResults([]);
+                    }}>
+                    <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
+                    <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
+                      {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
+                      {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                    </div>
                   </div>
                 ))}
               </div>
