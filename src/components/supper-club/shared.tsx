@@ -1,6 +1,74 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { Restaurant, getRatingInfo, MEAL_TYPES, PRICE_LABELS } from "@/data/supper-club-data";
 import { S, chip } from "./styles";
+
+// ── Minimal SVG social icons ──
+const SocialIcon = ({ type }: { type: string }) => {
+  const s: CSSProperties = { width: 22, height: 22, display: "block" };
+  const c = "rgba(201,149,106,0.85)";
+  switch (type) {
+    case "Instagram":
+      return (
+        <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" />
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="17.5" cy="6.5" r="1" fill={c} stroke="none" />
+        </svg>
+      );
+    case "TikTok":
+      return (
+        <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+        </svg>
+      );
+    case "Snapchat":
+      return (
+        <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2C9 2 7 4.5 7 7.5v2.5c-1 .3-2 .7-2 1.2 0 .6 1.2.8 1.5 1 .3.2.3.5.1.9-.3.6-.8 1.3-1.4 1.7-.3.2-.2.5.1.7 1 .5 2 .5 2.5.7.2.1.2.4.2.7 0 .3.3.5.6.5.6 0 1.3-.4 2.4-.4s1.8.4 2.4.4c.3 0 .6-.2.6-.5 0-.3 0-.6.2-.7.5-.2 1.5-.2 2.5-.7.3-.2.4-.5.1-.7-.6-.4-1.1-1.1-1.4-1.7-.2-.4-.2-.7.1-.9.3-.2 1.5-.4 1.5-1 0-.5-1-.9-2-1.2V7.5C17 4.5 15 2 12 2z" />
+        </svg>
+      );
+    case "Facebook":
+      return (
+        <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+        </svg>
+      );
+    case "X":
+      return (
+        <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4l6.5 8L4 20h2l5.5-6.8L16 20h4l-6.8-8.4L20 4h-2l-5.2 6.4L8 4H4z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
+// ── ShareRow ──
+export const ShareRow = ({ showToast }: { showToast: (msg: string) => void }) => (
+  <div style={{ marginBottom: "16px" }}>
+    <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "12px", textAlign: "center" }}>
+      Share Your Review
+    </div>
+    <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+      {["Instagram", "TikTok", "Snapchat", "Facebook", "X"].map(name => (
+        <div
+          key={name}
+          onClick={() => showToast(`Opening ${name}…`)}
+          style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
+            cursor: "pointer", padding: "12px 10px", borderRadius: "14px",
+            background: "rgba(255,255,255,0.02)", border: "1px solid rgba(201,149,106,0.08)",
+            minWidth: "52px", transition: "all 0.2s",
+          }}
+        >
+          <SocialIcon type={name} />
+          <span style={{ fontSize: "8px", color: "#5a3a25", letterSpacing: "1px", textTransform: "uppercase" }}>{name}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 // ── StarRating ──
 export const StarRating = ({ value, onChange, small }: { value: number; onChange?: (n: number) => void; small?: boolean }) => (
