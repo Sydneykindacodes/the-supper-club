@@ -152,13 +152,6 @@ export default function SupperClub() {
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={{ padding:"52px 24px 16px", background:"linear-gradient(180deg,#2d1208 0%,transparent 100%)" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Your Groups</div>
-            <div style={{ display:"flex", gap:"8px", marginBottom:"16px", overflowX:"auto" }}>
-              {groups.map(g => (
-                <div key={g.id} onClick={() => setActiveGroup(g)} style={chip(activeGroup.id === g.id)}>{g.name}</div>
-              ))}
-              <div onClick={() => { setJoinMode("create"); setScreen("join_create"); }} style={{ flexShrink:0, padding:"8px 14px", borderRadius:"20px", cursor:"pointer", border:"1px dashed rgba(201,149,106,0.25)", fontSize:"12px", color:"#4a2e18" }}>+ New Group</div>
-            </div>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
             <div style={{ fontSize:"13px", color:"#7a5a40", marginTop:"4px", fontStyle:"italic" }}>
               {noDate ? WITTY_NO_DATE[wittyIdx] : pending ? "Your group has a proposed date. Waiting on confirmations." : "Your next supper is coming. Try not to look up the restaurant."}
