@@ -785,7 +785,7 @@ export default function SupperClub() {
                 }}>
                 Override & Lock Date
               </button>
-              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to group admins</div>
+              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to the host</div>
             </div>
           </div>
 
