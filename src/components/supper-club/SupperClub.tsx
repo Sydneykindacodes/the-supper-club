@@ -59,8 +59,9 @@ export default function SupperClub() {
     ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
     : [];
 
+  const [searchRadius, setSearchRadius] = useState(10);
+
   // Google Places search state
-  const [gpQuery, setGpQuery] = useState("");
   const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
   const [gpLoading, setGpLoading] = useState(false);
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
@@ -81,8 +82,6 @@ export default function SupperClub() {
       setLoading(false);
     }
   }, [activeGroup.city, searchRadius]);
-
-  const [searchRadius, setSearchRadius] = useState(10);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
