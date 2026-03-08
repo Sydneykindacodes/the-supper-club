@@ -729,11 +729,34 @@ export default function SupperClub() {
             Dined somewhere outside the club? Log it here. Your personal reviews are yours alone — share them with the community or keep them private.
           </div>
           <label style={S.label}>Restaurant Name</label>
-          <input style={S.input} placeholder="e.g. Don Angie" value={freeReviewRestaurant} onChange={e => setFreeReviewRestaurant(e.target.value)}/>
+          <div style={{ position:"relative" }}>
+            <input style={S.input} placeholder="e.g. Don Angie" value={freeReviewRestaurant}
+              onChange={e => { setFreeReviewRestaurant(e.target.value); setFreeReviewShowSuggestions(true); }}
+              onFocus={() => setFreeReviewShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 150)}
+            />
+            {freeReviewShowSuggestions && restaurantSuggestions.length > 0 && (
+              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"180px", overflowY:"auto" }}>
+                {restaurantSuggestions.map(r => (
+                  <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)", fontSize:"13px", color:"#f5e6d3" }}
+                    onMouseDown={() => {
+                      setFreeReviewRestaurant(r.name);
+                      setFreeReviewCity(r.city);
+                      setFreeReviewCuisine(r.cuisine);
+                      setRPrice(r.price);
+                      setFreeReviewShowSuggestions(false);
+                    }}>
+                    <span style={{ fontWeight:600 }}>{r.name}</span>
+                    <span style={{ color:"#7a5a40", marginLeft:"8px" }}>{r.cuisine} · {r.city}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <label style={S.label}>City</label>
-          <input style={S.input} placeholder="e.g. New York, NY"/>
+          <input style={S.input} placeholder="e.g. New York, NY" value={freeReviewCity} onChange={e => setFreeReviewCity(e.target.value)}/>
           <label style={S.label}>Cuisine</label>
-          <input style={S.input} placeholder="e.g. Italian, Korean..."/>
+          <input style={S.input} placeholder="e.g. Italian, Korean..." value={freeReviewCuisine} onChange={e => setFreeReviewCuisine(e.target.value)}/>
           <div style={{ marginBottom:"16px" }}>
             <label style={S.label}>Price Range</label>
             <div style={{ display:"flex", gap:"8px" }}>
