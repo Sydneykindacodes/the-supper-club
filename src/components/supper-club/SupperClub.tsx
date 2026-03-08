@@ -561,7 +561,8 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <div style={S.header}>
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+          <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Discover</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
           </div>
