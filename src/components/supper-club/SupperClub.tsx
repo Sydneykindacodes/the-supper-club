@@ -759,11 +759,11 @@ export default function SupperClub() {
 
           {/* ── Admin Override ── */}
           <div style={{ marginTop:"20px", marginBottom:"8px" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Admin Override</div>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Host Override</div>
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
               <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-                Tired of waiting? As admin, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
+                Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
               </div>
               {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
                 <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
