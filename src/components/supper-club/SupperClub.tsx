@@ -37,6 +37,14 @@ export default function SupperClub() {
   const [freeReviewText, setFreeReviewText] = useState("");
   const [freeReviewMealType, setFreeReviewMealType] = useState("Dinner");
   const [freeReviewPhoto, setFreeReviewPhoto] = useState(false);
+  const [freeReviewCity, setFreeReviewCity] = useState("");
+  const [freeReviewCuisine, setFreeReviewCuisine] = useState("");
+  const [freeReviewShowSuggestions, setFreeReviewShowSuggestions] = useState(false);
+
+  const allKnownRestaurants = [...RESTAURANT_POOL, ...PREVIOUSLY_VISITED];
+  const restaurantSuggestions = freeReviewRestaurant.length >= 2
+    ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
+    : [];
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
