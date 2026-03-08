@@ -125,6 +125,15 @@ export default function SupperClub() {
             <input style={S.input} defaultValue="Marisol"/>
             <label style={S.label}>City</label>
             <input style={S.input} defaultValue="New York, NY"/>
+            <label style={S.label}>Search Radius</label>
+            <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
+              {[5, 10, 15, 25, 50].map(r => (
+                <div key={r} onClick={() => setSearchRadius(r)} style={chip(searchRadius === r)}>{r} mi</div>
+              ))}
+            </div>
+            <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
+              Restaurants within {searchRadius} miles of your city will appear in your pool.
+            </div>
             <div style={{ height:"12px" }}/>
             <button style={S.primaryBtn} onClick={() => { setScreen("club_home"); setActiveTab("home"); }}>Create &amp; Get Invite Code</button>
           </>) : (<>
