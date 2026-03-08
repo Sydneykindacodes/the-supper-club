@@ -262,11 +262,14 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.25)", cursor:"pointer" }}
-            onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code — {ag.name}</div>
-            <div style={{ fontSize:"28px", color:"#f5e6d3", letterSpacing:"8px", fontWeight:"700", marginBottom:"6px" }}>{ag.code}</div>
-            <div style={{ fontSize:"12px", color:"#7a5a40" }}>Tap to copy · Share to invite members</div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", marginBottom:"4px" }}
+            onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+            >
+            <div style={{ display:"flex", alignItems:"center", gap:"10px", cursor:"pointer" }}>
+              <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
+              <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic" }}>tap to copy</span>
+            </div>
+            <span style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase" }}>Invite</span>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
