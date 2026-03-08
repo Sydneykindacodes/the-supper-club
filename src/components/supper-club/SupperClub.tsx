@@ -40,12 +40,37 @@ export default function SupperClub() {
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
 
-  const [poolRestaurants, setPoolRestaurants] = useState<Restaurant[]>(RESTAURANT_POOL);
+  // Per-group pool: map groupId -> Restaurant[]
+  const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
+    [INITIAL_GROUPS[0].id]: RESTAURANT_POOL,
+    [INITIAL_GROUPS[1].id]: [],
+  });
+  const poolRestaurants = groupPools[activeGroup.id] || [];
+  const setPoolRestaurants = (fn: (p: Restaurant[]) => Restaurant[]) => {
+    setGroupPools(prev => ({ ...prev, [activeGroup.id]: fn(prev[activeGroup.id] || []) }));
+  };
+  const addToGroupPool = (restaurant: Restaurant, groupIds: number[]) => {
+    setGroupPools(prev => {
+      const next = { ...prev };
+      groupIds.forEach(gid => {
+        const existing = next[gid] || [];
+        if (!existing.find(r => r.name === restaurant.name)) {
+          next[gid] = [...existing, restaurant];
+        }
+      });
+      return next;
+    });
+  };
+
   const [visitedRestaurants] = useState<Restaurant[]>(PREVIOUSLY_VISITED);
-  const [poolView, setPoolView] = useState("pool");
+  const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
+  const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
+  const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
+  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: RESTAURANT_POOL[0], visible: false });
+  const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
   const [rCuisine, setRCuisine] = useState("");
   const [rCity, setRCity] = useState("");
