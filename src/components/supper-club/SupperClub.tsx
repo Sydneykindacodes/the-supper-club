@@ -1148,8 +1148,9 @@ export default function SupperClub() {
     return (
       <div style={S.app}><div style={S.phone}>
         <div style={S.screen}>
-          <div style={S.header}>
-            <div style={S.headerEye}>The Golden Table</div>
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+          <div style={{ ...S.header, paddingTop: "8px" }}>
+            <div style={S.headerEye}>Collection</div>
             <div style={S.headerTitle}>Badges</div>
           </div>
           <div style={{ display:"flex", gap:"6px", margin:"16px 16px 0", padding:"4px", background:"rgba(255,255,255,0.03)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.08)" }}>
