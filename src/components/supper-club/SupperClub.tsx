@@ -1172,11 +1172,6 @@ export default function SupperClub() {
             </div>
           ) : (
             <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ display:"flex", gap:"8px", overflowX:"auto", marginBottom:"16px" }}>
-                {groups.map(g => (
-                  <div key={g.id} onClick={() => setActiveGroup(g)} style={chip(activeGroup.id===g.id)}>{g.name}</div>
-                ))}
-              </div>
               <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", textAlign:"center", marginBottom:"20px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>{activeGroup.name}</div>
                 <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{gEarned}</div>
