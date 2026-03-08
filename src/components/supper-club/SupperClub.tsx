@@ -469,7 +469,7 @@ export default function SupperClub() {
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>ADMIN</span>}
+                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>HOST</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
                     {!isYou && youAreAdmin && !isAdmin && (
