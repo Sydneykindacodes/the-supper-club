@@ -38,6 +38,7 @@ export default function SupperClub() {
   const [inviteRevealed, setInviteRevealed] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
+  const [groupAdmin, setGroupAdmin] = useState("You");
 
   const [poolRestaurants, setPoolRestaurants] = useState<Restaurant[]>(RESTAURANT_POOL);
   const [visitedRestaurants] = useState<Restaurant[]>(PREVIOUSLY_VISITED);
