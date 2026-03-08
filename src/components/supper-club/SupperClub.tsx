@@ -204,10 +204,11 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.25)" }}>
+          <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.25)", cursor:"pointer" }}
+            onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}>
             <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code — {ag.name}</div>
             <div style={{ fontSize:"28px", color:"#f5e6d3", letterSpacing:"8px", fontWeight:"700", marginBottom:"6px" }}>{ag.code}</div>
-            <div style={{ fontSize:"12px", color:"#7a5a40" }}>Share to invite or add members at any time.</div>
+            <div style={{ fontSize:"12px", color:"#7a5a40" }}>Tap to copy · Share to invite members</div>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
@@ -781,6 +782,25 @@ export default function SupperClub() {
             if (postDinnerDates.length > 0) updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 11, 2026" });
             setTimeout(() => setScreen("club_home"), 2000);
           }}>Submit Review</button>
+
+          <div style={{ marginBottom:"16px" }}>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", textAlign:"center" }}>Share Your Review</div>
+            <div style={{ display:"flex", gap:"8px", justifyContent:"center", flexWrap:"wrap" }}>
+              {[
+                { name:"Instagram", icon:"📸", color:"#E1306C" },
+                { name:"TikTok", icon:"🎵", color:"#00f2ea" },
+                { name:"Snapchat", icon:"👻", color:"#FFFC00" },
+                { name:"Facebook", icon:"📘", color:"#1877F2" },
+                { name:"X", icon:"𝕏", color:"#f5e6d3" },
+              ].map(p => (
+                <div key={p.name} onClick={() => showToast(`Opening ${p.name}…`)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", cursor:"pointer", padding:"10px 12px", borderRadius:"12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(201,149,106,0.1)", minWidth:"56px", transition:"all 0.15s" }}>
+                  <span style={{ fontSize:"20px" }}>{p.icon}</span>
+                  <span style={{ fontSize:"9px", color:"#7a5a40", letterSpacing:"0.5px" }}>{p.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => { showToast("Review submitted."); setTimeout(() => setScreen("club_home"), 1800); }}>Submit Without Next Dates</button>
         </div>
       </div>
@@ -908,6 +928,25 @@ export default function SupperClub() {
 
           <div style={{ height:"16px" }}/>
           <button style={S.primaryBtn} onClick={() => { showToast("Review logged."); setTimeout(() => setScreen("club_home"), 1500); }}>Save Review</button>
+
+          <div style={{ marginBottom:"16px", marginTop:"12px" }}>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", textAlign:"center" }}>Share Your Review</div>
+            <div style={{ display:"flex", gap:"8px", justifyContent:"center", flexWrap:"wrap" }}>
+              {[
+                { name:"Instagram", icon:"📸", color:"#E1306C" },
+                { name:"TikTok", icon:"🎵", color:"#00f2ea" },
+                { name:"Snapchat", icon:"👻", color:"#FFFC00" },
+                { name:"Facebook", icon:"📘", color:"#1877F2" },
+                { name:"X", icon:"𝕏", color:"#f5e6d3" },
+              ].map(p => (
+                <div key={p.name} onClick={() => showToast(`Opening ${p.name}…`)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", cursor:"pointer", padding:"10px 12px", borderRadius:"12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(201,149,106,0.1)", minWidth:"56px", transition:"all 0.15s" }}>
+                  <span style={{ fontSize:"20px" }}>{p.icon}</span>
+                  <span style={{ fontSize:"9px", color:"#7a5a40", letterSpacing:"0.5px" }}>{p.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => setScreen("club_home")}>Cancel</button>
         </div>
       </div>
