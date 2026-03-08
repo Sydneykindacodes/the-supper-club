@@ -332,7 +332,10 @@ export default function SupperClub() {
 
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
+                <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Admin</span>
+              </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
             <div style={{ display:"flex", gap:"14px" }}>
