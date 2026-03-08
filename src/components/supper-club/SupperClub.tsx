@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
   WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS,
   Group, Restaurant,
 } from "@/data/supper-club-data";
+import { supabase } from "@/integrations/supabase/client";
+
+interface GooglePlace {
+  id: string;
+  name: string;
+  cuisine: string;
+  city: string;
+  address: string;
+  price: number;
+  googleRating: number | null;
+  googleReviewCount: number;
+  googlePlaceId: string;
+}
 import { S, tabPill, chip } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
