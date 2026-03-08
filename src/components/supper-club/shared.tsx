@@ -128,11 +128,11 @@ export const RatingBadge = ({ restaurant, large }: { restaurant: Restaurant; lar
 export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigate: (tab: string, screen: string) => void }) => (
   <div style={S.bottomNav}>
     {[
-      { id:"home",        label:"Home",   glyph:"⌂",  screen:"club_home" },
-      { id:"restaurants", label:"Pool",   glyph:"≡",  screen:"restaurant_pool" },
-      { id:"schedule",    label:"Dates",  glyph:"◫",  screen:"availability" },
-      { id:"reveal",      label:"Reveal", glyph:"◎",  screen:"reveal" },
-      { id:"badges",      label:"Badges", glyph:"◈",  screen:"badges" },
+      { id:"home",        label:"Home",    glyph:"⌂",  screen:"club_home" },
+      { id:"explore",     label:"Explore", glyph:"◉",  screen:"explore" },
+      { id:"schedule",    label:"Dates",   glyph:"◫",  screen:"availability" },
+      { id:"reveal",      label:"Reveal",  glyph:"◎",  screen:"reveal" },
+      { id:"badges",      label:"Badges",  glyph:"◈",  screen:"badges" },
     ].map(item => (
       <div key={item.id} style={S.navItem} onClick={() => onNavigate(item.id, item.screen)}>
         <span style={{ fontSize:"20px", color:activeTab===item.id?"#c9956a":"#3d2010" }}>{item.glyph}</span>

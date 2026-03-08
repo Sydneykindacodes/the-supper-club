@@ -40,12 +40,37 @@ export default function SupperClub() {
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
 
-  const [poolRestaurants, setPoolRestaurants] = useState<Restaurant[]>(RESTAURANT_POOL);
+  // Per-group pool: map groupId -> Restaurant[]
+  const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
+    [INITIAL_GROUPS[0].id]: RESTAURANT_POOL,
+    [INITIAL_GROUPS[1].id]: [],
+  });
+  const poolRestaurants = groupPools[activeGroup.id] || [];
+  const setPoolRestaurants = (fn: (p: Restaurant[]) => Restaurant[]) => {
+    setGroupPools(prev => ({ ...prev, [activeGroup.id]: fn(prev[activeGroup.id] || []) }));
+  };
+  const addToGroupPool = (restaurant: Restaurant, groupIds: number[]) => {
+    setGroupPools(prev => {
+      const next = { ...prev };
+      groupIds.forEach(gid => {
+        const existing = next[gid] || [];
+        if (!existing.find(r => r.name === restaurant.name)) {
+          next[gid] = [...existing, restaurant];
+        }
+      });
+      return next;
+    });
+  };
+
   const [visitedRestaurants] = useState<Restaurant[]>(PREVIOUSLY_VISITED);
-  const [poolView, setPoolView] = useState("pool");
+  const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
+  const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
+  const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
+  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: RESTAURANT_POOL[0], visible: false });
+  const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
   const [rCuisine, setRCuisine] = useState("");
   const [rCity, setRCity] = useState("");
@@ -363,6 +388,7 @@ export default function SupperClub() {
           </div>
 
           <div style={{ padding:"8px 16px 4px" }}>
+            <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("post_dinner")}>Submit Last Dinner Review</button>
             <button style={{ ...S.ghostBtn, fontSize:"12px", padding:"12px" }} onClick={() => setScreen("free_review")}>Log a Personal Restaurant Review</button>
           </div>
@@ -514,32 +540,75 @@ export default function SupperClub() {
     </div></div>
   );
 
-  // ── RESTAURANT POOL ──
-  if (screen === "restaurant_pool") {
+  // ── GROUP POOL ──
+  if (screen === "group_pool") {
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Restaurant Pool</div>
+          </div>
+          <div style={{ padding:"16px 16px 0" }}>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Active Pool · {poolRestaurants.length}</div>
+            {poolRestaurants.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>Your pool is empty. Add restaurants from Explore.</div>
+                <button style={S.primaryBtn} onClick={() => { setActiveTab("explore"); setScreen("explore"); }}>Explore Restaurants</button>
+              </div>
+            ) : (
+              poolRestaurants.map(r => (
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <div>
+                    <div style={S.cardTitle}>{r.name}</div>
+                    <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
+                    <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>added by {r.suggested_by}</div>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                    <PriceTag price={r.price}/>
+                    <RatingBadge restaurant={r}/>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      </div></div>
+    );
+  }
+
+  // ── EXPLORE ──
+  if (screen === "explore") {
     const uniqueRestaurants = [...new Set(PUBLIC_REVIEWS.map(r => r.restaurant))];
+    const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
 
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={S.header}>
-            <div style={S.headerEye}>{activeGroup.name}</div>
-            <div style={S.headerTitle}>Restaurants</div>
+            <div style={S.headerEye}>Discover</div>
+            <div style={S.headerTitle}>Explore Restaurants</div>
           </div>
 
           <div style={{ display:"flex", gap:"4px", margin:"16px 16px 0", padding:"4px", background:"rgba(255,255,255,0.03)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.08)" }}>
-            {([["pool","Pool"],["visited","Visited"],["public","Community"]] as const).map(([id,label]) => (
-              <div key={id} style={{ ...tabPill(poolView===id), flex:1 }} onClick={() => { setPoolView(id); setSelectedPublicR(null); }}>{label}</div>
+            {([["search","Search"],["visited","Visited"],["community","Community"]] as const).map(([id,label]) => (
+              <div key={id} style={{ ...tabPill(exploreView===id), flex:1 }} onClick={() => { setExploreView(id); setSelectedPublicR(null); }}>{label}</div>
             ))}
           </div>
 
-          {poolView === "pool" && (<>
+          {exploreView === "search" && (
             <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for a restaurant to add to your group's pool.</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for restaurants to add to your group pools.</div>
               <label style={S.label}>Search Restaurants</label>
               <div style={{ position:"relative" }}>
                 <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
+                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || "New York, NY", setGpResults, setGpLoading); }}
                 />
                 {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants…</div>}
                 {gpResults.length > 0 && (
@@ -547,16 +616,15 @@ export default function SupperClub() {
                     {gpResults.map(r => (
                       <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
                         onClick={() => {
-                          setRName(r.name); setRCuisine(r.cuisine); setRCity(r.city); setRPrice(r.price);
-                          setGpResults([]);
-                          // Auto-add with Google data
-                          setPoolRestaurants(p => [...p, {
-                            id: p.length + 100, name: r.name, cuisine: r.cuisine, suggested_by: "You",
+                          const restaurant = {
+                            id: Date.now(), name: r.name, cuisine: r.cuisine, suggested_by: "You",
                             city: r.city, price: r.price, visited: false, visitedDate: null, visitedRating: null,
                             googleRating: r.googleRating, googleReviewCount: r.googleReviewCount, scRating: null, scReviewCount: 0,
-                          }]);
-                          setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
-                          showToast(`${r.name} added to the pool.`);
+                          };
+                          setAddToGroupPicker({ restaurant, visible: true });
+                          setAddToGroupSelected([activeGroup.id]);
+                          setGpResults([]);
+                          setRName("");
                         }}>
                         <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
                         <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
@@ -569,52 +637,34 @@ export default function SupperClub() {
                   </div>
                 )}
               </div>
-              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"12px" }}>
-                Searching within {searchRadius} mi of {activeGroup.city}
+              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>
+                Search results will show restaurants near your groups' cities
               </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px", marginTop:"16px" }}>Or add manually</div>
-              <label style={S.label}>Restaurant Name</label>
-              <input style={S.input} placeholder="e.g. Le Bernardin" value={rName} onChange={e => setRName(e.target.value)}/>
-              <label style={S.label}>Cuisine Type</label>
-              <input style={S.input} placeholder="e.g. French, Italian..." value={rCuisine} onChange={e => setRCuisine(e.target.value)}/>
-              <label style={S.label}>City</label>
-              <input style={S.input} placeholder="e.g. New York, NY" value={rCity} onChange={e => setRCity(e.target.value)}/>
-              <label style={S.label}>Price Range</label>
-              <div style={{ display:"flex", gap:"8px", marginBottom:"14px" }}>
-                {[1,2,3,4].map(n => (
-                  <div key={n} onClick={() => setRPrice(n)} style={{ ...chip(rPrice===n), padding:"9px 14px" }}>{PRICE_LABELS[n]}</div>
-                ))}
-              </div>
-              <button style={S.primaryBtn} onClick={() => {
-                if (rName) {
-                  setPoolRestaurants(p => [...p, { id:p.length+10, name:rName, cuisine:rCuisine||"—", suggested_by:"You", city:rCity||"—", price:rPrice, visited:false, visitedDate:null, visitedRating:null }]);
-                  setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
-                  showToast("Added to the pool.");
-                }
-              }}>Add Manually</button>
-            </div>
-            <div style={{ padding:"0 16px 0" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Active Pool · {poolRestaurants.length}</div>
-              {poolRestaurants.map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <div>
-                    <div style={S.cardTitle}>{r.name}</div>
-                    <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
-                    <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>suggested by {r.suggested_by}</div>
-                  </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
-                    <PriceTag price={r.price}/>
-                    <RatingBadge restaurant={r}/>
-                  </div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Filters</div>
+              <div style={{ marginBottom:"16px" }}>
+                <label style={S.label}>Cuisine</label>
+                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
+                  {cuisines.slice(0,5).map(c => (
+                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div style={{ marginBottom:"16px" }}>
+                <label style={S.label}>Price Range</label>
+                <div style={{ display:"flex", gap:"8px" }}>
+                  {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
+                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => setExplorePriceFilter(id)}>{label}</div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </>)}
+          )}
 
-          {poolView === "visited" && (
+          {exploreView === "visited" && (
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                Every restaurant your group has dined at. Use the archive to revisit favorites — if your settings allow it.
+                Restaurants you've visited across all groups. Add to other group pools.
               </div>
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Sort By</label>
@@ -635,7 +685,7 @@ export default function SupperClub() {
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                 {visitedRestaurants.length} Previously Visited
               </div>
-              {sortedVisited.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
+              {visitedRestaurants.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
                 <div key={r.id} style={{ ...S.card, margin:"0 0 10px" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
@@ -648,20 +698,19 @@ export default function SupperClub() {
                       <RatingBadge restaurant={r} large/>
                     </div>
                   </div>
-                  {!noRepeats && (
-                    <button onClick={() => {
-                      setPoolRestaurants(p => [...p, { ...r, visited:false, visitedDate:null, visitedRating:null, suggested_by:"You" }]);
-                      showToast(`${r.name} returned to the pool.`);
-                    }} style={{ ...S.ghostBtn, marginTop:"12px", fontSize:"11px", padding:"10px" }}>
-                      Return to Pool
-                    </button>
-                  )}
+                  <button onClick={() => {
+                    const restaurant = { ...r, visited:false, visitedDate:null, visitedRating:null, suggested_by:"You", id: Date.now() };
+                    setAddToGroupPicker({ restaurant, visible: true });
+                    setAddToGroupSelected([activeGroup.id]);
+                  }} style={{ ...S.ghostBtn, marginTop:"12px", fontSize:"11px", padding:"10px" }}>
+                    Add to Pool
+                  </button>
                 </div>
               ))}
             </div>
           )}
 
-          {poolView === "public" && (
+          {exploreView === "community" && (
             selectedPublicR ? (
               <div style={{ padding:"16px 16px 0" }}>
                 <button onClick={() => setSelectedPublicR(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"14px", cursor:"pointer", padding:0, marginBottom:"16px" }}>← All Restaurants</button>
@@ -678,14 +727,15 @@ export default function SupperClub() {
                   </div>
                 ))}
                 <button style={{ ...S.primaryBtn, marginTop:"8px" }} onClick={() => {
-                  setPoolRestaurants(p => [...p, { id:p.length+20, name:selectedPublicR, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null }]);
-                  showToast(`${selectedPublicR} added to your pool.`);
-                }}>Add to Our Pool</button>
+                  const restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null };
+                  setAddToGroupPicker({ restaurant, visible: true });
+                  setAddToGroupSelected([activeGroup.id]);
+                }}>Add to Pool</button>
               </div>
             ) : (
               <div style={{ padding:"16px 16px 0" }}>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                  Reviews from other Supper Club groups. Browse, discover, add to your own pool.
+                  Reviews from other Supper Club groups. Browse, discover, add to your pools.
                 </div>
                 {uniqueRestaurants.map(name => {
                   const reviews = PUBLIC_REVIEWS.filter(r => r.restaurant === name);
@@ -704,6 +754,39 @@ export default function SupperClub() {
                 })}
               </div>
             )
+          )}
+
+          {/* Group Picker Modal */}
+          {addToGroupPicker.visible && (
+            <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(26,15,10,0.9)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
+              <div style={{ background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"16px", padding:"20px", maxWidth:"320px", width:"100%" }}>
+                <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"600" }}>Add to Groups</div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic" }}>{addToGroupPicker.restaurant.name}</div>
+                <div style={{ marginBottom:"20px" }}>
+                  {groups.map(g => (
+                    <div key={g.id} onClick={() => {
+                      const isSelected = addToGroupSelected.includes(g.id);
+                      setAddToGroupSelected(prev => isSelected ? prev.filter(id => id !== g.id) : [...prev, g.id]);
+                    }} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px", cursor:"pointer", borderRadius:"10px", background:addToGroupSelected.includes(g.id)?"rgba(201,149,106,0.1)":"transparent", marginBottom:"8px" }}>
+                      <div style={{ width:"20px", height:"20px", borderRadius:"4px", border:"1px solid rgba(201,149,106,0.3)", background:addToGroupSelected.includes(g.id)?"#c9956a":"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {addToGroupSelected.includes(g.id) && <span style={{ fontSize:"12px", color:"#1a0f0a" }}>✓</span>}
+                      </div>
+                      <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{g.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display:"flex", gap:"10px" }}>
+                  <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => { setAddToGroupPicker(prev => ({ ...prev, visible: false })); setAddToGroupSelected([]); }}>Cancel</button>
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                    if (addToGroupSelected.length === 0) { showToast("Select at least one group."); return; }
+                    addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
+                    showToast(`Added to ${addToGroupSelected.length} group${addToGroupSelected.length > 1 ? "s" : ""}.`);
+                    setAddToGroupPicker(prev => ({ ...prev, visible: false }));
+                    setAddToGroupSelected([]);
+                  }}>Add to {addToGroupSelected.length} Group{addToGroupSelected.length !== 1 ? "s" : ""}</button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
