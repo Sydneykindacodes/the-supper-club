@@ -332,7 +332,10 @@ export default function SupperClub() {
 
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
+                <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Admin</span>
+              </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
             <div style={{ display:"flex", gap:"14px" }}>
@@ -469,6 +472,25 @@ export default function SupperClub() {
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code</div>
               <div style={{ fontSize:"20px", color:"#f5e6d3", letterSpacing:"6px", fontWeight:"700" }}>{activeGroup.code}</div>
             </div>
+          </div>
+
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Danger Zone</div>
+          <div style={{ ...S.card, border:"1px solid rgba(197,92,92,0.2)", background:"rgba(197,92,92,0.03)" }}>
+            <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"6px" }}>Leave This Club</div>
+            <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+              You'll lose access to this group's pool, history, and badges. This can't be undone.
+            </div>
+            <button style={{ width:"100%", padding:"12px", borderRadius:"10px", fontSize:"12px", letterSpacing:"0.5px", background:"rgba(197,92,92,0.12)", border:"1px solid rgba(197,92,92,0.3)", color:"#c45c5c", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"600" }}
+              onClick={() => {
+                const remaining = groups.filter(g => g.id !== activeGroup.id);
+                if (remaining.length === 0) { showToast("You can't leave your only club."); return; }
+                setGroups(remaining);
+                setActiveGroup(remaining[0]);
+                showToast(`You left ${activeGroup.name}.`);
+                setTimeout(() => setScreen("club_home"), 800);
+              }}>
+              Leave {activeGroup.name}
+            </button>
           </div>
 
           <div style={{ height:"16px" }}/>
