@@ -473,7 +473,7 @@ export default function SupperClub() {
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
                     {!isYou && youAreAdmin && !isAdmin && (
-                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the admin.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Admin</span>
+                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && youAreAdmin && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
