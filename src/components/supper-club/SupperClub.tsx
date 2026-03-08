@@ -25,6 +25,7 @@ import {
 } from "./shared";
 
 export default function SupperClub() {
+  const MAX_GROUPS = 15;
   const [screen, setScreen] = useState("welcome");
   const [groups, setGroups] = useState(INITIAL_GROUPS);
   const [activeGroup, setActiveGroup] = useState(INITIAL_GROUPS[0]);
@@ -33,6 +34,9 @@ export default function SupperClub() {
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
+  const [showNewGroupForm, setShowNewGroupForm] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupCity, setNewGroupCity] = useState("");
 
   const [poolRestaurants, setPoolRestaurants] = useState<Restaurant[]>(RESTAURANT_POOL);
   const [visitedRestaurants] = useState<Restaurant[]>(PREVIOUSLY_VISITED);
