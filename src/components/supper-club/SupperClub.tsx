@@ -421,7 +421,44 @@ export default function SupperClub() {
 
           {poolView === "pool" && (<>
             <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Suggest a restaurant. The app decides. No lobbying allowed.</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for a restaurant to add to your group's pool.</div>
+              <label style={S.label}>Search Restaurants</label>
+              <div style={{ position:"relative" }}>
+                <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
+                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
+                />
+                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants…</div>}
+                {gpResults.length > 0 && (
+                  <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
+                    {gpResults.map(r => (
+                      <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
+                        onClick={() => {
+                          setRName(r.name); setRCuisine(r.cuisine); setRCity(r.city); setRPrice(r.price);
+                          setGpResults([]);
+                          // Auto-add with Google data
+                          setPoolRestaurants(p => [...p, {
+                            id: p.length + 100, name: r.name, cuisine: r.cuisine, suggested_by: "You",
+                            city: r.city, price: r.price, visited: false, visitedDate: null, visitedRating: null,
+                            googleRating: r.googleRating, googleReviewCount: r.googleReviewCount, scRating: null, scReviewCount: 0,
+                          }]);
+                          setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
+                          showToast(`${r.name} added to the pool.`);
+                        }}>
+                        <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
+                        <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
+                          {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
+                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                          {r.price && <span style={{ marginLeft:"6px" }}>{PRICE_LABELS[r.price]}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"12px" }}>
+                Searching within {searchRadius} mi of {activeGroup.city}
+              </div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px", marginTop:"16px" }}>Or add manually</div>
               <label style={S.label}>Restaurant Name</label>
               <input style={S.input} placeholder="e.g. Le Bernardin" value={rName} onChange={e => setRName(e.target.value)}/>
               <label style={S.label}>Cuisine Type</label>
@@ -440,7 +477,7 @@ export default function SupperClub() {
                   setRName(""); setRCuisine(""); setRCity(""); setRPrice(3);
                   showToast("Added to the pool.");
                 }
-              }}>Add to Pool</button>
+              }}>Add Manually</button>
             </div>
             <div style={{ padding:"0 16px 0" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Active Pool · {poolRestaurants.length}</div>
