@@ -388,6 +388,7 @@ export default function SupperClub() {
           </div>
 
           <div style={{ padding:"8px 16px 4px" }}>
+            <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("post_dinner")}>Submit Last Dinner Review</button>
             <button style={{ ...S.ghostBtn, fontSize:"12px", padding:"12px" }} onClick={() => setScreen("free_review")}>Log a Personal Restaurant Review</button>
           </div>
