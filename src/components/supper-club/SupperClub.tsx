@@ -335,7 +335,7 @@ export default function SupperClub() {
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
-                {groupAdmin === "You" && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Admin</span>}
+                {groupAdmin === "You" && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
               </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
@@ -469,11 +469,11 @@ export default function SupperClub() {
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>ADMIN</span>}
+                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>HOST</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
                     {!isYou && youAreAdmin && !isAdmin && (
-                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the admin.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Admin</span>
+                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && youAreAdmin && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
@@ -759,11 +759,11 @@ export default function SupperClub() {
 
           {/* ── Admin Override ── */}
           <div style={{ marginTop:"20px", marginBottom:"8px" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Admin Override</div>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Host Override</div>
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
               <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-                Tired of waiting? As admin, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
+                Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
               </div>
               {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
                 <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
@@ -785,7 +785,7 @@ export default function SupperClub() {
                 }}>
                 Override & Lock Date
               </button>
-              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to group admins</div>
+              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to the host</div>
             </div>
           </div>
 
