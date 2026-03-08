@@ -201,7 +201,61 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <div style={{ padding:"52px 24px 16px", background:"linear-gradient(180deg,#2d1208 0%,transparent 100%)" }}>
+          {/* ── Group Switcher ── */}
+          <div style={{ padding:"48px 0 0" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"8px", padding:"0 16px", overflowX:"auto", scrollbarWidth:"none", WebkitOverflowScrolling:"touch", msOverflowStyle:"none" }}>
+              {groups.map(g => {
+                const active = g.id === activeGroup.id;
+                return (
+                  <div key={g.id} onClick={() => { setActiveGroup(g); setShowNewGroupForm(false); }}
+                    style={{
+                      flexShrink: 0, padding:"10px 18px", borderRadius:"20px", cursor:"pointer",
+                      background: active ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
+                      border: active ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.08)",
+                      transition:"all 0.2s",
+                    }}>
+                    <div style={{ fontSize:"12px", fontWeight: active ? "600" : "400", color: active ? "#f5e6d3" : "#5a3a25", letterSpacing:"0.5px", whiteSpace:"nowrap" }}>{g.name}</div>
+                  </div>
+                );
+              })}
+              {groups.length < MAX_GROUPS && (
+                <div onClick={() => setShowNewGroupForm(true)}
+                  style={{
+                    flexShrink:0, padding:"10px 16px", borderRadius:"20px", cursor:"pointer",
+                    background: showNewGroupForm ? "rgba(201,149,106,0.1)" : "transparent",
+                    border:"1px dashed rgba(201,149,106,0.2)", transition:"all 0.2s",
+                    display:"flex", alignItems:"center", gap:"6px",
+                  }}>
+                  <span style={{ fontSize:"14px", color:"#c9956a", lineHeight:1 }}>+</span>
+                  <span style={{ fontSize:"11px", color:"#7a5a40", whiteSpace:"nowrap" }}>New Club</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Inline New Group Form ── */}
+          {showNewGroupForm && (
+            <div style={{ ...S.card, margin:"12px 16px", border:"1px solid rgba(201,149,106,0.25)", background:"rgba(201,149,106,0.04)" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Create New Club</div>
+              <input style={{ ...S.input, marginBottom:"10px" }} placeholder="Club name" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
+              <input style={S.input} placeholder="City (e.g. New York, NY)" value={newGroupCity} onChange={e => setNewGroupCity(e.target.value)} />
+              <div style={{ display:"flex", gap:"8px", marginTop:"12px" }}>
+                <button style={{ ...S.primaryBtn, flex:1, marginBottom:0, fontSize:"12px", padding:"12px" }} onClick={() => {
+                  if (!newGroupName.trim()) { showToast("Name your club first."); return; }
+                  const code = `SUPR-${Math.floor(1000 + Math.random() * 9000)}`;
+                  const newGroup: Group = { id: Date.now(), name: newGroupName.trim(), code, members: 1, city: newGroupCity.trim() || "New York, NY", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
+                  setGroups(prev => [...prev, newGroup]);
+                  setActiveGroup(newGroup);
+                  setNewGroupName(""); setNewGroupCity(""); setShowNewGroupForm(false);
+                  showToast(`${newGroup.name} created. Share code ${code}.`);
+                }}>Create</button>
+                <button style={{ ...S.ghostBtn, flex:1, marginBottom:0, fontSize:"12px", padding:"12px" }} onClick={() => { setShowNewGroupForm(false); setNewGroupName(""); setNewGroupCity(""); }}>Cancel</button>
+              </div>
+              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"10px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
+            </div>
+          )}
+
+          <div style={{ padding:"16px 24px 12px" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
             <div style={{ fontSize:"13px", color:"#7a5a40", marginTop:"4px", fontStyle:"italic" }}>
               {noDate ? WITTY_NO_DATE[wittyIdx] : pending ? "Your group has a proposed date. Waiting on confirmations." : "Your next supper is coming. Try not to look up the restaurant."}
