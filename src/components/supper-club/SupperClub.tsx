@@ -705,17 +705,54 @@ export default function SupperClub() {
             </div>
           )}
           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-          {MEMBERS.map(m => (
-            <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+          {MEMBERS.map(m => {
+            const isYou = m.name === "You";
+            const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+            return (
+              <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                  <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                  <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+                </div>
+                <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                  {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                </span>
               </div>
-              <span style={{ fontSize:"12px", fontStyle:"italic", color:m.name === "You" ? "#c9956a" : "#7a9e7e" }}>
-                {m.name === "You" ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : "Submitted"}
-              </span>
+            );
+          })}
+
+          {/* ── Admin Override ── */}
+          <div style={{ marginTop:"20px", marginBottom:"8px" }}>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Admin Override</div>
+            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
+              <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+                Tired of waiting? As admin, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
+              </div>
+              {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
+                <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
+                  {MEMBERS.filter(m => m.name === "Priya").map(m => (
+                    <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
+                      <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                      <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"auto" }}>will be marked absent</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
+                onClick={() => {
+                  if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
+                  showToast("Date locked. Priya marked as not attending.");
+                  updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" });
+                }}>
+                Override & Lock Date
+              </button>
+              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to group admins</div>
             </div>
-          ))}
+          </div>
+
           <div style={{ height:"18px" }}/>
           <button style={S.primaryBtn} onClick={() => { if (selectedDates.length > 0) { showToast("Availability saved."); updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" }); } }}>
             Submit Availability
