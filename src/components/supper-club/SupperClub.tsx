@@ -204,10 +204,11 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.25)" }}>
+          <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.25)", cursor:"pointer" }}
+            onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}>
             <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code — {ag.name}</div>
             <div style={{ fontSize:"28px", color:"#f5e6d3", letterSpacing:"8px", fontWeight:"700", marginBottom:"6px" }}>{ag.code}</div>
-            <div style={{ fontSize:"12px", color:"#7a5a40" }}>Share to invite or add members at any time.</div>
+            <div style={{ fontSize:"12px", color:"#7a5a40" }}>Tap to copy · Share to invite members</div>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
