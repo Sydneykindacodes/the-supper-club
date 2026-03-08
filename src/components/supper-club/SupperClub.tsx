@@ -782,6 +782,25 @@ export default function SupperClub() {
             if (postDinnerDates.length > 0) updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 11, 2026" });
             setTimeout(() => setScreen("club_home"), 2000);
           }}>Submit Review</button>
+
+          <div style={{ marginBottom:"16px" }}>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", textAlign:"center" }}>Share Your Review</div>
+            <div style={{ display:"flex", gap:"8px", justifyContent:"center", flexWrap:"wrap" }}>
+              {[
+                { name:"Instagram", icon:"📸", color:"#E1306C" },
+                { name:"TikTok", icon:"🎵", color:"#00f2ea" },
+                { name:"Snapchat", icon:"👻", color:"#FFFC00" },
+                { name:"Facebook", icon:"📘", color:"#1877F2" },
+                { name:"X", icon:"𝕏", color:"#f5e6d3" },
+              ].map(p => (
+                <div key={p.name} onClick={() => showToast(`Opening ${p.name}…`)} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", cursor:"pointer", padding:"10px 12px", borderRadius:"12px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(201,149,106,0.1)", minWidth:"56px", transition:"all 0.15s" }}>
+                  <span style={{ fontSize:"20px" }}>{p.icon}</span>
+                  <span style={{ fontSize:"9px", color:"#7a5a40", letterSpacing:"0.5px" }}>{p.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => { showToast("Review submitted."); setTimeout(() => setScreen("club_home"), 1800); }}>Submit Without Next Dates</button>
         </div>
       </div>
