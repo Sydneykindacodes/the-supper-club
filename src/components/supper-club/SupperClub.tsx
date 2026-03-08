@@ -807,12 +807,17 @@ export default function SupperClub() {
           <label style={S.label}>Restaurant Name</label>
           <div style={{ position:"relative" }}>
             <input style={S.input} placeholder="e.g. Don Angie" value={freeReviewRestaurant}
-              onChange={e => { setFreeReviewRestaurant(e.target.value); setFreeReviewShowSuggestions(true); }}
+              onChange={e => {
+                setFreeReviewRestaurant(e.target.value);
+                setFreeReviewShowSuggestions(true);
+                searchGooglePlaces(e.target.value, freeReviewCity || activeGroup.city, setGpFreeResults, setGpFreeLoading);
+              }}
               onFocus={() => setFreeReviewShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 150)}
+              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 200)}
             />
-            {freeReviewShowSuggestions && restaurantSuggestions.length > 0 && (
-              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"180px", overflowY:"auto" }}>
+            {gpFreeLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching…</div>}
+            {freeReviewShowSuggestions && (gpFreeResults.length > 0 || restaurantSuggestions.length > 0) && (
+              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
                 {restaurantSuggestions.map(r => (
                   <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)", fontSize:"13px", color:"#f5e6d3" }}
                     onMouseDown={() => {
@@ -821,9 +826,28 @@ export default function SupperClub() {
                       setFreeReviewCuisine(r.cuisine);
                       setRPrice(r.price);
                       setFreeReviewShowSuggestions(false);
+                      setGpFreeResults([]);
                     }}>
                     <span style={{ fontWeight:600 }}>{r.name}</span>
                     <span style={{ color:"#7a5a40", marginLeft:"8px" }}>{r.cuisine} · {r.city}</span>
+                    <span style={{ color:"#c9956a", marginLeft:"6px", fontSize:"10px" }}>In pool</span>
+                  </div>
+                ))}
+                {gpFreeResults.filter(g => !restaurantSuggestions.some(r => r.name === g.name)).map(r => (
+                  <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
+                    onMouseDown={() => {
+                      setFreeReviewRestaurant(r.name);
+                      setFreeReviewCity(r.city);
+                      setFreeReviewCuisine(r.cuisine);
+                      setRPrice(r.price);
+                      setFreeReviewShowSuggestions(false);
+                      setGpFreeResults([]);
+                    }}>
+                    <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
+                    <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
+                      {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
+                      {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                    </div>
                   </div>
                 ))}
               </div>
