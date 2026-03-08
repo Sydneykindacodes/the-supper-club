@@ -35,6 +35,7 @@ export default function SupperClub() {
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
+  const [inviteRevealed, setInviteRevealed] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
 
@@ -262,14 +263,22 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", marginBottom:"4px" }}
-            onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
-            >
-            <div style={{ display:"flex", alignItems:"center", gap:"10px", cursor:"pointer" }}>
-              <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
-              <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic" }}>tap to copy</span>
-            </div>
-            <span style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase" }}>Invite</span>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 16px", marginBottom:"4px", cursor:"pointer" }}
+            onClick={() => {
+              if (!inviteRevealed) { setInviteRevealed(true); }
+              else { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }
+            }}>
+            {!inviteRevealed ? (
+              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                <span style={{ fontSize:"12px", color:"#c9956a", letterSpacing:"1.5px" }}>Tap to Invite</span>
+                <span style={{ fontSize:"10px", color:"#5a3a25" }}>›</span>
+              </div>
+            ) : (
+              <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
+                <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic" }}>tap to copy</span>
+              </div>
+            )}
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
