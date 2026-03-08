@@ -124,6 +124,54 @@ export const RatingBadge = ({ restaurant, large }: { restaurant: Restaurant; lar
   );
 };
 
+// ── GlobalGroupSwitcher ──
+export const GlobalGroupSwitcher = ({
+  groups,
+  activeGroup,
+  setActiveGroup,
+  showNewGroupForm,
+  setShowNewGroupForm,
+  maxGroups = 15,
+}: {
+  groups: { id: number; name: string }[];
+  activeGroup: { id: number; name: string };
+  setActiveGroup: (g: any) => void;
+  showNewGroupForm: boolean;
+  setShowNewGroupForm: (v: boolean) => void;
+  maxGroups?: number;
+}) => (
+  <div style={{ padding: "12px 0 0" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 16px", overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
+      {groups.map(g => {
+        const active = g.id === activeGroup.id;
+        return (
+          <div key={g.id} onClick={() => { setActiveGroup(g); setShowNewGroupForm(false); }}
+            style={{
+              flexShrink: 0, padding: "8px 14px", borderRadius: "16px", cursor: "pointer",
+              background: active ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
+              border: active ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.08)",
+              transition: "all 0.2s",
+            }}>
+            <div style={{ fontSize: "11px", fontWeight: active ? "600" : "400", color: active ? "#f5e6d3" : "#5a3a25", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{g.name}</div>
+          </div>
+        );
+      })}
+      {groups.length < maxGroups && (
+        <div onClick={() => setShowNewGroupForm(true)}
+          style={{
+            flexShrink: 0, padding: "8px 12px", borderRadius: "16px", cursor: "pointer",
+            background: showNewGroupForm ? "rgba(201,149,106,0.1)" : "transparent",
+            border: "1px dashed rgba(201,149,106,0.2)", transition: "all 0.2s",
+            display: "flex", alignItems: "center", gap: "5px",
+          }}>
+          <span style={{ fontSize: "12px", color: "#c9956a", lineHeight: 1 }}>+</span>
+          <span style={{ fontSize: "10px", color: "#7a5a40", whiteSpace: "nowrap" }}>New</span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 // ── NavBar ──
 export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigate: (tab: string, screen: string) => void }) => (
   <div style={S.bottomNav}>

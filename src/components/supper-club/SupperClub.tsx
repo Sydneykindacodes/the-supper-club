@@ -21,7 +21,7 @@ interface GooglePlace {
 import { S, tabPill, chip } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
-  NavBar, CalendarGrid, MealTypeSelector, ShareRow,
+  NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
 
 export default function SupperClub() {
@@ -228,37 +228,7 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          {/* ── Group Switcher ── */}
-          <div style={{ padding:"48px 0 0" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:"8px", padding:"0 16px", overflowX:"auto", scrollbarWidth:"none", WebkitOverflowScrolling:"touch", msOverflowStyle:"none" }}>
-              {groups.map(g => {
-                const active = g.id === activeGroup.id;
-                return (
-                  <div key={g.id} onClick={() => { setActiveGroup(g); setShowNewGroupForm(false); }}
-                    style={{
-                      flexShrink: 0, padding:"10px 18px", borderRadius:"20px", cursor:"pointer",
-                      background: active ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
-                      border: active ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.08)",
-                      transition:"all 0.2s",
-                    }}>
-                    <div style={{ fontSize:"12px", fontWeight: active ? "600" : "400", color: active ? "#f5e6d3" : "#5a3a25", letterSpacing:"0.5px", whiteSpace:"nowrap" }}>{g.name}</div>
-                  </div>
-                );
-              })}
-              {groups.length < MAX_GROUPS && (
-                <div onClick={() => setShowNewGroupForm(true)}
-                  style={{
-                    flexShrink:0, padding:"10px 16px", borderRadius:"20px", cursor:"pointer",
-                    background: showNewGroupForm ? "rgba(201,149,106,0.1)" : "transparent",
-                    border:"1px dashed rgba(201,149,106,0.2)", transition:"all 0.2s",
-                    display:"flex", alignItems:"center", gap:"6px",
-                  }}>
-                  <span style={{ fontSize:"14px", color:"#c9956a", lineHeight:1 }}>+</span>
-                  <span style={{ fontSize:"11px", color:"#7a5a40", whiteSpace:"nowrap" }}>New Club</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
 
           {/* ── Inline New Group Form ── */}
           {showNewGroupForm && (
@@ -591,7 +561,8 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <div style={S.header}>
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+          <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Discover</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
           </div>
@@ -799,8 +770,9 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <div style={S.header}>
-          <div style={S.headerEye}>{activeGroup.name}</div>
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+        <div style={{ ...S.header, paddingTop: "8px" }}>
+          <div style={S.headerEye}>Schedule</div>
           <div style={S.headerTitle}>Set Availability</div>
         </div>
         <div style={{ padding:"16px 16px 0" }}>
@@ -887,8 +859,9 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <div style={S.header}>
-          <div style={S.headerEye}>{activeGroup.name}</div>
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+        <div style={{ ...S.header, paddingTop: "8px" }}>
+          <div style={S.headerEye}>Reveal</div>
           <div style={S.headerTitle}>Tonight's Dinner</div>
         </div>
         {!revealUnlocked ? (<>
@@ -1175,8 +1148,9 @@ export default function SupperClub() {
     return (
       <div style={S.app}><div style={S.phone}>
         <div style={S.screen}>
-          <div style={S.header}>
-            <div style={S.headerEye}>The Golden Table</div>
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+          <div style={{ ...S.header, paddingTop: "8px" }}>
+            <div style={S.headerEye}>Collection</div>
             <div style={S.headerTitle}>Badges</div>
           </div>
           <div style={{ display:"flex", gap:"6px", margin:"16px 16px 0", padding:"4px", background:"rgba(255,255,255,0.03)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.08)" }}>
@@ -1198,11 +1172,6 @@ export default function SupperClub() {
             </div>
           ) : (
             <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ display:"flex", gap:"8px", overflowX:"auto", marginBottom:"16px" }}>
-                {groups.map(g => (
-                  <div key={g.id} onClick={() => setActiveGroup(g)} style={chip(activeGroup.id===g.id)}>{g.name}</div>
-                ))}
-              </div>
               <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", textAlign:"center", marginBottom:"20px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>{activeGroup.name}</div>
                 <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{gEarned}</div>
