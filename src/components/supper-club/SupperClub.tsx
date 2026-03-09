@@ -199,6 +199,30 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     loadGroups();
   }, [user.id]);
 
+  // Greeting animation sequence: in → hold → out → done
+  useEffect(() => {
+    if (!greetingPhase) return;
+    if (greetingPhase === "in") {
+      const t = setTimeout(() => setGreetingPhase("hold"), 600);
+      return () => clearTimeout(t);
+    }
+    if (greetingPhase === "hold") {
+      const t = setTimeout(() => setGreetingPhase("out"), 1400);
+      return () => clearTimeout(t);
+    }
+    if (greetingPhase === "out") {
+      const t = setTimeout(() => {
+        setGreetingPhase(null);
+        sessionStorage.setItem("sc_greeted", "1");
+        if (pendingScreen) {
+          setScreen(pendingScreen);
+          setPendingScreen(null);
+        }
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [greetingPhase, pendingScreen]);
+
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const isTemporaryGroup = activeGroup.is_temporary || false;
