@@ -4066,7 +4066,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   textAlign:"center",
                   marginBottom:"20px"
                 }}>
-                  <div style={{ fontSize:"24px", marginBottom:"14px" }}>🍽️</div>
+                  <div style={{ marginBottom:"14px", display:"flex", justifyContent:"center" }}><UtensilsCrossed size={28} color="hsl(30,20%,88%)" strokeWidth={1.5} /></div>
                   <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
                     Your seat is reserved.
                   </div>
