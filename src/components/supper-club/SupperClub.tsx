@@ -1197,7 +1197,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ fontSize:"12px", color:"#c9956a", marginBottom:"4px" }}>Selected Date</div>
                 <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(hostSelectedDate)}</div>
                 <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"4px" }}>
-                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {MEMBERS.length} members available
+                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {currentMembers.length} members available
                 </div>
               </div>
             )}
