@@ -43,9 +43,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
 
-  // Load user's groups from DB on mount
+  // Load user's groups from DB on mount (and handle invite links)
   useEffect(() => {
     const loadGroups = async () => {
+      // Check for invite link in URL
+      const params = new URLSearchParams(window.location.search);
+      const inviteCode = params.get("invite");
+
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
         .from("members")
@@ -70,8 +74,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setActiveGroup(loadedGroups[0]);
           setScreen("club_home");
           setActiveTab("home");
+          // Clear invite param from URL
+          if (inviteCode) {
+            window.history.replaceState({}, "", window.location.pathname);
+          }
           return;
         }
+      }
+      // New user — check for invite link
+      if (inviteCode) {
+        setJoinMode("join");
+        setJoinCode(inviteCode);
+        setScreen("join_create");
+        window.history.replaceState({}, "", window.location.pathname);
+        return;
       }
       // New user — show welcome
       setScreen("welcome");
@@ -82,6 +98,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const dbData = useSupperClubData(user, activeGroupId);
+
+  // Sync DB-loaded availability into local state
+  useEffect(() => {
+    if (dbData.userSelectedDates.length > 0) {
+      setSelectedDates(dbData.userSelectedDates);
+    }
+  }, [dbData.userSelectedDates]);
+
+  useEffect(() => {
+    if (Object.keys(dbData.memberAvailability).length > 0) {
+      setMemberAvailability(dbData.memberAvailability);
+    }
+  }, [dbData.memberAvailability]);
 
   const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
   const [badgeTab, setBadgeTab] = useState("individual");
@@ -274,7 +303,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
   const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
-  const allConfirmed = confirmedCount === MEMBERS.length;
+  const allConfirmed = confirmedCount === currentMembers.length;
 
   const sortedVisited = [...visitedRestaurants].sort((a, b) => {
     if (visitedSort === "rating") return (b.visitedRating || 0) - (a.visitedRating || 0);
@@ -564,15 +593,30 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <span style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase" }}>Invite Code</span>
               <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
             </div>
-            <button 
-              onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
-              style={{ 
-                background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
-                borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
-                fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
-              }}>
-              Copy
-            </button>
+            <div style={{ display:"flex", gap:"6px" }}>
+              <button 
+                onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+                style={{ 
+                  background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
+                  borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                  fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+                }}>
+                Code
+              </button>
+              <button 
+                onClick={() => { 
+                  const link = `${window.location.origin}/?invite=${ag.code}`;
+                  navigator.clipboard.writeText(link); 
+                  showToast("Invite link copied!"); 
+                }}
+                style={{ 
+                  background:"linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))", border:"1px solid rgba(201,149,106,0.35)", 
+                  borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                  fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+                }}>
+                Share Link
+              </button>
+            </div>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (() => {
@@ -613,7 +657,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
                   <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {MEMBERS.length}.
+                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {currentMembers.length}.
                   </div>
                 </div>
                 {!bookingDateConfirm ? (
@@ -631,7 +675,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
                       <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
                       <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
-                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {MEMBERS.length}</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
                     </div>
                     <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
                       showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
@@ -802,7 +846,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       Everyone's dates are in. Now we wait for the host to work their magic.
                     </div>
                     <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px" }}>
-                      {MEMBERS.map(m => {
+                      {currentMembers.map(m => {
                         const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                         const hasSubmitted = dates.length > 0;
                         return (
@@ -828,14 +872,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
-                {groupAdmin === "You" && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {currentMembers.length}/{MAX_GROUP_MEMBERS}</div>
+                {dbData.isHost && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
               </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
-            <div style={{ display:"flex", gap:"14px" }}>
-              {MEMBERS.map(m => (
-                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px" }}>
+            <div style={{ display:"flex", gap:"14px", overflowX:"auto" }}>
+              {currentMembers.map(m => (
+                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
                   <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
                   <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
                 </div>
@@ -963,27 +1007,25 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </>)}
           </div>
 
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {currentMembers.length}/{MAX_GROUP_MEMBERS}</div>
           <div style={S.card}>
-            {MEMBERS.length >= MAX_GROUP_MEMBERS && (
+            {currentMembers.length >= MAX_GROUP_MEMBERS && (
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"12px", lineHeight:"1.5" }}>
                 This group is at capacity. No more members can join.
               </div>
             )}
-            {MEMBERS.map(m => {
-              const isHost = m.name === groupAdmin;
-              const isCreator2 = m.name === groupCreator;
+            {currentMembers.map(m => {
+              const isMemberHost = m.name === groupAdmin;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isCreator2 && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
-                    {isHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
+                    {isMemberHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && !isHost && (
+                    {!isYou && !isMemberHost && (
                       <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
@@ -995,6 +1037,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ paddingTop:"14px" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code</div>
               <div style={{ fontSize:"20px", color:"#f5e6d3", letterSpacing:"6px", fontWeight:"700" }}>{activeGroup.code}</div>
+              <button onClick={() => { 
+                const link = `${window.location.origin}/?invite=${activeGroup.code}`;
+                navigator.clipboard.writeText(link); 
+                showToast("Invite link copied!"); 
+              }} style={{ marginTop:"10px", background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", borderRadius:"8px", padding:"8px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif", width:"100%" }}>
+                Copy Shareable Link
+              </button>
             </div>
           </div>
 
@@ -1059,8 +1108,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── HOST SELECT DATE ──
   if (screen === "host_select_date") {
-    const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-    const notSubmittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
+    const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+    const notSubmittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
     // Gather all dates from submitted members
     const allDatesFromSubmitted: string[] = [];
@@ -1112,7 +1161,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             {/* Submission Status */}
             <div style={{ ...S.card, marginBottom:"16px" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Who's Submitted</div>
-              {MEMBERS.map(m => {
+              {currentMembers.map(m => {
                 const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                 const hasSubmitted = dates.length > 0;
                 return (
@@ -1168,7 +1217,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap" }}>
                         <span style={{ fontSize:"11px", color:"#7a5a40" }}>Available:</span>
                         {available.map(name => {
-                          const member = MEMBERS.find(m => m.name === name);
+                          const member = currentMembers.find(m => m.name === name);
                           return (
                             <div key={name} style={{ width:"22px", height:"22px", borderRadius:"50%", background: member?.color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"9px", color:"#fff", fontWeight:"700" }}>
                               {member?.avatar || name[0]}
@@ -1192,7 +1241,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ fontSize:"12px", color:"#c9956a", marginBottom:"4px" }}>Selected Date</div>
                 <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(hostSelectedDate)}</div>
                 <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"4px" }}>
-                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {MEMBERS.length} members available
+                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {currentMembers.length} members available
                 </div>
               </div>
             )}
@@ -1353,7 +1402,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ padding:"12px 16px" }}>
                     <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1.5px", textTransform:"uppercase", marginBottom:"10px" }}>Member Reviews</div>
                     {mockReviews.slice(0, 2 + (idx % 2)).map((rev, i) => {
-                      const member = MEMBERS.find(m => m.name === rev.member);
+                      const member = currentMembers.find(m => m.name === rev.member);
                       return (
                         <div key={i} style={{ marginBottom:"12px", paddingBottom:"12px", borderBottom: i < mockReviews.slice(0, 2 + (idx % 2)).length - 1 ? "1px solid rgba(201,149,106,0.06)" : "none" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" }}>
@@ -1489,7 +1538,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 Member Reviews · {mockRestaurantReviews.length}
               </div>
               {mockRestaurantReviews.map((rev, i) => {
-                const member = MEMBERS.find(m => m.name === rev.member);
+                const member = currentMembers.find(m => m.name === rev.member);
                 return (
                   <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
@@ -1935,8 +1984,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => setAvailabilityModifying(false)}>
                     Cancel
                   </button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
-                    showToast("Dates updated. The host has been notified.");
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
+                    const saved = await dbData.saveAvailability(selectedDates);
+                    if (saved) {
+                      showToast("Dates updated. The host has been notified.");
+                    } else {
+                      showToast("Failed to save. Try again.");
+                    }
                     setAvailabilityModifying(false);
                   }}>
                     Save Changes
@@ -1945,9 +1999,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               ) : (
                 <>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-                  {MEMBERS.map(m => {
+                  {currentMembers.map(m => {
                     const isYou = m.name === "You";
-                    const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+                    const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
                     return (
                       <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
@@ -1969,10 +2023,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
                         Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
                       </div>
-                      {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
+                      {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).length > 0 && (
                         <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
                           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
-                          {MEMBERS.filter(m => m.name === "Priya").map(m => (
+                          {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).map(m => (
                             <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
                               <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
@@ -1994,12 +2048,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
 
                   <div style={{ height:"18px" }}/>
-                  <button style={S.primaryBtn} onClick={() => { 
+                  <button style={S.primaryBtn} onClick={async () => { 
                     if (selectedDates.length > 0) { 
-                      showToast("Availability saved. Waiting on host to pick a date."); 
-                      updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
-                      setScreen("club_home");
-                      setActiveTab("home");
+                      const saved = await dbData.saveAvailability(selectedDates);
+                      if (saved) {
+                        showToast("Availability saved. Waiting on host to pick a date."); 
+                        updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+                        setScreen("club_home");
+                        setActiveTab("home");
+                      } else {
+                        showToast("Failed to save. Try again.");
+                      }
                     } 
                   }}>
                     Submit Availability
@@ -2058,7 +2117,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {/* Group members status */}
               <div style={{ ...S.card }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>The Table</div>
-                {MEMBERS.map(m => (
+                {currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#1a0f0a", fontWeight:"700" }}>{m.avatar}</div>
                     <div style={{ flex:1 }}>
