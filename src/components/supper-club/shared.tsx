@@ -150,7 +150,7 @@ export const GlobalGroupSwitcher = ({
         {groups.map(g => {
           const active = g.id === activeGroup.id;
           return (
-            <div key={g.id} onClick={() => setActiveGroup(g)}
+            <div key={g.id} onClick={() => { setActiveGroup(g); onGroupSelect?.(g); }}
               style={{
                 flexShrink: 0, padding: "8px 14px", borderRadius: "16px", cursor: "pointer",
                 background: active ? "linear-gradient(135deg,rgba(212,205,196,0.15),rgba(212,205,196,0.06))" : "rgba(255,255,255,0.02)",
