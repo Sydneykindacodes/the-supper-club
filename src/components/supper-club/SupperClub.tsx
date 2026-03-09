@@ -199,6 +199,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showProfile, setShowProfile] = useState(false);
   const [viewingMemberUserId, setViewingMemberUserId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showRevealAnimation, setShowRevealAnimation] = useState(false);
+  const [hasSeenReveal, setHasSeenReveal] = useState(false);
   const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
