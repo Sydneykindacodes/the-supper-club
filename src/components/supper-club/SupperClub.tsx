@@ -2508,48 +2508,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
 
-          {exploreView === "visited" && (
-            <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                Restaurants you've visited across all groups. Tap for details.
-              </div>
-              <div style={{ marginBottom:"16px" }}>
-                <label style={S.label}>Sort By</label>
-                <div style={{ display:"flex", gap:"8px" }}>
-                  {([["date","Date"],["rating","Rating"],["price","Price"]] as const).map(([id,label]) => (
-                    <div key={id} style={chip(visitedSort===id)} onClick={() => setVisitedSort(id)}>{label}</div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom:"16px" }}>
-                <label style={S.label}>Filter by Price</label>
-                <div style={{ display:"flex", gap:"8px" }}>
-                  {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
-                    <div key={id} style={chip(visitedFilter===id)} onClick={() => setVisitedFilter(id)}>{label}</div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                {visitedRestaurants.length} Previously Visited
-              </div>
-              {sortedVisited.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => openRestaurantDetail(r as any)}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                    <div style={{ flex:1 }}>
-                      <div style={S.cardTitle}>{r.name}</div>
-                      <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
-                      <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>Visited {r.visitedDate}</div>
-                    </div>
-                    <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"6px" }}>
-                      <PriceTag price={r.price}/>
-                      <RatingBadge restaurant={r} large/>
-                    </div>
-                  </div>
-                  <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for photos and reviews →</div>
-                </div>
-              ))}
-            </div>
-          )}
 
           {exploreView === "community" && (
             selectedPublicR ? (
