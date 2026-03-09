@@ -2265,7 +2265,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {detailReviews.map((rev, i) => (
                     <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                        <div onClick={(e) => { e.stopPropagation(); rev.user_id === user.id ? setShowProfile(true) : setViewingMemberUserId(rev.user_id); }} style={{ 
+                        <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ 
                           width:"28px", height:"28px", borderRadius:"50%", 
                           background: rev.reviewerColor || "#c9956a",
                           display:"flex", alignItems:"center", justifyContent:"center",
