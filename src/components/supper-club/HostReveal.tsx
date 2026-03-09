@@ -30,7 +30,7 @@ const PRIVILEGE_MESSAGES = [
   "You hold the secret. The restaurant. The reservation. Everything.",
 ];
 
-export default function HostReveal({ isYouTheHost, groupName, onComplete }: HostRevealProps) {
+export default function HostReveal({ isYouTheHost, groupName, onComplete, onDecline }: HostRevealProps) {
   const [stage, setStage] = useState(0);
   const [chosenMsg] = useState(() =>
     isYouTheHost
