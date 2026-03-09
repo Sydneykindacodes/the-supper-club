@@ -12,16 +12,20 @@ export interface DBMember {
   user_id: string | null;
 }
 
-export interface DBGroup {
+export interface ActiveReservation {
   id: string;
-  name: string;
-  code: string;
-  city: string;
-  members: number;
-  dinnerStatus: "scheduled" | "pending_confirm" | "no_date" | "awaiting_host";
-  nextDinner: string | null;
-  pendingDate: string | null;
+  status: string;
+  dinner_date: string;
+  dinner_time: string | null;
+  restaurant_id: string | null;
+  party_size: number;
+  confirmed_at: string | null;
+  revealed_at: string | null;
+  reveal_at: string | null;
+  booking_url: string | null;
 }
+
+export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host";
 
 export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [members, setMembers] = useState<DBMember[]>([]);
@@ -31,7 +35,10 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [userSelectedDates, setUserSelectedDates] = useState<string[]>([]);
-  const [activeReservationId, setActiveReservationId] = useState<string | null>(null);
+  const [activeReservation, setActiveReservation] = useState<ActiveReservation | null>(null);
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
+  const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
   // Load members for active group
   useEffect(() => {
@@ -54,7 +61,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         }
         setLoadingMembers(false);
       });
-  }, [activeGroupId]);
+  }, [activeGroupId, refreshCounter]);
 
   // Load restaurants for active group
   useEffect(() => {
@@ -92,47 +99,62 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         }
         setLoadingRestaurants(false);
       });
-  }, [activeGroupId]);
+  }, [activeGroupId, refreshCounter]);
 
-  // Load availability for active group (active reservation)
+  // Load active reservation for group
   useEffect(() => {
-    if (!activeGroupId) { setMemberAvailability({}); setUserSelectedDates([]); setActiveReservationId(null); return; }
-    
-    const loadAvailability = async () => {
-      // Find active (non-completed, non-cancelled) reservation for group
-      const { data: reservations } = await supabase
-        .from("reservations")
-        .select("id, status")
-        .eq("group_id", activeGroupId)
-        .not("status", "in", '("completed","cancelled")')
-        .order("created_at", { ascending: false })
-        .limit(1);
+    if (!activeGroupId) { setActiveReservation(null); return; }
+    supabase
+      .from("reservations")
+      .select("*")
+      .eq("group_id", activeGroupId)
+      .not("status", "in", '("completed","cancelled")')
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const r = data[0];
+          setActiveReservation({
+            id: r.id,
+            status: r.status || "pending_selection",
+            dinner_date: r.dinner_date,
+            dinner_time: r.dinner_time,
+            restaurant_id: r.restaurant_id,
+            party_size: r.party_size,
+            confirmed_at: r.confirmed_at,
+            revealed_at: r.revealed_at,
+            reveal_at: r.reveal_at,
+            booking_url: r.booking_url,
+          });
+        } else {
+          setActiveReservation(null);
+        }
+      });
+  }, [activeGroupId, refreshCounter]);
 
-      if (!reservations || reservations.length === 0) {
-        setActiveReservationId(null);
-        setMemberAvailability({});
-        setUserSelectedDates([]);
-        return;
-      }
+  // Load availability for active reservation
+  useEffect(() => {
+    if (!activeReservation || members.length === 0) {
+      setMemberAvailability({});
+      setUserSelectedDates([]);
+      return;
+    }
 
-      const resId = reservations[0].id;
-      setActiveReservationId(resId);
-
-      // Load all member availability for this reservation
-      const { data: avails } = await supabase
-        .from("member_availability")
-        .select("member_id, available_dates")
-        .eq("reservation_id", resId);
-
-      if (avails && avails.length > 0) {
+    supabase
+      .from("member_availability")
+      .select("member_id, available_dates")
+      .eq("reservation_id", activeReservation.id)
+      .then(({ data: avails }) => {
+        if (!avails || avails.length === 0) {
+          setMemberAvailability({});
+          setUserSelectedDates([]);
+          return;
+        }
         const avMap: MemberAvailability = {};
-        const currentMember = members.find(m => m.user_id === user.id);
-        
         avails.forEach(a => {
           const member = members.find(m => m.id === a.member_id);
           if (member) {
-            const isYou = member.user_id === user.id;
-            if (isYou) {
+            if (member.user_id === user.id) {
               setUserSelectedDates(a.available_dates);
             } else {
               avMap[member.name] = a.available_dates;
@@ -140,22 +162,48 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
           }
         });
         setMemberAvailability(avMap);
-      }
-    };
+      });
+  }, [activeReservation?.id, members, user.id]);
 
-    if (members.length > 0) loadAvailability();
-  }, [activeGroupId, members, user.id]);
+  // Compute dinner status from reservation
+  const dinnerStatus: DinnerStatus = (() => {
+    if (!activeReservation) return "no_date";
+    switch (activeReservation.status) {
+      case "pending_selection": return "awaiting_host";
+      case "pending_host_booking": return "pending_confirm";
+      case "card_required_skipped": return "pending_confirm";
+      case "confirmed":
+      case "revealed":
+        return "scheduled";
+      default: return "no_date";
+    }
+  })();
+
+  const nextDinner: string | null = (() => {
+    if (!activeReservation || dinnerStatus === "no_date") return null;
+    if (dinnerStatus === "scheduled" || dinnerStatus === "pending_confirm") {
+      const d = new Date(activeReservation.dinner_date + "T00:00:00");
+      return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+    return null;
+  })();
+
+  const pendingDate: string | null = (() => {
+    if (dinnerStatus === "pending_confirm" && activeReservation) {
+      const d = new Date(activeReservation.dinner_date + "T00:00:00");
+      return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+    return null;
+  })();
 
   // Save availability for current user
   const saveAvailability = useCallback(async (dates: string[]) => {
     if (!activeGroupId) return false;
-    
     const currentMember = members.find(m => m.user_id === user.id);
     if (!currentMember) return false;
 
-    let reservationId = activeReservationId;
+    let reservationId = activeReservation?.id;
 
-    // Create reservation if none exists
     if (!reservationId) {
       const { data: newRes, error } = await supabase
         .from("reservations")
@@ -167,13 +215,10 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         })
         .select()
         .single();
-
       if (error || !newRes) return false;
       reservationId = newRes.id;
-      setActiveReservationId(reservationId);
     }
 
-    // Upsert availability
     const { data: existing } = await supabase
       .from("member_availability")
       .select("id")
@@ -189,16 +234,101 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     } else {
       await supabase
         .from("member_availability")
-        .insert({
-          reservation_id: reservationId,
-          member_id: currentMember.id,
-          available_dates: dates,
-        });
+        .insert({ reservation_id: reservationId, member_id: currentMember.id, available_dates: dates });
     }
 
     setUserSelectedDates(dates);
+    refresh();
     return true;
-  }, [activeGroupId, activeReservationId, members, user.id]);
+  }, [activeGroupId, activeReservation?.id, members, user.id, refresh]);
+
+  // Host proposes a date → update reservation
+  const proposeDate = useCallback(async (date: string) => {
+    if (!activeGroupId) return false;
+    let reservationId = activeReservation?.id;
+
+    if (reservationId) {
+      const { error } = await supabase
+        .from("reservations")
+        .update({ dinner_date: date, status: "pending_host_booking" })
+        .eq("id", reservationId);
+      if (error) return false;
+    } else {
+      const { error } = await supabase
+        .from("reservations")
+        .insert({
+          group_id: activeGroupId,
+          dinner_date: date,
+          party_size: members.length,
+          status: "pending_host_booking",
+        });
+      if (error) return false;
+    }
+    refresh();
+    return true;
+  }, [activeGroupId, activeReservation?.id, members.length, refresh]);
+
+  // Host confirms booking
+  const confirmBooking = useCallback(async (bookingUrl?: string) => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({
+        status: "confirmed",
+        confirmed_at: new Date().toISOString(),
+        booking_url: bookingUrl || null,
+      })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
+  // Reveal restaurant to group
+  const revealRestaurant = useCallback(async () => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({ status: "revealed", revealed_at: new Date().toISOString() })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
+  // Complete dinner (post-dinner)
+  const completeDinner = useCallback(async () => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({ status: "completed" })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
+  // Make a member the host
+  const makeHost = useCallback(async (memberId: string) => {
+    if (!activeGroupId) return false;
+    // Remove host from all members in group
+    await supabase.from("members").update({ is_host: false }).eq("group_id", activeGroupId);
+    // Set new host
+    const { error } = await supabase.from("members").update({ is_host: true }).eq("id", memberId);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeGroupId, refresh]);
+
+  // Leave group
+  const leaveGroup = useCallback(async () => {
+    if (!activeGroupId) return false;
+    const currentMember = members.find(m => m.user_id === user.id);
+    if (!currentMember) return false;
+    const { error } = await supabase.from("members").delete().eq("id", currentMember.id);
+    if (error) return false;
+    return true;
+  }, [activeGroupId, members, user.id]);
 
   // Add restaurant to group pool in DB
   const addRestaurantToPool = useCallback(async (restaurant: {
@@ -248,9 +378,24 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return false;
   }, []);
 
+  // Remove restaurant from pool
+  const removeRestaurantFromPool = useCallback(async (restaurantName: string) => {
+    if (!activeGroupId) return false;
+    const { error } = await supabase
+      .from("restaurants")
+      .delete()
+      .eq("group_id", activeGroupId)
+      .eq("name", restaurantName);
+    if (error) return false;
+    setRestaurants(prev => prev.filter(r => r.name !== restaurantName));
+    return true;
+  }, [activeGroupId]);
+
   // Get current user's member record
   const currentMember = members.find(m => m.user_id === user.id);
   const isHost = currentMember?.is_host || false;
+  const hostMember = members.find(m => m.is_host);
+  const hostName = hostMember ? (hostMember.user_id === user.id ? "You" : hostMember.name) : "Unknown";
 
   // Convert to the Member format used by UI
   const uiMembers: Member[] = members.map(m => ({
@@ -266,14 +411,26 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     visitedRestaurants,
     currentMember,
     isHost,
+    hostName,
     loadingMembers,
     loadingRestaurants,
     addRestaurantToPool,
+    removeRestaurantFromPool,
     setRestaurants,
     setVisitedRestaurants,
     memberAvailability,
     userSelectedDates,
     saveAvailability,
-    activeReservationId,
+    activeReservation,
+    dinnerStatus,
+    nextDinner,
+    pendingDate,
+    proposeDate,
+    confirmBooking,
+    revealRestaurant,
+    completeDinner,
+    makeHost,
+    leaveGroup,
+    refresh,
   };
 }

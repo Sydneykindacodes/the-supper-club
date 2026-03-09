@@ -520,7 +520,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
 
   if (screen === "club_home") {
-    const ag = activeGroup;
+    const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
     
@@ -620,10 +620,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           {ag.dinnerStatus === "scheduled" && (() => {
-            const isHost = groupAdmin === "You";
-            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
+            const hostIsYou = dbData.isHost;
+            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
             
-            return isHost ? (
+            return hostIsYou ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
                   <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
@@ -677,9 +677,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
                       <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
                     </div>
-                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                      showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
-                      updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
+                      const success = await dbData.confirmBooking();
+                      if (success) {
+                        showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
+                      } else {
+                        showToast("Failed to confirm. Try again.");
+                      }
                       setBookingDateConfirm(false);
                     }}>
                       Yes, Booked for {ag.nextDinner}
@@ -723,18 +727,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
                 Time to start planning the next one. Your availability has been reset.
               </div>
-              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => {
+              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
                 resetForNextDinner();
-                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                await dbData.completeDinner();
                 setDinnerCompletedAt(null);
                 setScreen("availability");
                 setActiveTab("schedule");
               }}>
                 Set Availability for Next Dinner
               </button>
-              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
                 resetForNextDinner();
-                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                await dbData.completeDinner();
                 setDinnerCompletedAt(null);
               }}>
                 I'll Do It Later
@@ -782,9 +786,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           )}
 
           {ag.dinnerStatus === "awaiting_host" && (() => {
-            const isHost = groupAdmin === "You";
-            const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-            const allSubmitted = submittedMembers.length === MEMBERS.length;
+            const isHost = dbData.isHost;
+            const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+            const allSubmitted = submittedMembers.length === currentMembers.length;
             
             // Calculate overlapping dates
             const allDates: string[] = [];
@@ -854,7 +858,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                               <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
-                              {m.name === groupAdmin && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
+                              {m.name === dbData.hostName && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
                             </div>
                             <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
                               {hasSubmitted ? "✓" : "..."}
@@ -899,7 +903,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── GROUP SETTINGS ──
   if (screen === "group_settings") {
-    const isCreator = groupCreator === "You";
+    const isCreator = dbData.isHost; // Host can manage settings
     
     if (!isCreator) return (
       <div style={S.app}><div style={S.phone}>
@@ -1015,7 +1019,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             )}
             {currentMembers.map(m => {
-              const isMemberHost = m.name === groupAdmin;
+              const isMemberHost = m.name === dbData.hostName;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
@@ -1026,7 +1030,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
                     {!isYou && !isMemberHost && (
-                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
+                      <span onClick={async () => { 
+                        const dbMember = dbData.members.find(dm => dm.name === m.name || (m.name === "You" && dm.user_id === user.id));
+                        if (dbMember) {
+                          const success = await dbData.makeHost(dbMember.id);
+                          if (success) showToast(`${m.name} is now the host.`);
+                          else showToast("Failed to update host.");
+                        }
+                      }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
@@ -1084,13 +1095,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               You'll lose access to this group's pool, history, and badges. This can't be undone.
             </div>
             <button style={{ width:"100%", padding:"12px", borderRadius:"10px", fontSize:"12px", letterSpacing:"0.5px", background:"rgba(197,92,92,0.12)", border:"1px solid rgba(197,92,92,0.3)", color:"#c45c5c", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"600" }}
-              onClick={() => {
+              onClick={async () => {
                 const remaining = groups.filter(g => g.id !== activeGroup.id);
                 if (remaining.length === 0) { showToast("You can't leave your only club."); return; }
-                setGroups(remaining);
-                setActiveGroup(remaining[0]);
-                showToast(`You left ${activeGroup.name}.`);
-                setTimeout(() => setScreen("club_home"), 800);
+                const success = await dbData.leaveGroup();
+                if (success) {
+                  setGroups(remaining);
+                  setActiveGroup(remaining[0]);
+                  showToast(`You left ${activeGroup.name}.`);
+                  setTimeout(() => setScreen("club_home"), 800);
+                } else {
+                  showToast("Failed to leave. Try again.");
+                }
               }}>
               Leave {activeGroup.name}
             </button>
@@ -1248,13 +1264,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             <button 
               style={{ ...S.primaryBtn, opacity: hostSelectedDate ? 1 : 0.5 }} 
-              onClick={() => {
+              onClick={async () => {
                 if (!hostSelectedDate) { showToast("Select a date first."); return; }
-                const formattedDate = new Date(hostSelectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                updateGroup(activeGroup.id, { dinnerStatus: "pending_confirm", pendingDate: formattedDate });
-                showToast("Date proposed! Members will be asked to confirm.");
-                setScreen("club_home");
-                setActiveTab("home");
+                const success = await dbData.proposeDate(hostSelectedDate);
+                if (success) {
+                  showToast("Date proposed! Members will be asked to confirm.");
+                  setScreen("club_home");
+                  setActiveTab("home");
+                } else {
+                  showToast("Failed to propose date. Try again.");
+                }
               }}
             >
               Propose This Date
@@ -2038,8 +2057,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
                         onClick={() => {
                           if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                          showToast("Date locked. Priya marked as not attending.");
-                          updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" });
+                          dbData.proposeDate(selectedDates[0]).then(ok => {
+                            if (ok) showToast("Date locked. Members not submitted marked as absent.");
+                            else showToast("Failed. Try again.");
+                          });
                         }}>
                         Override & Lock Date
                       </button>
@@ -2052,8 +2073,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     if (selectedDates.length > 0) { 
                       const saved = await dbData.saveAvailability(selectedDates);
                       if (saved) {
-                        showToast("Availability saved. Waiting on host to pick a date."); 
-                        updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+                        showToast("Availability saved. Waiting on host to pick a date.");
                         setScreen("club_home");
                         setActiveTab("home");
                       } else {
@@ -2076,8 +2096,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── REVEAL TAB ──
   if (screen === "reveal") {
-    const ag = activeGroup;
-    const isHost = groupAdmin === "You";
+    const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
+    const hostIsYou = dbData.isHost;
     const hasScheduled = ag.dinnerStatus === "scheduled" && ag.nextDinner;
     const hasConfirmed = ag.dinnerStatus === "pending_confirm" && ag.pendingDate;
 
@@ -2097,7 +2117,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
                 <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
-                {isHost ? (
+                {hostIsYou ? (
                   <>
                     <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
                     <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
@@ -2234,8 +2254,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             <button 
               style={{ ...S.primaryBtn, background:"linear-gradient(135deg, #c9956a, #9a6040)", marginBottom:"12px" }} 
-              onClick={() => { 
-                setGroupAdmin("You");
+              onClick={async () => { 
+                if (dbData.currentMember) {
+                  await dbData.makeHost(dbData.currentMember.id);
+                }
                 setScreen("club_home"); 
                 setActiveTab("home");
                 showToast("You're officially the host. Keep the secret safe.");
