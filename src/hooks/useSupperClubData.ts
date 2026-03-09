@@ -756,6 +756,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     avatar: m.user_id === user.id ? "Y" : m.avatar,
     color: m.color,
     user_id: m.user_id,
+    avatar_url: m.avatar_url,
   }));
 
   // Check if user has reviewed the current dinner
