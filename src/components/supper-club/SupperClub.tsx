@@ -509,8 +509,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
-        <div style={{ padding:"16px 24px 12px" }}>
+        <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{feature}</div>
+          <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
+            {userName.charAt(0).toUpperCase()}
+          </div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 28px", textAlign:"center" }}>
           <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"linear-gradient(135deg, rgba(201,149,106,0.1), rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"28px", color:"#c9956a", marginBottom:"24px" }}>
