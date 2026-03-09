@@ -2024,7 +2024,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           />
         )}
 
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
       </div></div>
     );
   }
