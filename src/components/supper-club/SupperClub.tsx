@@ -2170,10 +2170,42 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for restaurants to add to your group pools.</div>
               
-              <label style={S.label}>Location</label>
-              <input style={S.input} placeholder="e.g. New York, NY" value={rCity || activeGroup.city}
-                onChange={e => setRCity(e.target.value)}
-              />
+              <label style={S.label}>Location (City or Zip Code)</label>
+              <div style={{ position:"relative" }}>
+                <input style={S.input} placeholder="e.g. New York, NY or 10001" value={rCity || activeGroup.city}
+                  onChange={e => handleCityInputChange(e.target.value)}
+                  onFocus={() => { if (citySuggestions.length > 0) setShowCitySuggestions(true); }}
+                />
+                {showCitySuggestions && citySuggestions.length > 0 && (
+                  <>
+                    <div onClick={() => setShowCitySuggestions(false)} style={{ position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:98 }} />
+                    <div style={{
+                      position:"absolute", top:"100%", left:0, right:0, zIndex:99,
+                      background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)",
+                      borderRadius:"0 0 12px 12px", boxShadow:"0 8px 32px rgba(0,0,0,0.6)",
+                      maxHeight:"220px", overflowY:"auto",
+                    }}>
+                      {citySuggestions.map((s, i) => (
+                        <div key={i} onClick={() => {
+                          setRCity(s.description);
+                          setShowCitySuggestions(false);
+                          setCitySuggestions([]);
+                        }}
+                          style={{
+                            padding:"12px 14px", cursor:"pointer",
+                            borderBottom: i < citySuggestions.length - 1 ? "1px solid rgba(201,149,106,0.08)" : "none",
+                            transition:"background 0.15s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ fontSize:"13px", color:"#f5e6d3" }}>{s.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <label style={S.label}>Search Radius</label>
               <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
                 {[5, 10, 15, 25, 50].map(r => (
@@ -2233,24 +2265,34 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
                     .map(r => (
-                    <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}
+                    <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
                       onClick={() => openRestaurantDetail(r)}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                        <div style={{ flex:1 }}>
-                          <div style={S.cardTitle}>{r.name}</div>
-                          <div style={S.cardSub}>{r.cuisine}</div>
-                          <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                      {/* Restaurant photo */}
+                      {r.photoRefs && r.photoRefs.length > 0 && (
+                        <RestaurantPhotoStrip photoRefs={r.photoRefs} fetchPhotoUrl={fetchPhotoUrl} />
+                      )}
+                      <div style={{ padding:"12px 14px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                          <div style={{ flex:1 }}>
+                            <div style={S.cardTitle}>{r.name}</div>
+                            <div style={S.cardSub}>{r.cuisine}</div>
+                            <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                          </div>
+                          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                            <PriceTag price={r.price}/>
+                            {r.googleRating && (
+                              <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700" }}>
+                                {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>G</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
-                          <PriceTag price={r.price}/>
-                          {r.googleRating && (
-                            <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700" }}>
-                              {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>G</span>
-                            </div>
-                          )}
-                        </div>
+                        <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
                       </div>
-                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
+                    </div>
+                  ))}
+                </>
+              )}
                     </div>
                   ))}
                 </>
