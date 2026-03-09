@@ -705,5 +705,8 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     earnBadge,
     groupSettings,
     saveGroupSettings,
+    selectRestaurantForReservation,
+    selectedRestaurantData,
+    isSoloGroup,
   };
 }
