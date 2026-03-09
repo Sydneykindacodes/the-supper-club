@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import {
-  INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
-  RESTAURANT_POOL, PREVIOUSLY_VISITED,
-  WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
+  INDIVIDUAL_BADGES, GROUP_BADGES,
+  WITTY_NO_DATE, MEAL_TYPES, WITTY_HOST_WAITING,
   SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES, WITTY_INITIATION_MESSAGES,
   WITTY_SKIP_MESSAGES,
   MAX_GROUP_MEMBERS,
@@ -34,12 +33,38 @@ interface GooglePlace {
   googleRating: number | null;
   googleReviewCount: number;
   googlePlaceId: string;
+  photoRefs?: string[];
 }
 import { S, tabPill, chip } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
+
+// ── Restaurant Photo Strip (fetches Google Places photos) ──
+const RestaurantPhotoStrip = ({ photoRefs, fetchPhotoUrl }: { photoRefs: string[]; fetchPhotoUrl: (ref: string) => Promise<string | null> }) => {
+  const [urls, setUrls] = useState<(string | null)[]>(photoRefs.map(() => null));
+  useEffect(() => {
+    photoRefs.forEach((ref, i) => {
+      fetchPhotoUrl(ref).then(url => {
+        if (url) setUrls(prev => { const n = [...prev]; n[i] = url; return n; });
+      });
+    });
+  }, [photoRefs.join(',')]);
+  const loaded = urls.filter(Boolean);
+  if (loaded.length === 0) return (
+    <div style={{ width:"100%", height:"120px", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.6))", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ width:"20px", height:"20px", border:"2px solid rgba(201,149,106,0.3)", borderTop:"2px solid #c9956a", borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+    </div>
+  );
+  return (
+    <div style={{ display:"flex", width:"100%", height:"120px", overflow:"hidden" }}>
+      {loaded.map((url, i) => (
+        <img key={i} src={url!} alt="" style={{ flex:1, objectFit:"cover", minWidth:0 }} loading="lazy" />
+      ))}
+    </div>
+  );
+};
 
 // ── Skeleton Loader ──
 const SkeletonPulse = ({ width = "100%", height = "16px", borderRadius = "8px", style }: { width?: string; height?: string; borderRadius?: string; style?: React.CSSProperties }) => (
@@ -201,7 +226,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const visitedRestaurants = dbData.visitedRestaurants;
 
   // Use DB members when available, else fallback to static MEMBERS
-  const currentMembers = dbData.uiMembers.length > 0 ? dbData.uiMembers : MEMBERS;
+  const currentMembers = dbData.uiMembers;
 
   // Add restaurant to group pool(s) - DB-backed
   const addToGroupPool = (restaurant: Restaurant, groupIds: (number | string)[]) => {
@@ -225,7 +250,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] = useState<Restaurant | GooglePlace | null>(null);
-  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: RESTAURANT_POOL[0], visible: false });
+  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: { id: 0, name: "", cuisine: "", city: "", price: 0, visited: false, visitedDate: null, visitedRating: null } as Restaurant, visible: false });
   const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
   const [rCuisine, setRCuisine] = useState("");
@@ -241,10 +266,49 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [freeReviewCuisine, setFreeReviewCuisine] = useState("");
   const [freeReviewShowSuggestions, setFreeReviewShowSuggestions] = useState(false);
 
-  const allKnownRestaurants = [...RESTAURANT_POOL, ...PREVIOUSLY_VISITED];
+  // Restaurant suggestions for free review from DB restaurants only
+  const allKnownRestaurants = [...poolRestaurants, ...visitedRestaurants];
   const restaurantSuggestions = freeReviewRestaurant.length >= 2
     ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
     : [];
+
+  // City autocomplete state
+  const [citySuggestions, setCitySuggestions] = useState<{ description: string; placeId: string }[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [citySearchTimeout, setCitySearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Photo URL cache
+  const [photoCache, setPhotoCache] = useState<Record<string, string>>({});
+
+  const searchCityAutocomplete = useCallback(async (input: string) => {
+    if (input.length < 2) { setCitySuggestions([]); return; }
+    try {
+      const { data, error } = await supabase.functions.invoke('autocomplete-city', { body: { input } });
+      if (!error && data?.suggestions) {
+        setCitySuggestions(data.suggestions);
+        setShowCitySuggestions(true);
+      }
+    } catch { setCitySuggestions([]); }
+  }, []);
+
+  const handleCityInputChange = useCallback((value: string) => {
+    setRCity(value);
+    if (citySearchTimeout) clearTimeout(citySearchTimeout);
+    const timeout = setTimeout(() => searchCityAutocomplete(value), 300);
+    setCitySearchTimeout(timeout);
+  }, [citySearchTimeout, searchCityAutocomplete]);
+
+  const fetchPhotoUrl = useCallback(async (photoRef: string) => {
+    if (photoCache[photoRef]) return photoCache[photoRef];
+    try {
+      const { data, error } = await supabase.functions.invoke('place-photo', { body: { photoName: photoRef, maxWidth: 400 } });
+      if (!error && data?.url) {
+        setPhotoCache(prev => ({ ...prev, [photoRef]: data.url }));
+        return data.url as string;
+      }
+    } catch {}
+    return null;
+  }, [photoCache]);
 
   const [searchRadius, setSearchRadius] = useState(10);
 
@@ -2130,10 +2194,42 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for restaurants to add to your group pools.</div>
               
-              <label style={S.label}>Location</label>
-              <input style={S.input} placeholder="e.g. New York, NY" value={rCity || activeGroup.city}
-                onChange={e => setRCity(e.target.value)}
-              />
+              <label style={S.label}>Location (City or Zip Code)</label>
+              <div style={{ position:"relative" }}>
+                <input style={S.input} placeholder="e.g. New York, NY or 10001" value={rCity || activeGroup.city}
+                  onChange={e => handleCityInputChange(e.target.value)}
+                  onFocus={() => { if (citySuggestions.length > 0) setShowCitySuggestions(true); }}
+                />
+                {showCitySuggestions && citySuggestions.length > 0 && (
+                  <>
+                    <div onClick={() => setShowCitySuggestions(false)} style={{ position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:98 }} />
+                    <div style={{
+                      position:"absolute", top:"100%", left:0, right:0, zIndex:99,
+                      background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)",
+                      borderRadius:"0 0 12px 12px", boxShadow:"0 8px 32px rgba(0,0,0,0.6)",
+                      maxHeight:"220px", overflowY:"auto",
+                    }}>
+                      {citySuggestions.map((s, i) => (
+                        <div key={i} onClick={() => {
+                          setRCity(s.description);
+                          setShowCitySuggestions(false);
+                          setCitySuggestions([]);
+                        }}
+                          style={{
+                            padding:"12px 14px", cursor:"pointer",
+                            borderBottom: i < citySuggestions.length - 1 ? "1px solid rgba(201,149,106,0.08)" : "none",
+                            transition:"background 0.15s",
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ fontSize:"13px", color:"#f5e6d3" }}>{s.description}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <label style={S.label}>Search Radius</label>
               <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
                 {[5, 10, 15, 25, 50].map(r => (
@@ -2193,24 +2289,30 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
                     .map(r => (
-                    <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}
+                    <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
                       onClick={() => openRestaurantDetail(r)}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-                        <div style={{ flex:1 }}>
-                          <div style={S.cardTitle}>{r.name}</div>
-                          <div style={S.cardSub}>{r.cuisine}</div>
-                          <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                      {/* Restaurant photo */}
+                      {r.photoRefs && r.photoRefs.length > 0 && (
+                        <RestaurantPhotoStrip photoRefs={r.photoRefs} fetchPhotoUrl={fetchPhotoUrl} />
+                      )}
+                      <div style={{ padding:"12px 14px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                          <div style={{ flex:1 }}>
+                            <div style={S.cardTitle}>{r.name}</div>
+                            <div style={S.cardSub}>{r.cuisine}</div>
+                            <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                          </div>
+                          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                            <PriceTag price={r.price}/>
+                            {r.googleRating && (
+                              <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700" }}>
+                                {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>G</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
-                          <PriceTag price={r.price}/>
-                          {r.googleRating && (
-                            <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700" }}>
-                              {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>G</span>
-                            </div>
-                          )}
-                        </div>
+                        <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
                       </div>
-                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
                     </div>
                   ))}
                 </>
@@ -2489,9 +2591,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
 
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-              {MEMBERS.map(m => {
+              {currentMembers.map(m => {
                 const isYou = m.name === "You";
-                const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+                const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
                 return (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>

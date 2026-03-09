@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName',
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos',
       },
       body: JSON.stringify(searchBody),
     });
@@ -62,6 +62,7 @@ Deno.serve(async (req) => {
     const restaurants = placesData.places.map((place: Record<string, unknown>, i: number) => {
       const displayName = place.displayName as { text: string } | undefined;
       const primaryTypeDisplay = place.primaryTypeDisplayName as { text: string } | undefined;
+      const photos = (place.photos as any[] || []).slice(0, 3).map((p: any) => p.name);
       return {
         id: `gp-${i}-${(place.id as string || '').slice(0, 8)}`,
         name: displayName?.text || 'Unknown',
@@ -72,6 +73,7 @@ Deno.serve(async (req) => {
         googleRating: (place.rating as number) || null,
         googleReviewCount: (place.userRatingCount as number) || 0,
         googlePlaceId: place.id,
+        photoRefs: photos,
       };
     });
 
