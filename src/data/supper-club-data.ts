@@ -11,6 +11,7 @@ export interface Member {
   avatar: string;
   color: string;
   user_id?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface Group {
