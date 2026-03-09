@@ -37,6 +37,9 @@ export default function SupperClub() {
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
+  const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
+  // Track if user is awaiting initiation (joined after host booked)
+  const [awaitingInitiation, setAwaitingInitiation] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
