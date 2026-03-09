@@ -3228,8 +3228,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
                   <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
                   <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"24px" }}>The group will find out at 8 AM on dinner day.</div>
-                  {/* Cancel reservation for host */}
-                  <div style={{ textAlign:"center" }}>
+                  {/* Host actions */}
+                  <div style={{ display:"flex", gap:"16px", justifyContent:"center" }}>
+                    <span onClick={() => setScreen("host_select_restaurant")} style={{ fontSize:"10px", color:"#c9956a", cursor:"pointer", letterSpacing:"1px", opacity:0.7 }}>
+                      Change restaurant
+                    </span>
+                    <span style={{ color:"rgba(201,149,106,0.2)" }}>·</span>
                     <span onClick={async () => {
                       if (!confirm("Cancel this dinner? The entire group will be notified.")) return;
                       const success = await dbData.cancelDinner();
@@ -3240,7 +3244,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         showToast("Failed to cancel. Try again.");
                       }
                     }} style={{ fontSize:"10px", color:"#c45c5c", cursor:"pointer", letterSpacing:"1px", opacity:0.7 }}>
-                      Cancel this reservation
+                      Cancel reservation
                     </span>
                   </div>
                 </div>
