@@ -360,6 +360,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
+  // Detect dinner cancellation — show notice to non-host members
+  useEffect(() => {
+    const current = dbData.dinnerStatus;
+    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && current === "no_date" && !dbData.isHost) {
+      setShowCancellationNotice(true);
+    }
+    setPrevDinnerStatus(current);
+  }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus]);
+
   // Restaurant detail reviews come from DB now
 
   const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
