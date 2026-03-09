@@ -335,10 +335,44 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <div style={S.ornament}>— · —</div>
         <button style={S.primaryBtn} onClick={() => { setJoinMode("create"); setNewGroupName(""); setNewGroupCity(""); setScreen("join_create"); }}>Create a Club</button>
         <button style={S.secondaryBtn} onClick={() => { setJoinMode("join"); setJoinCode(""); setScreen("join_create"); }}>Join with Invite Code</button>
-        <div style={{ marginTop:"36px" }}>
+        <button
+          style={{ background:"none", border:"none", color:"#7a5a40", fontSize:"12px", letterSpacing:"1px", cursor:"pointer", fontFamily:"Georgia,serif", marginTop:"20px", padding:"8px" }}
+          onClick={() => { setScreen("explore"); setActiveTab("explore"); }}
+        >
+          Skip for now
+        </button>
+        <div style={{ marginTop:"20px" }}>
           <button onClick={signOut} style={{ background:"none", border:"none", color:"#4a2e18", fontSize:"11px", letterSpacing:"1px", cursor:"pointer", fontFamily:"Georgia,serif" }}>Sign Out</button>
         </div>
       </div>
+    </div></div>
+  );
+
+  // No-group placeholder helper
+  const hasGroup = groups.length > 0 && activeGroup.id !== (EMPTY_GROUP.id as any);
+  const NoGroupPlaceholder = ({ feature }: { feature: string }) => (
+    <div style={S.app}><div style={S.phone}>
+      {toast && <div style={S.toast}>{toast}</div>}
+      <div style={S.screen}>
+        <div style={{ padding:"54px 24px 20px", borderBottom:"1px solid rgba(201,149,106,0.1)" }}>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"4px" }}>The Supper Club</div>
+          <div style={{ fontSize:"30px", color:"#f5e6d3", fontWeight:"400" }}>{feature}</div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"64px 32px", textAlign:"center" }}>
+          <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(201,149,106,0.08)", border:"1px solid rgba(201,149,106,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px", color:"#c9956a", marginBottom:"24px" }}>
+            ◇
+          </div>
+          <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400" }}>
+            Join or create a club first
+          </div>
+          <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8", marginBottom:"28px", maxWidth:"280px" }}>
+            Please create or join a club to access {feature.toLowerCase()}. Your dining journey begins with a group.
+          </div>
+          <button style={{ ...S.primaryBtn, maxWidth:"260px" }} onClick={() => { setJoinMode("create"); setNewGroupName(""); setNewGroupCity(""); setScreen("join_create"); }}>Create a Club</button>
+          <button style={{ ...S.secondaryBtn, maxWidth:"260px" }} onClick={() => { setJoinMode("join"); setJoinCode(""); setScreen("join_create"); }}>Join with Invite Code</button>
+        </div>
+      </div>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
     </div></div>
   );
 
