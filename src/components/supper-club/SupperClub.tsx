@@ -352,15 +352,72 @@ export default function SupperClub() {
             </button>
           </div>
 
-          {ag.dinnerStatus === "scheduled" && (
-            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.18)" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Next Dinner</div>
-              <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>Destination Unknown</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40" }}>{ag.nextDinner} · 7:30 PM</div>
-              <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"3px", fontStyle:"italic" }}>Reservation secured. You're welcome.</div>
-              <div style={{ marginTop:"14px", padding:"10px 14px", background:"rgba(201,149,106,0.07)", borderRadius:"10px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>Restaurant revealed the morning of your dinner</div>
-            </div>
-          )}
+          {ag.dinnerStatus === "scheduled" && (() => {
+            const isHost = groupAdmin === "You";
+            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
+            
+            return isHost ? (
+              <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
+                  <span style={{ fontSize:"18px" }}>🤫</span>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>For Your Eyes Only</div>
+                </div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.7" }}>
+                  You hold the secret. The group suspects nothing. Guard this information with your life (or at least until 8 AM on dinner day).
+                </div>
+                <div style={{ background:"rgba(201,149,106,0.1)", borderRadius:"12px", padding:"16px", marginBottom:"16px" }}>
+                  <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>The Secret Destination</div>
+                  <div style={{ fontSize:"24px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>{mockRestaurant.name}</div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
+                </div>
+                <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>🔗 Secure the Reservation</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
+                  <a href={`https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                    <span style={{ fontSize:"16px" }}>📍</span>
+                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking →</span>
+                  </a>
+                  <a href={`https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                    <span style={{ fontSize:"16px" }}>🍽️</span>
+                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>OpenTable</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability →</span>
+                  </a>
+                  <a href={`https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                    <span style={{ fontSize:"16px" }}>✨</span>
+                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Resy</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots →</span>
+                  </a>
+                </div>
+                <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
+                  <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                    <strong>Pro tip:</strong> Book for {ag.nextDinner} at 7:30 PM · Party of {MEMBERS.length}
+                  </div>
+                </div>
+                <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                  showToast("🎉 Reservation confirmed! The secret is safe.");
+                  updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
+                }}>
+                  ✓ I've Booked It
+                </button>
+                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => showToast("Restaurant skipped. Finding next best option...")}>
+                  Skip This One (Card Required)
+                </button>
+              </div>
+            ) : (
+              <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.18)" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"10px" }}>
+                  <span style={{ fontSize:"16px" }}>🔒</span>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Next Dinner</div>
+                </div>
+                <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>Destination Unknown</div>
+                <div style={{ fontSize:"13px", color:"#7a5a40" }}>{ag.nextDinner} · 7:30 PM</div>
+                <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"3px", fontStyle:"italic" }}>Only the host knows where you're going...</div>
+                <div style={{ marginTop:"14px", padding:"10px 14px", background:"rgba(201,149,106,0.07)", borderRadius:"10px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
+                  🌅 Restaurant revealed at 8 AM on dinner day
+                </div>
+              </div>
+            );
+          })()}
 
           {ag.dinnerStatus === "pending_confirm" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"rgba(201,149,106,0.04)" }}>
