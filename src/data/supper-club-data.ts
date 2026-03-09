@@ -184,6 +184,19 @@ export const WITTY_SKIP_MESSAGES = [
   "Not tonight. The stars weren't aligned.",
 ];
 
+export const WITTY_AWAITING_HOST = [
+  "The torch has been passed. But to whom? Even the shadows don't know yet.",
+  "Someone among you has been chosen. They just don't know it yet. Neither do you.",
+  "A new host stirs in the darkness. All will be revealed at dawn.",
+  "The selection has been made. The universe is processing. Check back at 8 AM.",
+  "One of you holds the power now. But the envelope remains sealed until morning.",
+  "The dice have been cast. The fates have decided. But they're not telling until 8 AM.",
+  "Somewhere, a host has been chosen. They're probably sleeping. Blissfully unaware.",
+  "The next chapter begins at sunrise. Until then... suspense.",
+  "A secret has been planted. It blooms at 8 AM tomorrow.",
+  "The gods of dining have spoken. Their decree arrives with the morning light.",
+];
+
 export const MEAL_TYPES = ["Breakfast","Brunch","Lunch","Dinner"];
 export const PRICE_LABELS: Record<number, string> = { 1:"$", 2:"$$", 3:"$$$", 4:"$$$$" };
 
