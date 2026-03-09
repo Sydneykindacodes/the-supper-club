@@ -404,7 +404,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       <div style={S.welcomeBg}>
         <div style={S.orb}/>
         <div style={S.eyebrow}>Est. 2026</div>
-        <div style={S.mainTitle}>The Supper Club</div>
+        <div style={S.mainTitle}>The Supper Club Social</div>
         <div style={{ ...S.subtitle, marginBottom:"12px" }}>Welcome, {userName}.</div>
         <div style={S.ornament}>— · —</div>
         <button style={S.primaryBtn} onClick={() => { setJoinMode("create"); setNewGroupName(""); setNewGroupCity(""); setScreen("join_create"); }}>Create a Club</button>
