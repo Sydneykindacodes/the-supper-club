@@ -1117,7 +1117,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             {/* Submission Status */}
             <div style={{ ...S.card, marginBottom:"16px" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Who's Submitted</div>
-              {MEMBERS.map(m => {
+              {currentMembers.map(m => {
                 const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                 const hasSubmitted = dates.length > 0;
                 return (
