@@ -1121,7 +1121,7 @@ export default function SupperClub() {
                             "{rev.text}"
                           </div>
                           {rev.photo && (
-                            <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px" }}>📷 Shared a photo</div>
+                            <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px" }}>Shared a photo</div>
                           )}
                         </div>
                       );
