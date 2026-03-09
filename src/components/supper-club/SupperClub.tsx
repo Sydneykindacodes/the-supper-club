@@ -2016,7 +2016,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                       <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
                     </div>
-                    <span style={{ fontSize:"12px", fontStyle:"italic", color:confirmationVotes[m.name]?"#7a9e7e":"#5a3a25" }}>{confirmationVotes[m.name]?"Confirmed":"Pending"}</span>
+                    <span style={{ fontSize:"12px", fontStyle:"italic", color:dbData.dateConfirmations[m.name]?"#7a9e7e":"#5a3a25" }}>{dbData.dateConfirmations[m.name]?"Confirmed":"Pending"}</span>
                   </div>
                 ))}
               </div>
