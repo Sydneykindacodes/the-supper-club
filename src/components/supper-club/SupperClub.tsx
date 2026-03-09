@@ -288,8 +288,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
-  const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
+  const [exploreCuisineFilter, setExploreCuisineFilter] = useState<string[]>([]);
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
+  const [communitySearchQuery, setCommunitySearchQuery] = useState("");
   const [searchPage, setSearchPage] = useState(1);
   const [communityPage, setCommunityPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
@@ -2609,10 +2610,41 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 ))}
               </div>
 
-              <label style={S.label}>Search Restaurants</label>
-              <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
+              <label style={S.label}>Cuisine</label>
+              <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"16px" }}>
+                {["American","Mexican","Italian","Mediterranean","Chinese","Seafood","Indian","Thai","Sushi","Japanese","BBQ","Korean","Other"].map(c => {
+                  const isActive = exploreCuisineFilter.includes(c);
+                  return (
+                    <div key={c} style={chip(isActive)} onClick={() => {
+                      setExploreCuisineFilter(prev => isActive ? prev.filter(x => x !== c) : [...prev, c]);
+                      setSearchPage(1);
+                    }}>{c}</div>
+                  );
+                })}
+              </div>
+
+              <label style={S.label}>Search Restaurants (optional)</label>
+              <input style={S.input} placeholder="e.g. Le Bernardin, steakhouse..." value={rName}
+                onChange={e => setRName(e.target.value)}
               />
+
+              <div style={{ marginBottom:"16px" }}>
+                <label style={S.label}>Price Range</label>
+                <div style={{ display:"flex", gap:"8px" }}>
+                  {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
+                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => { setExplorePriceFilter(id); setSearchPage(1); }}>{label}</div>
+                  ))}
+                </div>
+              </div>
+
+              <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
+                const cuisineQuery = exploreCuisineFilter.length > 0 ? exploreCuisineFilter.join(" or ") : "";
+                const searchTerm = [rName, cuisineQuery].filter(Boolean).join(" ") || "restaurant";
+                searchGooglePlaces(searchTerm, rCity || activeGroup.city, setGpResults, setGpLoading);
+                setSearchPage(1);
+              }}>
+                Search
+              </button>
               {gpLoading && (
                 <div style={{ padding:"12px 0" }}>
                   {[1,2,3].map(i => (
@@ -2624,38 +2656,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   ))}
                 </div>
               )}
-              
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
-              <div style={{ marginBottom:"16px" }}>
-                <label style={S.label}>Cuisine</label>
-                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => { setExploreCuisineFilter("all"); setSearchPage(1); }}>All</div>
-                  {[...new Set(gpResults.map(r => r.cuisine))].slice(0,5).map(c => (
-                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => { setExploreCuisineFilter(c); setSearchPage(1); }}>{c}</div>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom:"16px" }}>
-                <label style={S.label}>Price Range</label>
-                <div style={{ display:"flex", gap:"8px" }}>
-                  {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
-                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => { setExplorePriceFilter(id); setSearchPage(1); }}>{label}</div>
-                  ))}
-                </div>
-              </div>
-
-              <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
-                searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
-                setSearchPage(1);
-              }}>
-                Search
-              </button>
 
               {/* Search Results */}
               {gpResults.length > 0 && (
                 (() => {
                   const allFiltered = gpResults
-                    .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                    .filter(r => exploreCuisineFilter.length === 0 || exploreCuisineFilter.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter);
                   const capped = allFiltered.slice(0, MAX_ITEMS);
                   const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
@@ -2816,8 +2822,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <input
                   style={S.input}
                   placeholder="e.g. Tokyo, Sushi, Le Bernardin..."
-                  value={exploreCuisineFilter === "all" ? "" : exploreCuisineFilter}
-                  onChange={e => { setExploreCuisineFilter(e.target.value || "all"); setCommunityPage(1); }}
+                  value={communitySearchQuery}
+                  onChange={e => { setCommunitySearchQuery(e.target.value); setCommunityPage(1); }}
                 />
 
                 {/* Sort */}
@@ -2828,7 +2834,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
 
                 {(() => {
-                  const query = exploreCuisineFilter === "all" ? "" : exploreCuisineFilter.toLowerCase().trim();
+                  const query = communitySearchQuery.toLowerCase().trim();
                   let filtered = [...allCommunityReviews];
                   if (query) {
                     filtered = filtered.filter(r =>
