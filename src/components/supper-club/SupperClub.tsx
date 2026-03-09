@@ -1397,6 +1397,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── PAST DINNERS ──
   if (screen === "past_dinners") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Past Dinners" />;
     const mockPhotos = ["I", "II", "III", "IV"];
     const mockReviews = [
       { member: "Marisol", rating: 4.8, text: "The pasta was transcendent. I'm still thinking about that carbonara.", photo: true },
