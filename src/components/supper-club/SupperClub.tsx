@@ -49,6 +49,7 @@ export default function SupperClub() {
     "Derek": ["2026-03-18", "2026-03-20", "2026-03-25", "2026-03-27"],
     "Priya": [], // hasn't submitted yet
   });
+  const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
 
   // Per-group pool: map groupId -> Restaurant[]
   const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
