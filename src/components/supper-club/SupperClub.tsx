@@ -292,21 +292,31 @@ export default function SupperClub() {
           <button style={S.primaryBtn} onClick={() => {
             if (!joinCode.trim()) { showToast("Please enter an invite code."); return; }
             if (!joinName.trim()) { showToast("Please enter your name."); return; }
+            // Check if the group has an active booking (simulate by checking if code matches scheduled group)
+            const existingGroup = groups.find(g => g.code === joinCode.trim());
+            const hasActiveBooking = existingGroup?.dinnerStatus === "scheduled";
             // Create a mock joined group (in production this would validate the code)
             const newGroup: Group = { 
               id: Date.now(), 
-              name: `Club ${joinCode}`, 
+              name: existingGroup?.name || `Club ${joinCode}`, 
               code: joinCode.trim(), 
-              members: 4, 
-              city: "New York, NY", 
-              dinnerStatus: "no_date", 
-              nextDinner: null, 
-              pendingDate: null 
+              members: (existingGroup?.members || 3) + 1, 
+              city: existingGroup?.city || "New York, NY", 
+              dinnerStatus: existingGroup?.dinnerStatus || "no_date", 
+              nextDinner: existingGroup?.nextDinner || null, 
+              pendingDate: existingGroup?.pendingDate || null 
             };
             setGroups(prev => [...prev, newGroup]);
             setGroupPools(prev => ({ ...prev, [newGroup.id]: [] }));
             setActiveGroup(newGroup);
-            showToast(`Welcome to ${newGroup.name}!`);
+            // If joining a group with an active booking, set awaiting initiation
+            if (hasActiveBooking) {
+              setAwaitingInitiation(true);
+              showToast(`Welcome! You'll be initiated after the current dinner.`);
+            } else {
+              setAwaitingInitiation(false);
+              showToast(`Welcome to ${newGroup.name}!`);
+            }
             setJoinCode(""); setJoinName("");
             setScreen("club_home"); 
             setActiveTab("home"); 
