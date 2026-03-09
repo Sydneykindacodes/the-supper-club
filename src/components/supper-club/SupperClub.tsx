@@ -903,7 +903,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── GROUP SETTINGS ──
   if (screen === "group_settings") {
-    const isCreator = groupCreator === "You";
+    const isCreator = dbData.isHost; // Host can manage settings
     
     if (!isCreator) return (
       <div style={S.app}><div style={S.phone}>
