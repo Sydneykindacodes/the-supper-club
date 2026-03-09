@@ -766,6 +766,23 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     ? communityReviews.some(r => r.user_id === user.id && r.reservation_id === activeReservation.id)
     : false;
 
+  // Check if current member is awaiting initiation (joined after reservation was created)
+  const isAwaitingInitiation = (() => {
+    if (!currentMember || !activeReservation) return false;
+    // Only applies when there's an active dinner in progress
+    const status = activeReservation.status;
+    if (!status || status === "cancelled") return false;
+    // Member joined after reservation was created
+    const memberJoined = new Date(currentMember.created_at);
+    const reservationCreated = new Date(activeReservation.dinner_date + "T00:00:00");
+    if (memberJoined <= reservationCreated) return false;
+    // Check if dinner is "complete" — 1h45m after dinner date+time
+    const dinnerDateTime = new Date(activeReservation.dinner_date + "T" + (activeReservation.dinner_time || "19:00:00"));
+    const completionTime = new Date(dinnerDateTime.getTime() + (1 * 60 + 45) * 60 * 1000);
+    if (new Date() >= completionTime) return false; // dinner completed, they're free
+    return true;
+  })();
+
   // Get the next host name (for awaiting_next_host display after reveal time)
   const nextHostMember = activeReservation?.next_host_id 
     ? members.find(m => m.id === activeReservation.next_host_id)
