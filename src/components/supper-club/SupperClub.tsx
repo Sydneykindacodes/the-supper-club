@@ -1925,16 +1925,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ ...S.card, border:"1px solid rgba(197,92,92,0.2)", background:"rgba(197,92,92,0.03)" }}>
             <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"6px" }}>Leave This Club</div>
             <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-              You'll lose access to this group's pool, history, and badges. This can't be undone.
+              {currentMembers.length <= 1
+                ? "⚠️ You're the last member. Leaving will permanently delete all group badges, accomplishments, and history."
+                : "You'll lose access to this group's pool, history, and badges. This can't be undone."}
             </div>
             <button style={{ width:"100%", padding:"12px", borderRadius:"10px", fontSize:"12px", letterSpacing:"0.5px", background:"rgba(197,92,92,0.12)", border:"1px solid rgba(197,92,92,0.3)", color:"#c45c5c", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"600" }}
               onClick={async () => {
+                const isLastMember = currentMembers.length <= 1;
+                if (isLastMember) {
+                  if (!confirm("You're the last member. All group badges, history, and accomplishments will be permanently lost. Are you sure?")) return;
+                }
                 const remaining = groups.filter(g => g.id !== activeGroup.id);
-                if (remaining.length === 0) { showToast("You can't leave your only club."); return; }
+                if (remaining.length === 0 && !isLastMember) { showToast("You can't leave your only club."); return; }
                 const success = await dbData.leaveGroup();
                 if (success) {
                   setGroups(remaining);
-                  setActiveGroup(remaining[0]);
+                  if (remaining.length > 0) setActiveGroup(remaining[0]);
                   showToast(`You left ${activeGroup.name}.`);
                   setTimeout(() => setScreen("club_home"), 800);
                 } else {
