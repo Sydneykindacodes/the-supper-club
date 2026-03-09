@@ -845,21 +845,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
-                  <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", borderRadius:"10px", border:"1px solid rgba(122,158,126,0.25)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking</span>
+                    <span style={{ fontSize:"11px", color:"#7a9e7e", marginLeft:"auto" }}>recommended</span>
                   </a>
-                  <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"12px", color:"#c9956a" }}>◎</span>
-                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>OpenTable</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability</span>
-                  </a>
-                  <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"12px", color:"#9b7ec8" }}>◎</span>
-                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Resy</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots</span>
-                  </a>
+                  <div style={{ fontSize:"10px", color:"#5a3a25", textAlign:"center", padding:"4px 0", letterSpacing:"1px", textTransform:"uppercase" }}>or try searching on</div>
+                  <div style={{ display:"flex", gap:"8px" }}>
+                    <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                      <span style={{ fontSize:"11px", color:"#7a5a40" }}>OpenTable</span>
+                    </a>
+                    <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                      <span style={{ fontSize:"11px", color:"#7a5a40" }}>Resy</span>
+                    </a>
+                  </div>
+                  <div style={{ fontSize:"10px", color:"#4a2e18", fontStyle:"italic", textAlign:"center" }}>Not all restaurants are on every platform</div>
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
                   <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
