@@ -143,8 +143,8 @@ export const GlobalGroupSwitcher = ({
   const [showMenu, setShowMenu] = useState(false);
   
   return (
-    <div style={{ padding: "12px 0 0" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 16px", overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
+    <div style={{ padding: "12px 0 0", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 16px", overflowX: "auto", overflowY: "visible", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
         {groups.map(g => {
           const active = g.id === activeGroup.id;
           return (
@@ -171,38 +171,42 @@ export const GlobalGroupSwitcher = ({
               <span style={{ fontSize: "12px", color: "#c9956a", lineHeight: 1 }}>+</span>
               <span style={{ fontSize: "10px", color: "#7a5a40", whiteSpace: "nowrap" }}>New</span>
             </div>
-            {showMenu && (
-              <div style={{
-                position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 100,
-                background: "#2d1208", border: "1px solid rgba(201,149,106,0.3)",
-                borderRadius: "12px", padding: "6px", minWidth: "160px",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-              }}>
-                <div onClick={() => { setShowMenu(false); onNewClub(); }}
-                  style={{
-                    padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                  <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Create a Club</div>
-                  <div style={{ fontSize: "10px", color: "#7a5a40" }}>Start a new dining circle</div>
-                </div>
-                <div onClick={() => { setShowMenu(false); onJoinClub(); }}
-                  style={{
-                    padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                  <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Join with Code</div>
-                  <div style={{ fontSize: "10px", color: "#7a5a40" }}>Enter an invite code</div>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
+      {/* Menu rendered outside the scrollable container to avoid clipping */}
+      {showMenu && groups.length < maxGroups && (
+        <>
+          <div onClick={() => setShowMenu(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} />
+          <div style={{
+            position: "absolute", top: "calc(100% + 4px)", right: "16px", zIndex: 100,
+            background: "#2d1208", border: "1px solid rgba(201,149,106,0.3)",
+            borderRadius: "12px", padding: "6px", minWidth: "160px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+          }}>
+            <div onClick={() => { setShowMenu(false); onNewClub(); }}
+              style={{
+                padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+              <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Create a Club</div>
+              <div style={{ fontSize: "10px", color: "#7a5a40" }}>Start a new dining circle</div>
+            </div>
+            <div onClick={() => { setShowMenu(false); onJoinClub(); }}
+              style={{
+                padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+              <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Join with Code</div>
+              <div style={{ fontSize: "10px", color: "#7a5a40" }}>Enter an invite code</div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
