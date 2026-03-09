@@ -2602,59 +2602,68 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             ) : (
               <div style={{ padding:"16px 16px 0" }}>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                  Recent reviews from Supper Club members.
+                  Discover restaurants through other Supper Club members' reviews — search any city worldwide.
                 </div>
 
-                {/* Community Filters */}
-                {allCommunityReviews.length > 0 && (
-                  <>
-                    <div style={{ marginBottom:"16px" }}>
-                      <label style={S.label}>Filter by City</label>
-                      <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                        <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
-                        {[...new Set(allCommunityReviews.map(r => r.city))].slice(0, 5).map(c => (
-                          <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ marginBottom:"16px" }}>
-                      <label style={S.label}>Sort By</label>
-                      <div style={{ display:"flex", gap:"8px" }}>
-                        {([["date","Most Recent"],["rating","Highest Rated"]] as const).map(([id,label]) => (
-                          <div key={id} style={chip(visitedSort===id)} onClick={() => setVisitedSort(id)}>{label}</div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
+                {/* Search Input */}
+                <label style={S.label}>Search by City, Restaurant, or Cuisine</label>
+                <input
+                  style={S.input}
+                  placeholder="e.g. Tokyo, Sushi, Le Bernardin..."
+                  value={exploreCuisineFilter === "all" ? "" : exploreCuisineFilter}
+                  onChange={e => setExploreCuisineFilter(e.target.value || "all")}
+                />
 
-                {allCommunityReviews.length === 0 ? (
-                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                    <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◈</div>
-                    <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No community reviews yet.</div>
-                    <div style={{ fontSize:"12px", color:"#5a3a25" }}>Be the first to review a restaurant and it'll appear here for all Supper Club members.</div>
-                  </div>
-                ) : (
-                  (() => {
-                    let filtered = [...allCommunityReviews];
-                    if (exploreCuisineFilter !== "all") {
-                      filtered = filtered.filter(r => r.city === exploreCuisineFilter);
-                    }
-                    if (visitedSort === "rating") {
-                      filtered.sort((a, b) => b.rating - a.rating);
-                    }
-                    // default is already by date (most recent first from DB)
+                {/* Sort */}
+                <div style={{ display:"flex", gap:"8px", marginBottom:"16px" }}>
+                  {([["date","Most Recent"],["rating","Highest Rated"]] as const).map(([id,label]) => (
+                    <div key={id} style={chip(visitedSort===id)} onClick={() => setVisitedSort(id)}>{label}</div>
+                  ))}
+                </div>
 
-                    return filtered.map(rev => (
+                {(() => {
+                  const query = exploreCuisineFilter === "all" ? "" : exploreCuisineFilter.toLowerCase().trim();
+                  let filtered = [...allCommunityReviews];
+                  if (query) {
+                    filtered = filtered.filter(r =>
+                      r.city.toLowerCase().includes(query) ||
+                      r.restaurant.toLowerCase().includes(query) ||
+                      (r.cuisine || "").toLowerCase().includes(query) ||
+                      r.reviewer.toLowerCase().includes(query) ||
+                      r.group.toLowerCase().includes(query)
+                    );
+                  }
+                  if (visitedSort === "rating") {
+                    filtered.sort((a, b) => b.rating - a.rating);
+                  }
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                        <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◈</div>
+                        <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>
+                          {query ? `No reviews found for "${exploreCuisineFilter}"` : "No community reviews yet."}
+                        </div>
+                        <div style={{ fontSize:"12px", color:"#5a3a25" }}>
+                          {query ? "Try a different city, restaurant name, or cuisine." : "Be the first to review a restaurant and it'll appear here for all Supper Club members."}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                        {filtered.length} review{filtered.length !== 1 ? "s" : ""}{query ? ` matching "${exploreCuisineFilter}"` : ""}
+                      </div>
+                      {filtered.map(rev => (
                       <div key={rev.id} onClick={() => setSelectedPublicR(rev.id)} style={{ ...S.card, margin:"0 0 12px", cursor:"pointer", padding:0, overflow:"hidden" }}>
-                        {/* Photo thumbnail */}
                         {rev.photo_url && (
                           <div style={{ width:"100%", height:"140px", overflow:"hidden" }}>
                             <img src={rev.photo_url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy" />
                           </div>
                         )}
                         <div style={{ padding:"14px 16px" }}>
-                          {/* Reviewer row */}
                           <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
                             <div style={{ width:"32px", height:"32px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700", flexShrink:0, border:"1.5px solid rgba(201,149,106,0.25)" }}>
                               {rev.reviewer.charAt(0).toUpperCase()}
@@ -2669,11 +2678,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                               ))}
                             </div>
                           </div>
-                          {/* Restaurant */}
                           <div style={{ fontSize:"15px", color:"#c9956a", fontWeight:"500", marginBottom:"2px", cursor:"pointer", textDecoration:"underline", textDecorationColor:"rgba(201,149,106,0.3)", textUnderlineOffset:"2px" }}
                             onClick={(e) => { e.stopPropagation(); const rest: Restaurant = { id:Date.now(), name:rev.restaurant, cuisine:rev.cuisine||"—", city:rev.city, price:3, visited:false, visitedDate:null, visitedRating:null }; openRestaurantDetail(rest); }}>{rev.restaurant}</div>
                           <div style={{ fontSize:"11px", color:"#7a5a40", marginBottom:"8px" }}>{rev.cuisine ? `${rev.cuisine} · ` : ""}{rev.city}</div>
-                          {/* Review preview */}
                           {rev.review && (
                             <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic" }}>
                               "{rev.review.length > 120 ? rev.review.slice(0,120) + "..." : rev.review}"
@@ -2685,9 +2692,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           </div>
                         </div>
                       </div>
-                    ));
-                  })()
-                )}
+                    ))}
+                    </>
+                  );
+                })()}
               </div>
             )
           )}
