@@ -951,6 +951,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── GROUP SETTINGS ──
   if (screen === "group_settings") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Settings" />;
     const isCreator = dbData.isHost; // Host can manage settings
     
     if (!isCreator) return (
