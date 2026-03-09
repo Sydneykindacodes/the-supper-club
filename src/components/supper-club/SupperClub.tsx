@@ -13,6 +13,7 @@ import type { User } from "@supabase/supabase-js";
 import { useSupperClubData } from "@/hooks/useSupperClubData";
 import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
+import { useNotifications } from "@/hooks/useNotifications";
 import Onboarding from "./Onboarding";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
