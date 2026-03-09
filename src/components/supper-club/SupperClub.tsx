@@ -3252,6 +3252,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
+  // ── CINEMATIC HOST REVEAL ──
+  if (showHostRevealAnimation) {
+    const isNextHost = dbData.activeReservation?.next_host_id
+      ? dbData.members.find(m => m.id === dbData.activeReservation?.next_host_id)?.user_id === user.id
+      : dbData.isHost;
+    return (
+      <HostReveal
+        isYouTheHost={isNextHost || false}
+        groupName={activeGroup.name}
+        onComplete={() => {
+          setShowHostRevealAnimation(false);
+          setHasSeenHostReveal(true);
+        }}
+      />
+    );
+  }
+
   // ── MEMBER PROFILE VIEW (other users) ──
   if (viewingMemberUserId) {
     return (
