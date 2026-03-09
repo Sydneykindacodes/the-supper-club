@@ -641,7 +641,31 @@ export default function SupperClub() {
   }
 
   // ── GROUP SETTINGS ──
-  if (screen === "group_settings") return (
+  if (screen === "group_settings") {
+    const isCreator = groupCreator === "You";
+    
+    if (!isCreator) return (
+      <div style={S.app}><div style={S.phone}>
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Settings</div>
+          </div>
+          <div style={{ padding:"40px 24px", textAlign:"center" }}>
+            <div style={{ fontSize:"18px", color:"#c9956a", marginBottom:"12px" }}>◈</div>
+            <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>Creator Access Only</div>
+            <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
+              Only the group creator can modify these settings. If you need something changed, have a word with them.
+            </div>
+          </div>
+        </div>
+      </div></div>
+    );
+    
+    return (
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
@@ -735,22 +759,21 @@ export default function SupperClub() {
             )}
             {MEMBERS.map(m => {
               const isHost = m.name === groupAdmin;
-              const isCreator = m.name === groupCreator;
+              const isCreator2 = m.name === groupCreator;
               const isYou = m.name === "You";
-              const youAreCreator = groupCreator === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isCreator && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
+                    {isCreator2 && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
                     {isHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && youAreCreator && !isHost && (
+                    {!isYou && !isHost && (
                       <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
-                    {!isYou && youAreCreator && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
+                    {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
                   </div>
                 </div>
@@ -804,7 +827,8 @@ export default function SupperClub() {
         </div>
       </div>
     </div></div>
-  );
+    );
+  }
 
   // ── HOST SELECT DATE ──
   if (screen === "host_select_date") {
