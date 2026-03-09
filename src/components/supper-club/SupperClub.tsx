@@ -355,7 +355,7 @@ export default function SupperClub() {
                 padding:"32px 24px", 
                 textAlign:"center" 
               }}>
-                <div style={{ fontSize:"48px", marginBottom:"16px" }}>🍷</div>
+                <div style={{ fontSize:"24px", marginBottom:"16px", color:"#c9956a" }}>◈</div>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"12px" }}>
                   Awaiting Initiation
                 </div>
@@ -378,7 +378,7 @@ export default function SupperClub() {
                     {ag.nextDinner || "Date TBD"}
                   </div>
                   <div style={{ fontSize:"12px", color:"#5a3a25" }}>
-                    Reservation booked • You'll join the next one
+                    Reservation booked · You'll join the next one
                   </div>
                 </div>
                 <div style={{ 
