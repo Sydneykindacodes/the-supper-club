@@ -259,7 +259,31 @@ export default function SupperClub() {
     </div></div>
   );
 
-  // ── CLUB HOME ──
+  // ── JOIN CLUB (in-app) ──
+  if (screen === "join_club_inapp") return (
+    <div style={S.app}><div style={S.phone}>
+      <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"72px" }}>
+        <div style={{ alignSelf:"flex-start", marginBottom:"28px" }}>
+          <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
+        </div>
+        <div style={{ width:"100%" }}>
+          <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
+          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code</div>
+          <label style={S.label}>Invite Code</label>
+          <input style={S.input} placeholder="e.g. SUPR-4829"/>
+          <div style={{ height:"12px" }}/>
+          <button style={S.primaryBtn} onClick={() => {
+            showToast("Successfully joined club!");
+            setScreen("club_home"); 
+            setActiveTab("home"); 
+          }}>Join Club</button>
+          <button style={S.ghostBtn} onClick={() => { setScreen("club_home"); }}>Cancel</button>
+        </div>
+      </div>
+    </div></div>
+  );
+
+
   if (screen === "club_home") {
     const ag = activeGroup;
     const noDate = ag.dinnerStatus === "no_date";
@@ -273,7 +297,7 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{greeting}</div>
@@ -685,7 +709,7 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
           <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Discover</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
@@ -894,7 +918,7 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
         <div style={{ ...S.header, paddingTop: "8px" }}>
           <div style={S.headerEye}>Schedule</div>
           <div style={S.headerTitle}>Set Availability</div>
@@ -983,7 +1007,7 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
         <div style={{ ...S.header, paddingTop: "8px" }}>
           <div style={S.headerEye}>Reveal</div>
           <div style={S.headerTitle}>Tonight's Dinner</div>
@@ -1272,7 +1296,7 @@ export default function SupperClub() {
     return (
       <div style={S.app}><div style={S.phone}>
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
           <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Collection</div>
             <div style={S.headerTitle}>Badges</div>
