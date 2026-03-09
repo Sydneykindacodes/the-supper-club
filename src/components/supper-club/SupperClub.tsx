@@ -1399,11 +1399,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
             <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-              {/* Notification Bell */}
+              {/* Notification Envelope */}
               <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", padding:"4px" }}>
-                <span style={{ fontSize:"18px", color: notifs.unreadCount > 0 ? "#c9956a" : "#4a2e18" }}>◉</span>
+                <svg width="22" height="18" viewBox="0 0 22 18" fill="none" style={{ display:"block" }}>
+                  <rect x="1" y="1" width="20" height="16" rx="3" stroke={notifs.unreadCount > 0 ? "#c9956a" : "#4a2e18"} strokeWidth="1.5" fill="none"/>
+                  <path d="M1 4l10 6 10-6" stroke={notifs.unreadCount > 0 ? "#c9956a" : "#4a2e18"} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
                 {notifs.unreadCount > 0 && (
-                  <div style={{ position:"absolute", top:0, right:0, width:"14px", height:"14px", borderRadius:"50%", background:"#c45c5c", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"8px", color:"#fff", fontWeight:"700" }}>
+                  <div style={{ position:"absolute", top:"-4px", right:"-4px", minWidth:"16px", height:"16px", borderRadius:"8px", background:"#c45c5c", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"9px", color:"#fff", fontWeight:"700", padding:"0 4px", border:"2px solid #2a2a2a" }}>
                     {notifs.unreadCount}
                   </div>
                 )}
