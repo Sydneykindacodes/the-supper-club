@@ -2288,11 +2288,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
                         <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ 
                           width:"28px", height:"28px", borderRadius:"50%", 
-                          background: rev.reviewerColor || "#c9956a",
+                          background: rev.reviewerAvatarUrl ? `url(${rev.reviewerAvatarUrl}) center/cover no-repeat` : (rev.reviewerColor || "#c9956a"),
                           display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:"11px", color:"#fff", fontWeight:"700", cursor:"pointer"
+                          fontSize:"11px", color:"#fff", fontWeight:"700", cursor:"pointer", overflow:"hidden"
                         }}>
-                          {rev.reviewer?.charAt(0)?.toUpperCase() || rev.group[0]}
+                          {!rev.reviewerAvatarUrl && (rev.reviewer?.charAt(0)?.toUpperCase() || rev.group[0])}
                         </div>
                         <div style={{ flex:1 }}>
                           <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.group}</div>
