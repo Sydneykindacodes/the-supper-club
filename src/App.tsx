@@ -31,6 +31,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={user ? <Index user={user} signOut={signOut} /> : <Navigate to="/auth" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
