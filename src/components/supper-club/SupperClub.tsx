@@ -243,10 +243,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const currentMembers = dbData.uiMembers;
 
   // Add restaurant to group pool(s) - DB-backed
-  const addToGroupPool = (restaurant: Restaurant, groupIds: (number | string)[]) => {
-    groupIds.forEach(gid => {
+  const addToGroupPool = async (restaurant: Restaurant, groupIds: (number | string)[]) => {
+    let added = 0;
+    let dupes = 0;
+    for (const gid of groupIds) {
       const gidStr = String(gid);
-      dbData.addRestaurantToPool({
+      const result = await dbData.addRestaurantToPool({
         name: restaurant.name,
         cuisine: restaurant.cuisine,
         city: restaurant.city,
@@ -254,7 +256,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         googleRating: restaurant.googleRating,
         googleReviewCount: restaurant.googleReviewCount,
       }, gidStr);
-    });
+      if (result === "duplicate") dupes++;
+      else if (result === true) added++;
+    }
+    if (dupes > 0 && added === 0) {
+      showToast(`${restaurant.name} is already in the pool.`);
+    } else if (added > 0 && dupes > 0) {
+      showToast(`Added to ${added} group${added > 1 ? "s" : ""}. Already in ${dupes} pool${dupes > 1 ? "s" : ""}.`);
+    } else if (added > 0) {
+      showToast(`Added to ${added} group${added > 1 ? "s" : ""}.`);
+    }
   };
 
   const [exploreView, setExploreView] = useState("search");
