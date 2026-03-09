@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           cutoff_days: number | null
           id: string
+          is_temporary: boolean
           name: string
           no_repeats: boolean | null
           repeat_months: number | null
@@ -39,6 +40,7 @@ export type Database = {
           created_at?: string
           cutoff_days?: number | null
           id?: string
+          is_temporary?: boolean
           name: string
           no_repeats?: boolean | null
           repeat_months?: number | null
@@ -55,6 +57,7 @@ export type Database = {
           created_at?: string
           cutoff_days?: number | null
           id?: string
+          is_temporary?: boolean
           name?: string
           no_repeats?: boolean | null
           repeat_months?: number | null

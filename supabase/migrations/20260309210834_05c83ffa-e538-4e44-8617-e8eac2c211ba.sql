@@ -1,0 +1,1 @@
+ALTER TABLE public.groups ADD COLUMN is_temporary boolean NOT NULL DEFAULT false;
