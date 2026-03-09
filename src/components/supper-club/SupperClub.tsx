@@ -814,8 +814,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                 )}
               </div>
-              <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
-                {userName.charAt(0).toUpperCase()}
+              <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: userAvatarUrl ? `url(${userAvatarUrl}) center/cover no-repeat` : (user.user_metadata?.avatar_color || "#c9956a"), display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)", overflow:"hidden" }}>
+                {!userAvatarUrl && userName.charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
