@@ -2247,8 +2247,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           <div style={{ padding:"8px 16px 4px" }}>
-            <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("past_dinners")}>Past Dinners · {visitedRestaurants.length}</button>
-            <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
+            <button style={{ ...S.ghostBtn, fontSize:"11px", marginBottom:"6px" }} onClick={() => setScreen("past_dinners")}>Past Dinners · {visitedRestaurants.length}</button>
+            <button style={{ ...S.ghostBtn, fontSize:"11px", marginBottom:"6px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
           </div>
 
           {/* Relinquish host duties */}
