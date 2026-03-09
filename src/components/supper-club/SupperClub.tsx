@@ -481,12 +481,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         setter(newResults);
       }
       setGpNextPageToken(data?.nextPageToken || null);
+      // Cache group city center from search results
+      if (data?.cityCenter && !groupCityCenter) {
+        setGroupCityCenter(data.cityCenter);
+      }
     } catch {
       if (!pageToken) setter([]);
     } finally {
       setLoading(false);
     }
-  }, [activeGroup.city, searchRadius]);
+  }, [activeGroup.city, searchRadius, groupCityCenter]);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
