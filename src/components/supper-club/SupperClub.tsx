@@ -120,9 +120,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     activeGroupId
   );
 
+  // Notifications
+  const memberIdsForNotif = dbData.currentMember ? [dbData.currentMember.id] : [];
+  const notifs = useNotifications(user, memberIdsForNotif);
+
   // Review form and profile state
   const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
+  const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
