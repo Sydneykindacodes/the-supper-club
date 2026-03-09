@@ -106,6 +106,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const dbData = useSupperClubData(user, activeGroupId);
 
+  // Realtime subscriptions for live updates
+  useRealtimeSubscriptions(activeGroupId, dbData.refresh);
+
+  // Auto-earn badges based on activity
+  useBadgeTriggers(
+    dbData.communityReviews,
+    dbData.userBadges,
+    user.id,
+    dbData.isHost,
+    dbData.earnBadge,
+    activeGroupId
+  );
+
+  // Review form and profile state
+  const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+
   // Sync DB-loaded availability into local state
   useEffect(() => {
     if (dbData.userSelectedDates.length > 0) {
