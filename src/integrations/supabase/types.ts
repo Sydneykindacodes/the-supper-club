@@ -16,27 +16,51 @@ export type Database = {
     Tables: {
       groups: {
         Row: {
+          allowed_meal_types: string[] | null
+          auto_submit: boolean | null
           city: string
           code: string
           created_at: string
+          cutoff_days: number | null
           id: string
           name: string
+          no_repeats: boolean | null
+          repeat_months: number | null
+          res_time_end: string | null
+          res_time_start: string | null
+          search_radius: number | null
           updated_at: string
         }
         Insert: {
+          allowed_meal_types?: string[] | null
+          auto_submit?: boolean | null
           city: string
           code: string
           created_at?: string
+          cutoff_days?: number | null
           id?: string
           name: string
+          no_repeats?: boolean | null
+          repeat_months?: number | null
+          res_time_end?: string | null
+          res_time_start?: string | null
+          search_radius?: number | null
           updated_at?: string
         }
         Update: {
+          allowed_meal_types?: string[] | null
+          auto_submit?: boolean | null
           city?: string
           code?: string
           created_at?: string
+          cutoff_days?: number | null
           id?: string
           name?: string
+          no_repeats?: boolean | null
+          repeat_months?: number | null
+          res_time_end?: string | null
+          res_time_start?: string | null
+          search_radius?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -462,12 +486,136 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          best_dish_member: string | null
+          city: string | null
+          created_at: string
+          cuisine: string | null
+          group_id: string | null
+          id: string
+          meal_type: string | null
+          member_id: string | null
+          photo_url: string | null
+          rating: number
+          reservation_id: string | null
+          restaurant_id: string | null
+          restaurant_name: string
+          return_choice: string | null
+          review_text: string | null
+          user_id: string
+        }
+        Insert: {
+          best_dish_member?: string | null
+          city?: string | null
+          created_at?: string
+          cuisine?: string | null
+          group_id?: string | null
+          id?: string
+          meal_type?: string | null
+          member_id?: string | null
+          photo_url?: string | null
+          rating: number
+          reservation_id?: string | null
+          restaurant_id?: string | null
+          restaurant_name: string
+          return_choice?: string | null
+          review_text?: string | null
+          user_id: string
+        }
+        Update: {
+          best_dish_member?: string | null
+          city?: string | null
+          created_at?: string
+          cuisine?: string | null
+          group_id?: string | null
+          id?: string
+          meal_type?: string | null
+          member_id?: string | null
+          photo_url?: string | null
+          rating?: number
+          reservation_id?: string | null
+          restaurant_id?: string | null
+          restaurant_name?: string
+          return_choice?: string | null
+          review_text?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_key: string
+          badge_type: string
+          earned_at: string
+          group_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          badge_type?: string
+          earned_at?: string
+          group_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          badge_type?: string
+          earned_at?: string
+          group_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       reservation_status:
