@@ -13,12 +13,13 @@ const AVATAR_COLORS = [
 interface ProfileScreenProps {
   user: User;
   userReviews: DBReview[];
+  userBadges: DBBadge[];
   onClose: () => void;
   showToast: (msg: string) => void;
   signOut: () => Promise<void>;
 }
 
-export default function ProfileScreen({ user, userReviews, onClose, showToast, signOut }: ProfileScreenProps) {
+export default function ProfileScreen({ user, userReviews, userBadges, onClose, showToast, signOut }: ProfileScreenProps) {
   const currentName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "";
   const [displayName, setDisplayName] = useState(currentName);
   const [avatarColor, setAvatarColor] = useState(user.user_metadata?.avatar_color || "#c9956a");
