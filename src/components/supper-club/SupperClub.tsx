@@ -41,10 +41,37 @@ import {
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
 
+// ── Skeleton Loader ──
+const SkeletonPulse = ({ width = "100%", height = "16px", borderRadius = "8px", style }: { width?: string; height?: string; borderRadius?: string; style?: React.CSSProperties }) => (
+  <div style={{
+    width, height, borderRadius,
+    background: "linear-gradient(90deg, rgba(201,149,106,0.06) 25%, rgba(201,149,106,0.12) 50%, rgba(201,149,106,0.06) 75%)",
+    backgroundSize: "200% 100%",
+    animation: "shimmer 1.5s ease-in-out infinite",
+    ...style,
+  }} />
+);
+
+const LoadingScreen = () => (
+  <div style={S.app}><div style={S.phone}>
+    <div style={S.screen}>
+      <div style={{ padding: "54px 24px 20px" }}>
+        <SkeletonPulse width="120px" height="12px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse width="200px" height="32px" style={{ marginBottom: "24px" }} />
+      </div>
+      <div style={{ padding: "0 16px" }}>
+        <SkeletonPulse height="120px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse height="80px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse height="60px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+      </div>
+    </div>
+  </div></div>
+);
+
 export default function SupperClub({ user, signOut }: SupperClubProps) {
   const MAX_GROUPS = 15;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
-  const [screen, setScreen] = useState<string>("welcome");
+  const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
   const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
@@ -356,6 +383,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (visitedSort === "price") return b.price - a.price;
     return new Date(b.visitedDate || 0).getTime() - new Date(a.visitedDate || 0).getTime();
   });
+
+  // ── LOADING ──
+  if (screen === "loading") return <LoadingScreen />;
 
   // ── ONBOARDING ──
   if (screen === "onboarding") return (
@@ -1004,12 +1034,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
             <div style={{ display:"flex", gap:"14px", overflowX:"auto" }}>
-              {currentMembers.map(m => (
-                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
-                  <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
-                  <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
-                </div>
-              ))}
+              {dbData.loadingMembers ? (
+                [1,2,3,4].map(i => (
+                  <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
+                    <SkeletonPulse width="48px" height="48px" borderRadius="50%" />
+                    <SkeletonPulse width="36px" height="10px" />
+                  </div>
+                ))
+              ) : (
+                currentMembers.map(m => (
+                  <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
+                    <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
+                    <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -1741,7 +1780,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ ...S.card, marginBottom:"16px", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", border:"1px solid rgba(201,149,106,0.18)" }}>
                 <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>About This Restaurant</div>
                 {descriptionLoading ? (
-                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>Composing a description...</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    <SkeletonPulse width="100%" height="14px" />
+                    <SkeletonPulse width="85%" height="14px" />
+                    <SkeletonPulse width="60%" height="14px" />
+                  </div>
                 ) : restaurantDescription ? (
                   <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.8", fontStyle:"italic" }}>{restaurantDescription}</div>
                 ) : (
@@ -1940,7 +1983,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
                 onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
               />
-              {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
+              {gpLoading && (
+                <div style={{ padding:"12px 0" }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
+                      <SkeletonPulse width="60%" height="16px" style={{ marginBottom:"8px" }} />
+                      <SkeletonPulse width="40%" height="12px" style={{ marginBottom:"6px" }} />
+                      <SkeletonPulse width="30%" height="10px" />
+                    </div>
+                  ))}
+                </div>
+              )}
               
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
               <div style={{ marginBottom:"16px" }}>
