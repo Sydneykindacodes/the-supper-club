@@ -1632,8 +1632,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <button 
                 onClick={() => { 
                   const link = `${window.location.origin}/?invite=${ag.code}`;
-                  navigator.clipboard.writeText(link); 
-                  showToast("Invite link copied!"); 
+                  copyToClipboard(link, "Invite link copied!"); 
                 }}
                 style={{ 
                   background:"linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))", border:"1px solid rgba(201,149,106,0.35)", 
