@@ -1,0 +1,1 @@
+DELETE FROM restaurants WHERE id = 'c9b00350-1027-4381-abe7-35471d238162';
