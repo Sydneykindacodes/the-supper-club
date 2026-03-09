@@ -1588,7 +1588,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             )}
             {currentMembers.map(m => {
-              const isMemberHost = m.name === dbData.hostName;
+              const isMemberHost = dbData.isHost && m.name === dbData.hostName;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
@@ -1598,16 +1598,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     {isMemberHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && !isMemberHost && (
-                      <span onClick={async () => { 
-                        const dbMember = dbData.members.find(dm => dm.name === m.name || (m.name === "You" && dm.user_id === user.id));
-                        if (dbMember) {
-                          const success = await dbData.makeHost(dbMember.id);
-                          if (success) showToast(`${m.name} is now the host.`);
-                          else showToast("Failed to update host.");
-                        }
-                      }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
-                    )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
                   </div>
