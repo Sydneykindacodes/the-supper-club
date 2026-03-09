@@ -9,6 +9,7 @@ export interface DBMember {
   avatar: string;
   color: string;
   is_host: boolean;
+  host_count: number;
   user_id: string | null;
 }
 
@@ -97,6 +98,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             avatar: m.name.charAt(0).toUpperCase(),
             color: m.avatar_color || "#c9956a",
             is_host: m.is_host || false,
+            host_count: m.host_count || 0,
             user_id: m.user_id,
           })));
         }
@@ -607,6 +609,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   // Get current user's member record
   const currentMember = members.find(m => m.user_id === user.id);
   const isHost = currentMember?.is_host || false;
+  const hostCount = currentMember?.host_count || 0;
   const hostMember = members.find(m => m.is_host);
   const hostName = hostMember ? (hostMember.user_id === user.id ? "You" : hostMember.name) : "Unknown";
 
@@ -624,6 +627,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     visitedRestaurants,
     currentMember,
     isHost,
+    hostCount,
     hostName,
     loadingMembers,
     loadingRestaurants,

@@ -60,25 +60,10 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
         </div>
 
         <div style={{ padding: "16px 16px 0" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div style={{ marginBottom: "16px" }}>
             <div style={{ fontSize: "13px", color: "#7a5a40", fontStyle: "italic" }}>
               {earned} of {defs.length} earned
             </div>
-            <div style={{
-              background: "rgba(201,149,106,0.1)",
-              borderRadius: "8px",
-              padding: "4px 10px",
-              fontSize: "12px",
-              color: "#c9956a",
-              fontWeight: "600",
-            }}>
-              {Math.round((earned / defs.length) * 100)}%
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div style={{ height: "4px", background: "rgba(201,149,106,0.1)", borderRadius: "2px", marginBottom: "20px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${(earned / defs.length) * 100}%`, background: "linear-gradient(135deg,#c9956a,#9a6040)", borderRadius: "2px", transition: "width 0.3s" }} />
           </div>
 
           {defs.map(badge => {

@@ -142,7 +142,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     dbData.communityReviews,
     dbData.userBadges,
     user.id,
-    dbData.isHost,
+    dbData.hostCount,
     dbData.earnBadge,
     activeGroupId
   );
@@ -281,7 +281,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
-  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({ Marisol:true, Derek:true, Priya:false, You:false });
+  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
 
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [noRepeats, setNoRepeats] = useState(true);
@@ -324,7 +324,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setPostDinnerDates([]);
     setAvailabilityModifying(false);
     setHostSelectedDate(null);
-    setConfirmationVotes({ Marisol: false, Derek: false, Priya: false, You: false });
+    setConfirmationVotes({});
     setReviewRating(0);
     setReviewText("");
     setPhotoSubmitted(false);
@@ -333,7 +333,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setRevealUnlocked(false);
     setBookingDateConfirm(false);
     setAwaitingInitiation(false);
-    setMemberAvailability({ Marisol: [], Derek: [], Priya: [] });
+    setMemberAvailability({});
   }, []);
 
   const fetchRestaurantDescription = useCallback(async (name: string, cuisine: string, city: string, reviews: any[]) => {
@@ -904,7 +904,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{ag.pendingDate}</div>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>Everyone must confirm before the reservation is locked.</div>
               <div style={{ marginBottom:"14px" }}>
-                {MEMBERS.map(m => (
+                {currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
@@ -919,7 +919,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   Confirm — I'll Be There
                 </button>
               )}
-              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {MEMBERS.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {currentMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
             </div>
           )}
 
@@ -944,7 +944,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             // Calculate overlapping dates
             const allDates: string[] = [];
-            MEMBERS.forEach(m => {
+            currentMembers.forEach(m => {
               const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
               dates.forEach(d => allDates.push(d));
             });
@@ -970,7 +970,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                     <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px", marginBottom:"16px" }}>
                       <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>Submissions</div>
-                      {MEMBERS.map(m => {
+                      {currentMembers.map(m => {
                         const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                         const hasSubmitted = dates.length > 0;
                         return (
