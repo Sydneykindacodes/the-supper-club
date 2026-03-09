@@ -2531,7 +2531,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>
