@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
-  WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS,
-  Group, Restaurant,
+  WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
+  MAX_GROUP_MEMBERS,
+  Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,12 +35,20 @@ export default function SupperClub() {
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
+  const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
+
+  // Member availability tracking (mock data for demo)
+  const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({
+    "Marisol": ["2026-03-18", "2026-03-19", "2026-03-25", "2026-04-01"],
+    "Derek": ["2026-03-18", "2026-03-20", "2026-03-25", "2026-03-27"],
+    "Priya": [], // hasn't submitted yet
+  });
 
   // Per-group pool: map groupId -> Restaurant[]
   const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
