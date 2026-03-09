@@ -432,17 +432,34 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Select restaurant for reservation
+  // Select restaurant for reservation — update party_size to confirmed members only
   const selectRestaurantForReservation = useCallback(async (restaurantId: string) => {
     if (!activeReservation?.id) return false;
+
+    // Count members who submitted availability that includes the dinner date
+    const { data: avails } = await supabase
+      .from("member_availability")
+      .select("member_id, available_dates")
+      .eq("reservation_id", activeReservation.id);
+
+    let confirmedCount = members.length; // fallback to full group
+    if (avails && avails.length > 0) {
+      const dinnerDate = activeReservation.dinner_date;
+      confirmedCount = avails.filter(a =>
+        (a.available_dates as string[]).includes(dinnerDate)
+      ).length;
+      // At minimum 1 (the host)
+      if (confirmedCount < 1) confirmedCount = 1;
+    }
+
     const { error } = await supabase
       .from("reservations")
-      .update({ restaurant_id: restaurantId })
+      .update({ restaurant_id: restaurantId, party_size: confirmedCount })
       .eq("id", activeReservation.id);
     if (error) return false;
     refresh();
     return true;
-  }, [activeReservation?.id, refresh]);
+  }, [activeReservation?.id, activeReservation?.dinner_date, members.length, refresh]);
 
 
 
