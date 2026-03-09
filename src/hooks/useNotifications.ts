@@ -43,6 +43,29 @@ export function useNotifications(user: User, memberIds: string[]) {
     fetchNotifications();
   }, [fetchNotifications]);
 
+  // Realtime subscription for new notifications
+  useEffect(() => {
+    if (memberIds.length === 0) return;
+
+    const channel = supabase
+      .channel(`notifs-${memberIds.join("-")}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        (payload) => {
+          const n = payload.new as any;
+          if (memberIds.includes(n.member_id)) {
+            fetchNotifications();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [memberIds.join(","), fetchNotifications]);
+
   const markAllRead = useCallback(async () => {
     if (memberIds.length === 0) return;
     await supabase
@@ -69,6 +92,10 @@ export function useNotifications(user: User, memberIds: string[]) {
       case "post_dinner_review": return "✨ How was dinner? Submit your review & availability for next time!";
       case "all_availability_in": return "📋 Everyone has submitted their availability! Time to pick a date.";
       case "all_votes_in": return "✅ Everyone has responded to the proposed date!";
+      case "member_joined": return "👋 A new member has joined the club!";
+      case "availability_submitted": return "📅 A member has submitted their availability.";
+      case "dinner_cancelled": return "❌ The dinner has been cancelled.";
+      case "restaurant_added": return "🍴 A new restaurant has been added to the pool!";
       default: return "📬 You have a new notification";
     }
   };
