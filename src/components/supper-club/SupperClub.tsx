@@ -38,7 +38,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
   const [screen, setScreen] = useState<string>("welcome");
   const [groups, setGroups] = useState<Group[]>([]);
-  const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+  const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
+  const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
 
   // Load user's groups from DB on mount
