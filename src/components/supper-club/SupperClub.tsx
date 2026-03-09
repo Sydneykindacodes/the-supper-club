@@ -2636,7 +2636,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     });
     
     const formatDateDisplay = (dateStr: string) => {
-      const date = new Date(dateStr);
+      const date = new Date(dateStr + "T12:00:00");
       return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     };
     
