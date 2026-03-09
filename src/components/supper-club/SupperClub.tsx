@@ -1578,6 +1578,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             }
 
             if (currentStep === "availability") {
+              // Temporary groups — no next dinner, just wrap up
+              if (isTemporaryGroup) {
+                return (
+                  <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+                    <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"12px" }}>✧</div>
+                    <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>That's a Wrap</div>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                      One night. One table. No strings attached.
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                      This pop-up club will dissolve at midnight. Your badges and reviews live on forever.
+                    </div>
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
+                      setPostDinnerStep("completing");
+                      resetForNextDinner();
+                      setBookingLinks(null);
+                      await dbData.completeDinner();
+                      setPostDinnerStep(null);
+                      showToast("Pop-up complete. Until next time.");
+                    }}>
+                      Close the Chapter
+                    </button>
+                  </div>
+                );
+              }
+
               return (
                 <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
                   <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"12px" }}>◇</div>
