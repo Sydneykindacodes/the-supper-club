@@ -11,6 +11,7 @@ export interface DBMember {
   is_host: boolean;
   host_count: number;
   user_id: string | null;
+  avatar_url: string | null;
 }
 
 export interface ActiveReservation {
@@ -47,6 +48,7 @@ export interface DBReview {
   group_name?: string;
   member_name?: string;
   member_avatar_color?: string;
+  member_avatar_url?: string | null;
 }
 
 export interface DBBadge {
@@ -86,7 +88,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
 
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
-  // Load members for active group
+  // Load members for active group (with avatar_url from profiles)
   useEffect(() => {
     if (!activeGroupId) { setMembers([]); return; }
     setLoadingMembers(true);
@@ -94,8 +96,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       .from("members")
       .select("*")
       .eq("group_id", activeGroupId)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data) {
+          // Batch-load avatar_urls from profiles for all members with user_ids
+          const userIds = data.map(m => m.user_id).filter(Boolean) as string[];
+          let profileMap: Record<string, string | null> = {};
+          if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("id, avatar_url")
+              .in("id", userIds);
+            if (profiles) {
+              profiles.forEach(p => { profileMap[p.id] = p.avatar_url; });
+            }
+          }
           setMembers(data.map(m => ({
             id: m.id,
             name: m.name,
@@ -104,6 +118,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             is_host: m.is_host || false,
             host_count: m.host_count || 0,
             user_id: m.user_id,
+            avatar_url: m.user_id ? (profileMap[m.user_id] || null) : null,
           })));
         }
         setLoadingMembers(false);
@@ -246,8 +261,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       .select("*, members(name, avatar_color), groups(name)")
       .order("created_at", { ascending: false })
       .limit(100)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data) {
+          // Batch-load avatar_urls from profiles
+          const userIds = [...new Set(data.map((r: any) => r.user_id).filter(Boolean))];
+          let profileMap: Record<string, string | null> = {};
+          if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("id, avatar_url")
+              .in("id", userIds);
+            if (profiles) {
+              profiles.forEach(p => { profileMap[p.id] = p.avatar_url; });
+            }
+          }
           setCommunityReviews(data.map((r: any) => ({
             id: r.id,
             user_id: r.user_id,
@@ -265,6 +292,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             created_at: r.created_at,
             member_name: r.members?.name || null,
             member_avatar_color: r.members?.avatar_color || null,
+            member_avatar_url: profileMap[r.user_id] || null,
             group_name: r.groups?.name || null,
           })));
         }
@@ -728,6 +756,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     avatar: m.user_id === user.id ? "Y" : m.avatar,
     color: m.color,
     user_id: m.user_id,
+    avatar_url: m.avatar_url,
   }));
 
   // Check if user has reviewed the current dinner
