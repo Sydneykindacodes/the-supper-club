@@ -1,5 +1,5 @@
 import { S } from "./styles";
-import { INDIVIDUAL_BADGE_DEFS } from "./badgeDefs";
+import { INDIVIDUAL_BADGE_DEFS, BADGE_ICONS } from "./badgeDefs";
 
 interface BadgeData {
   badge_key: string;
@@ -41,13 +41,11 @@ export default function IndividualBadges({ badges, isOwnProfile, displayName }: 
           }}>
             <div style={{
               ...S.badgeSymbol,
-              width: "36px", height: "36px", fontSize: "12px",
+              width: "36px", height: "36px",
               background: isEarned ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
               border: isEarned ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.1)",
-              color: isEarned ? "#c9956a" : "#3d2010",
-            }}>
-              {badge.symbol}
-            </div>
+              color: isEarned ? "#ffffff" : "#3d2010",
+            }} dangerouslySetInnerHTML={{ __html: BADGE_ICONS[badge.key] || "" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "13px", color: isEarned ? "#f5e6d3" : "#5a3a25", fontWeight: "500" }}>
                 {badge.name}
