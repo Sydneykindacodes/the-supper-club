@@ -333,7 +333,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setRevealUnlocked(false);
     setBookingDateConfirm(false);
     setAwaitingInitiation(false);
-    setMemberAvailability({ Marisol: [], Derek: [], Priya: [] });
+    setMemberAvailability({});
   }, []);
 
   const fetchRestaurantDescription = useCallback(async (name: string, cuisine: string, city: string, reviews: any[]) => {
