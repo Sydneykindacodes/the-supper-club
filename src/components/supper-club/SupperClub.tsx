@@ -620,8 +620,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           {ag.dinnerStatus === "scheduled" && (() => {
-            const isHost = groupAdmin === "You";
-            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
+            const hostIsYou = dbData.isHost;
+            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
             
             return isHost ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
