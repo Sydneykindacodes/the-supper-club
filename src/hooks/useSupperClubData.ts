@@ -12,6 +12,7 @@ export interface DBMember {
   host_count: number;
   user_id: string | null;
   avatar_url: string | null;
+  created_at: string;
 }
 
 export interface ActiveReservation {
