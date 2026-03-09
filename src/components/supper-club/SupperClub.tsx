@@ -1620,29 +1620,36 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
 
               {/* Photos Section */}
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                Photos · {mockRestaurantPhotos.length}
-              </div>
-              <div style={{ 
-                display:"flex", gap:"10px", overflowX:"auto", paddingBottom:"16px", marginBottom:"16px",
-                scrollSnapType:"x mandatory", WebkitOverflowScrolling:"touch" as any,
-                scrollbarWidth:"none" as any, msOverflowStyle:"none" as any,
-              }}>
-                {mockRestaurantPhotos.map((symbol, i) => (
-                  <div key={i} style={{ 
-                    minWidth:"110px", height:"110px", borderRadius:"16px", 
-                    background:`linear-gradient(${135 + i * 15}deg, rgba(201,149,106,${0.12 + i * 0.02}), rgba(201,149,106,0.03))`,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:"32px", color:"#c9956a", 
-                    border:"1px solid rgba(201,149,106,0.15)",
-                    flexShrink:0, scrollSnapAlign:"start",
-                    boxShadow:"0 4px 20px rgba(0,0,0,0.3)",
-                    transition:"transform 0.2s ease",
-                  }}>
-                    {symbol}
+              {(() => {
+                const reviewPhotos = allCommunityReviews
+                  .filter(rev => rev.restaurant === r.name && rev.photo_url)
+                  .map(rev => rev.photo_url!);
+                return reviewPhotos.length > 0 ? (<>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                    Photos · {reviewPhotos.length}
                   </div>
-                ))}
-              </div>
+                  <div style={{ 
+                    display:"flex", gap:"10px", overflowX:"auto", paddingBottom:"16px", marginBottom:"16px",
+                    scrollSnapType:"x mandatory", WebkitOverflowScrolling:"touch" as any,
+                    scrollbarWidth:"none" as any, msOverflowStyle:"none" as any,
+                  }}>
+                    {reviewPhotos.map((url, i) => (
+                      <div key={i} style={{ 
+                        minWidth:"110px", height:"110px", borderRadius:"16px", 
+                        overflow:"hidden",
+                        flexShrink:0, scrollSnapAlign:"start",
+                        boxShadow:"0 4px 20px rgba(0,0,0,0.3)",
+                      }}>
+                        <img src={url} alt={`Photo ${i + 1}`} style={{ width:"110px", height:"110px", objectFit:"cover" }} />
+                      </div>
+                    ))}
+                  </div>
+                </>) : (
+                  <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"16px" }}>
+                    No photos yet. Share yours after your next visit.
+                  </div>
+                );
+              })()}
 
               {/* Reviews Section */}
               {(() => {
