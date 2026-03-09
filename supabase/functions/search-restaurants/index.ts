@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName',
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos',
       },
       body: JSON.stringify(searchBody),
     });
