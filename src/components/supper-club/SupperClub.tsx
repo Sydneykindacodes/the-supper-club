@@ -104,7 +104,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
-  const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
+  const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null, is_temporary: false };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
 
