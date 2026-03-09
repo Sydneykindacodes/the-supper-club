@@ -3219,6 +3219,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
+  // ── CINEMATIC RESTAURANT REVEAL ──
+  if (showRevealAnimation && dbData.selectedRestaurantData) {
+    const rest = dbData.selectedRestaurantData;
+    return (
+      <RestaurantReveal
+        restaurantName={rest.name}
+        cuisine={rest.cuisine}
+        city={rest.city}
+        dinnerDate={dbData.nextDinner || ""}
+        onComplete={() => {
+          setShowRevealAnimation(false);
+          setHasSeenReveal(true);
+        }}
+      />
+    );
+  }
+
   // ── MEMBER PROFILE VIEW (other users) ──
   if (viewingMemberUserId) {
     return (
