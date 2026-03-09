@@ -24,7 +24,7 @@ export default function IndividualBadges({ badges, isOwnProfile, displayName }: 
         {isOwnProfile ? "Your Badges" : `${displayName || "Member"}'s Badges`}
       </div>
       <div style={{ fontSize: "12px", color: "#5a3a25", marginBottom: "14px" }}>
-        {earned} of {INDIVIDUAL_BADGE_DEFS.length} earned
+        {earned} badge{earned !== 1 ? "s" : ""} earned
       </div>
 
       {/* Earned badges shown prominently */}
