@@ -1018,6 +1018,68 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
           </div>
         </div>
+
+        {/* Notifications Panel */}
+        {showNotifications && (
+          <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(26,15,10,0.92)", zIndex:200, display:"flex", flexDirection:"column" }}>
+            <div style={{ padding:"20px 16px 12px", display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:"1px solid rgba(201,149,106,0.15)" }}>
+              <div style={{ fontSize:"20px", color:"#f5e6d3", fontWeight:"400" }}>Notifications</div>
+              <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
+                {notifs.unreadCount > 0 && (
+                  <span onClick={() => notifs.markAllRead()} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Mark all read</span>
+                )}
+                <span onClick={() => setShowNotifications(false)} style={{ fontSize:"22px", color:"#c9956a", cursor:"pointer" }}>×</span>
+              </div>
+            </div>
+            <div style={{ flex:1, overflow:"auto", padding:"12px 16px" }}>
+              {notifs.notifications.length === 0 ? (
+                <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                  <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◉</div>
+                  <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic" }}>No notifications yet.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"4px" }}>You'll be notified when important events happen.</div>
+                </div>
+              ) : (
+                notifs.notifications.map(n => (
+                  <div key={n.id} style={{
+                    padding:"14px", marginBottom:"8px", borderRadius:"12px",
+                    background: n.delivered ? "rgba(201,149,106,0.03)" : "rgba(201,149,106,0.08)",
+                    border: n.delivered ? "1px solid rgba(201,149,106,0.08)" : "1px solid rgba(201,149,106,0.2)",
+                  }}>
+                    <div style={{ fontSize:"13px", color: n.delivered ? "#7a5a40" : "#f5e6d3", lineHeight:"1.5" }}>
+                      {notifs.getNotificationMessage(n)}
+                    </div>
+                    <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"6px" }}>
+                      {new Date(n.sent_at).toLocaleDateString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Post-Dinner Review Prompt */}
+        {postDinnerReviewPrompt && (
+          <ReviewForm
+            restaurantName="Your Last Dinner"
+            cuisine={undefined}
+            city={activeGroup.city}
+            members={currentMembers}
+            reservationId={dbData.activeReservation?.id}
+            onSubmit={async (review) => {
+              const ok = await dbData.submitReview(review);
+              if (ok) {
+                setPostDinnerReviewPrompt(false);
+                showToast("Review submitted! 🎉");
+              }
+              return ok;
+            }}
+            onUploadPhoto={dbData.uploadReviewPhoto}
+            onClose={() => setPostDinnerReviewPrompt(false)}
+            showToast={showToast}
+          />
+        )}
+
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
       </div></div>
     );
