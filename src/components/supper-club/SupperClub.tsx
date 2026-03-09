@@ -378,17 +378,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // Restaurant detail reviews come from DB now
 
-  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
-    if (query.length < 2) { setter([]); return; }
+  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void, pageToken?: string) => {
+    if (query.length < 2 && !pageToken) { setter([]); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('search-restaurants', {
-        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius },
+        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius, pageToken },
       });
       if (error) throw error;
-      setter(data?.restaurants || []);
+      const newResults = data?.restaurants || [];
+      if (pageToken) {
+        setter((prev: GooglePlace[]) => [...prev, ...newResults]);
+      } else {
+        setter(newResults);
+      }
+      setGpNextPageToken(data?.nextPageToken || null);
     } catch {
-      setter([]);
+      if (!pageToken) setter([]);
     } finally {
       setLoading(false);
     }
