@@ -322,8 +322,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Use DB members when available, else fallback to static MEMBERS
   const currentMembers = dbData.uiMembers;
 
+  // Check if a restaurant is within the group's search radius
+  const isWithinRadius = (r: { lat?: number | null; lng?: number | null }): boolean => {
+    if (!groupCityCenter || !r.lat || !r.lng) return true; // allow if no coords available
+    const dist = haversineDistance(groupCityCenter.lat, groupCityCenter.lng, r.lat, r.lng);
+    return dist <= searchRadius;
+  };
+
   // Add restaurant to group pool(s) - DB-backed
-  const addToGroupPool = async (restaurant: Restaurant, groupIds: (number | string)[]) => {
+  const addToGroupPool = async (restaurant: Restaurant & { lat?: number | null; lng?: number | null }, groupIds: (number | string)[]) => {
+    // Distance check
+    if (!isWithinRadius(restaurant)) {
+      showToast(`${restaurant.name} is outside your group's ${searchRadius}-mile radius.`);
+      return;
+    }
     let added = 0;
     let dupes = 0;
     let full = false;
