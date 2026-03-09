@@ -963,27 +963,25 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </>)}
           </div>
 
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {currentMembers.length}/{MAX_GROUP_MEMBERS}</div>
           <div style={S.card}>
-            {MEMBERS.length >= MAX_GROUP_MEMBERS && (
+            {currentMembers.length >= MAX_GROUP_MEMBERS && (
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"12px", lineHeight:"1.5" }}>
                 This group is at capacity. No more members can join.
               </div>
             )}
-            {MEMBERS.map(m => {
-              const isHost = m.name === groupAdmin;
-              const isCreator2 = m.name === groupCreator;
+            {currentMembers.map(m => {
+              const isMemberHost = m.name === groupAdmin;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isCreator2 && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
-                    {isHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
+                    {isMemberHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && !isHost && (
+                    {!isYou && !isMemberHost && (
                       <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
@@ -995,6 +993,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ paddingTop:"14px" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>Invite Code</div>
               <div style={{ fontSize:"20px", color:"#f5e6d3", letterSpacing:"6px", fontWeight:"700" }}>{activeGroup.code}</div>
+              <button onClick={() => { 
+                const link = `${window.location.origin}/?invite=${activeGroup.code}`;
+                navigator.clipboard.writeText(link); 
+                showToast("Invite link copied!"); 
+              }} style={{ marginTop:"10px", background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", borderRadius:"8px", padding:"8px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif", width:"100%" }}>
+                Copy Shareable Link
+              </button>
             </div>
           </div>
 
