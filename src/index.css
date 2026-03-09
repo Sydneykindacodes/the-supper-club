@@ -55,11 +55,22 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: 'Montserrat', sans-serif !important;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Montserrat', sans-serif !important;
+  }
+
+  /* Bristol display font class for headings/greetings */
+  .font-display {
+    font-family: 'Bristol', cursive !important;
+  }
+
+  /* Cormorant Garamond accent font for subtitles */
+  .font-accent {
+    font-family: 'Cormorant Garamond', serif !important;
   }
 
   /* Hide scrollbar for photo galleries */
