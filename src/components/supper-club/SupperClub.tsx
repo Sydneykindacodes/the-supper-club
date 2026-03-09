@@ -290,6 +290,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [visitedFilter, setVisitedFilter] = useState("all");
   const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
+  const [searchPage, setSearchPage] = useState(1);
+  const [communityPage, setCommunityPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
+  const MAX_ITEMS = 50;
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] = useState<Restaurant | GooglePlace | null>(null);
   const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: { id: 0, name: "", cuisine: "", city: "", price: 0, visited: false, visitedDate: null, visitedRating: null } as Restaurant, visible: false });
@@ -2709,9 +2713,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Cuisine</label>
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
+                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => { setExploreCuisineFilter("all"); setSearchPage(1); }}>All</div>
                   {[...new Set(gpResults.map(r => r.cuisine))].slice(0,5).map(c => (
-                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
+                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => { setExploreCuisineFilter(c); setSearchPage(1); }}>{c}</div>
                   ))}
                 </div>
               </div>
@@ -2719,28 +2723,33 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <label style={S.label}>Price Range</label>
                 <div style={{ display:"flex", gap:"8px" }}>
                   {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
-                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => setExplorePriceFilter(id)}>{label}</div>
+                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => { setExplorePriceFilter(id); setSearchPage(1); }}>{label}</div>
                   ))}
                 </div>
               </div>
 
               <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
                 searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
+                setSearchPage(1);
               }}>
                 Search
               </button>
 
               {/* Search Results */}
               {gpResults.length > 0 && (
-                <>
-                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                    Results · {gpResults.filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
-                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter).length}
-                  </div>
-                  {gpResults
+                (() => {
+                  const allFiltered = gpResults
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
-                    .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
-                    .map(r => {
+                    .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter);
+                  const capped = allFiltered.slice(0, MAX_ITEMS);
+                  const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
+                  const pageItems = capped.slice((searchPage - 1) * ITEMS_PER_PAGE, searchPage * ITEMS_PER_PAGE);
+                  return (
+                  <>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                    Results · {capped.length}{capped.length < allFiltered.length ? ` of ${allFiltered.length}` : ""}
+                  </div>
+                  {pageItems.map(r => {
                     const isInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
                     return (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
@@ -2775,7 +2784,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                     );
                   })}
-                </>
+                  {totalPages > 1 && (
+                    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"16px", padding:"16px 0 8px" }}>
+                      <button onClick={() => setSearchPage(p => Math.max(1, p - 1))} disabled={searchPage <= 1}
+                        style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: searchPage <= 1 ? "#3d2010" : "#c9956a", cursor: searchPage <= 1 ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: searchPage <= 1 ? 0.4 : 1 }}>
+                        ← Prev
+                      </button>
+                      <span style={{ fontSize:"12px", color:"#7a5a40" }}>{searchPage} / {totalPages}</span>
+                      <button onClick={() => setSearchPage(p => Math.min(totalPages, p + 1))} disabled={searchPage >= totalPages}
+                        style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: searchPage >= totalPages ? "#3d2010" : "#c9956a", cursor: searchPage >= totalPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: searchPage >= totalPages ? 0.4 : 1 }}>
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                  </>
+                  );
+                })()
               )}
             </div>
           )}
@@ -2877,7 +2901,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   style={S.input}
                   placeholder="e.g. Tokyo, Sushi, Le Bernardin..."
                   value={exploreCuisineFilter === "all" ? "" : exploreCuisineFilter}
-                  onChange={e => setExploreCuisineFilter(e.target.value || "all")}
+                  onChange={e => { setExploreCuisineFilter(e.target.value || "all"); setCommunityPage(1); }}
                 />
 
                 {/* Sort */}
@@ -2917,12 +2941,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     );
                   }
 
+                  const capped = filtered.slice(0, MAX_ITEMS);
+                  const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
+                  const pageItems = capped.slice((communityPage - 1) * ITEMS_PER_PAGE, communityPage * ITEMS_PER_PAGE);
+
                   return (
                     <>
                       <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                        {filtered.length} review{filtered.length !== 1 ? "s" : ""}{query ? ` matching "${exploreCuisineFilter}"` : ""}
+                        {capped.length} review{capped.length !== 1 ? "s" : ""}{query ? ` matching "${exploreCuisineFilter}"` : ""}{capped.length < filtered.length ? ` (showing ${capped.length} of ${filtered.length})` : ""}
                       </div>
-                      {filtered.map(rev => (
+                      {pageItems.map(rev => (
                       <div key={rev.id} onClick={() => setSelectedPublicR(rev.id)} style={{ ...S.card, margin:"0 0 12px", cursor:"pointer", padding:0, overflow:"hidden" }}>
                         {rev.photo_url && (
                           <div style={{ width:"100%", height:"140px", overflow:"hidden" }}>
@@ -2959,6 +2987,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         </div>
                       </div>
                     ))}
+                    {totalPages > 1 && (
+                      <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"16px", padding:"16px 0 8px" }}>
+                        <button onClick={() => setCommunityPage(p => Math.max(1, p - 1))} disabled={communityPage <= 1}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: communityPage <= 1 ? "#3d2010" : "#c9956a", cursor: communityPage <= 1 ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: communityPage <= 1 ? 0.4 : 1 }}>
+                          ← Prev
+                        </button>
+                        <span style={{ fontSize:"12px", color:"#7a5a40" }}>{communityPage} / {totalPages}</span>
+                        <button onClick={() => setCommunityPage(p => Math.min(totalPages, p + 1))} disabled={communityPage >= totalPages}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: communityPage >= totalPages ? "#3d2010" : "#c9956a", cursor: communityPage >= totalPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: communityPage >= totalPages ? 0.4 : 1 }}>
+                          Next →
+                        </button>
+                      </div>
+                    )}
                     </>
                   );
                 })()}
