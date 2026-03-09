@@ -146,7 +146,7 @@ export default function ProfileScreen({ user, userReviews, userBadges, onClose, 
               <div style={{ marginBottom:"16px" }}><label style={S.label}>City / Location</label><input style={S.input} value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. New York, NY" /></div>
               <div style={{ marginBottom:"20px" }}>
                 <label style={S.label}>Bio</label>
-                <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us about your taste in food..." maxLength={200} style={{ ...S.input, minHeight:"80px", resize:"vertical" as any, fontFamily:"'Georgia',serif" }} />
+                <textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us about your taste in food..." maxLength={200} style={{ ...S.input, minHeight:"80px", resize:"vertical" as any, fontFamily:"'Montserrat',sans-serif" }} />
                 <div style={{ fontSize:"10px", color:"#565250", textAlign:"right", marginTop:"-8px" }}>{bio.length}/200</div>
               </div>
               <button style={{ ...S.primaryBtn, opacity:saving?0.6:1 }} onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button>

@@ -15,7 +15,7 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div style={{ fontFamily: "'Georgia', serif", background: "#242424", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div style={{ fontFamily: "'Montserrat', sans-serif", background: "#242424", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
           <div style={{ fontSize: "11px", color: "#d4cdc4", letterSpacing: "4px", textTransform: "uppercase" }}>Loading</div>
           <div style={{ width: "40px", height: "2px", background: "rgba(212,205,196,0.3)", borderRadius: "1px", overflow: "hidden", position: "relative" }}>

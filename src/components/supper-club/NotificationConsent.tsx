@@ -26,7 +26,7 @@ export default function NotificationConsent({ userId, onComplete }: Notification
       <div style={{ ...S.welcomeBg, justifyContent:"space-between", paddingTop:"64px", paddingBottom:"48px" }}>
         <div style={S.orb} />
         <div style={{ width:"100%", zIndex:1, display:"flex", justifyContent:"flex-end" }}>
-          <button onClick={handleSkip} style={{ background:"none", border:"none", color:"#8c8278", fontSize:"12px", letterSpacing:"1px", cursor:"pointer", fontFamily:"Georgia, serif", padding:"4px 8px" }}>Skip</button>
+          <button onClick={handleSkip} style={{ background:"none", border:"none", color:"#8c8278", fontSize:"12px", letterSpacing:"1px", cursor:"pointer", fontFamily:"'Montserrat', sans-serif", padding:"4px 8px" }}>Skip</button>
         </div>
         <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", zIndex:1, padding:"0 8px", width:"100%" }}>
           <div style={{ width:"64px", height:"64px", borderRadius:"16px", background:"rgba(212,205,196,0.06)", border:"1px solid rgba(212,205,196,0.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px", color:"#d4cdc4", marginBottom:"28px" }}>◎</div>
