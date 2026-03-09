@@ -54,6 +54,7 @@ import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
+  parseDateMeal, getUniqueDates, getMealsForDate,
 } from "./shared";
 
 // ── Restaurant Photo Strip (fetches Google Places photos) ──
