@@ -259,7 +259,31 @@ export default function SupperClub() {
     </div></div>
   );
 
-  // ── CLUB HOME ──
+  // ── JOIN CLUB (in-app) ──
+  if (screen === "join_club_inapp") return (
+    <div style={S.app}><div style={S.phone}>
+      <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"72px" }}>
+        <div style={{ alignSelf:"flex-start", marginBottom:"28px" }}>
+          <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
+        </div>
+        <div style={{ width:"100%" }}>
+          <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
+          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code</div>
+          <label style={S.label}>Invite Code</label>
+          <input style={S.input} placeholder="e.g. SUPR-4829"/>
+          <div style={{ height:"12px" }}/>
+          <button style={S.primaryBtn} onClick={() => {
+            showToast("Successfully joined club!");
+            setScreen("club_home"); 
+            setActiveTab("home"); 
+          }}>Join Club</button>
+          <button style={S.ghostBtn} onClick={() => { setScreen("club_home"); }}>Cancel</button>
+        </div>
+      </div>
+    </div></div>
+  );
+
+
   if (screen === "club_home") {
     const ag = activeGroup;
     const noDate = ag.dinnerStatus === "no_date";
