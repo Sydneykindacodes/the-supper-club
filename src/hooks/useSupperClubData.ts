@@ -280,12 +280,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   }, [activeGroupId, refreshCounter]);
 
   // Compute dinner status from reservation
+  const isSoloGroup = members.length <= 1;
   const dinnerStatus: DinnerStatus = (() => {
     if (!activeReservation) return "no_date";
     switch (activeReservation.status) {
       case "pending_selection": return "awaiting_host";
-      case "pending_host_booking": return "pending_confirm";
-      case "card_required_skipped": return "pending_confirm";
+      case "pending_host_booking":
+        // If no restaurant selected yet, host needs to pick one
+        if (!activeReservation.restaurant_id) return "pending_restaurant";
+        // For solo groups, skip confirmation and go straight to scheduled
+        if (isSoloGroup) return "scheduled";
+        return "pending_confirm";
+      case "card_required_skipped":
+        if (isSoloGroup) return "scheduled";
+        return "pending_confirm";
       case "confirmed":
       case "revealed":
         return "scheduled";
