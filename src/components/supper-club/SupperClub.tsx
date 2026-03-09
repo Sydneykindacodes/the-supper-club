@@ -362,6 +362,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Google Places search state
   const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
   const [gpLoading, setGpLoading] = useState(false);
+  const [gpNextPageToken, setGpNextPageToken] = useState<string | null>(null);
+  const [gpLoadingMore, setGpLoadingMore] = useState(false);
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
