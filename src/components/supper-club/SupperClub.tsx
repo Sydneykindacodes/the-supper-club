@@ -802,7 +802,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       Everyone's dates are in. Now we wait for the host to work their magic.
                     </div>
                     <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px" }}>
-                      {MEMBERS.map(m => {
+                      {currentMembers.map(m => {
                         const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                         const hasSubmitted = dates.length > 0;
                         return (
