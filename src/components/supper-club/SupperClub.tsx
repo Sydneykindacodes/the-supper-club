@@ -460,10 +460,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
-  // Reset cancellation tracking when switching groups
+  // Reset cancellation tracking and city center when switching groups
   useEffect(() => {
     setPrevDinnerStatus(null);
     setShowCancellationNotice(false);
+    setGroupCityCenter(null);
+    // Eagerly geocode group city for radius checks
+    if (activeGroup.city) {
+      supabase.functions.invoke('search-restaurants', {
+        body: { query: "restaurant", city: activeGroup.city, radius: searchRadius },
+      }).then(({ data }) => {
+        if (data?.cityCenter) setGroupCityCenter(data.cityCenter);
+      }).catch(() => {});
+    }
   }, [activeGroupId]);
 
   // Detect dinner cancellation — show notice to non-host members
