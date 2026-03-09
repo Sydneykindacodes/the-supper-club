@@ -41,10 +41,37 @@ import {
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
 
+// ── Skeleton Loader ──
+const SkeletonPulse = ({ width = "100%", height = "16px", borderRadius = "8px", style }: { width?: string; height?: string; borderRadius?: string; style?: React.CSSProperties }) => (
+  <div style={{
+    width, height, borderRadius,
+    background: "linear-gradient(90deg, rgba(201,149,106,0.06) 25%, rgba(201,149,106,0.12) 50%, rgba(201,149,106,0.06) 75%)",
+    backgroundSize: "200% 100%",
+    animation: "shimmer 1.5s ease-in-out infinite",
+    ...style,
+  }} />
+);
+
+const LoadingScreen = () => (
+  <div style={S.app}><div style={S.phone}>
+    <div style={S.screen}>
+      <div style={{ padding: "54px 24px 20px" }}>
+        <SkeletonPulse width="120px" height="12px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse width="200px" height="32px" style={{ marginBottom: "24px" }} />
+      </div>
+      <div style={{ padding: "0 16px" }}>
+        <SkeletonPulse height="120px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse height="80px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+        <SkeletonPulse height="60px" borderRadius="18px" style={{ marginBottom: "12px" }} />
+      </div>
+    </div>
+  </div></div>
+);
+
 export default function SupperClub({ user, signOut }: SupperClubProps) {
   const MAX_GROUPS = 15;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
-  const [screen, setScreen] = useState<string>("welcome");
+  const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
   const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
