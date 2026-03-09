@@ -2609,32 +2609,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 ))}
               </div>
 
-              <label style={S.label}>Search Restaurants</label>
-              <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
-              />
-              {gpLoading && (
-                <div style={{ padding:"12px 0" }}>
-                  {[1,2,3].map(i => (
-                    <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
-                      <SkeletonPulse width="60%" height="16px" style={{ marginBottom:"8px" }} />
-                      <SkeletonPulse width="40%" height="12px" style={{ marginBottom:"6px" }} />
-                      <SkeletonPulse width="30%" height="10px" />
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
-              <div style={{ marginBottom:"16px" }}>
-                <label style={S.label}>Cuisine</label>
-                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => { setExploreCuisineFilter("all"); setSearchPage(1); }}>All</div>
-                  {[...new Set(gpResults.map(r => r.cuisine))].slice(0,5).map(c => (
-                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => { setExploreCuisineFilter(c); setSearchPage(1); }}>{c}</div>
-                  ))}
-                </div>
+              <label style={S.label}>Cuisine</label>
+              <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"16px" }}>
+                {["American","Mexican","Italian","Mediterranean","Chinese","Seafood","Indian","Thai","Sushi","Japanese","BBQ","Korean","Other"].map(c => {
+                  const isActive = exploreCuisineFilter.includes(c);
+                  return (
+                    <div key={c} style={chip(isActive)} onClick={() => {
+                      setExploreCuisineFilter(prev => isActive ? prev.filter(x => x !== c) : [...prev, c]);
+                      setSearchPage(1);
+                    }}>{c}</div>
+                  );
+                })}
               </div>
+
+              <label style={S.label}>Search Restaurants (optional)</label>
+              <input style={S.input} placeholder="e.g. Le Bernardin, steakhouse..." value={rName}
+                onChange={e => setRName(e.target.value)}
+              />
+
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Price Range</label>
                 <div style={{ display:"flex", gap:"8px" }}>
@@ -2645,11 +2637,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
 
               <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
-                searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
+                const cuisineQuery = exploreCuisineFilter.length > 0 ? exploreCuisineFilter.join(" or ") : "";
+                const searchTerm = [rName, cuisineQuery].filter(Boolean).join(" ") || "restaurant";
+                searchGooglePlaces(searchTerm, rCity || activeGroup.city, setGpResults, setGpLoading);
                 setSearchPage(1);
               }}>
                 Search
               </button>
+              {gpLoading && (
+                <div style={{ padding:"12px 0" }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
+                      <SkeletonPulse width="60%" height="16px" style={{ marginBottom:"8px" }} />
+                      <SkeletonPulse width="40%" height="12px" style={{ marginBottom:"6px" }} />
+                      <SkeletonPulse width="30%" height="10px" />
+                    </div>
+                  ))}
+                </div>
+              )
 
               {/* Search Results */}
               {gpResults.length > 0 && (
