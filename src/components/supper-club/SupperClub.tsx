@@ -613,7 +613,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
                   <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {MEMBERS.length}.
+                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {currentMembers.length}.
                   </div>
                 </div>
                 {!bookingDateConfirm ? (
