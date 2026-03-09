@@ -304,6 +304,36 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
 
+  // City autocomplete for group creation
+  const [newGroupCitySuggestions, setNewGroupCitySuggestions] = useState<{ description: string; placeId: string }[]>([]);
+  const [showNewGroupCitySuggestions, setShowNewGroupCitySuggestions] = useState(false);
+  const [newGroupCityTimeout, setNewGroupCityTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleNewGroupCityChange = useCallback((value: string) => {
+    setNewGroupCity(value);
+    if (newGroupCityTimeout) clearTimeout(newGroupCityTimeout);
+    if (value.length < 2) { setNewGroupCitySuggestions([]); return; }
+    const timeout = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('autocomplete-city', { body: { input: value } });
+        if (!error && data?.suggestions) {
+          setNewGroupCitySuggestions(data.suggestions);
+          setShowNewGroupCitySuggestions(true);
+        }
+      } catch { setNewGroupCitySuggestions([]); }
+    }, 300);
+    setNewGroupCityTimeout(timeout);
+  }, [newGroupCityTimeout]);
+
+  // Seed pool filter state
+  const [seedCuisineFilter, setSeedCuisineFilter] = useState<string[]>([]);
+  const [seedPriceFilter, setSeedPriceFilter] = useState("all");
+  const [seedSearchPage, setSeedSearchPage] = useState(1);
+  const [seedNextPageToken, setSeedNextPageToken] = useState<string | null>(null);
+  const [seedLoadingMore, setSeedLoadingMore] = useState(false);
+  const [seedLastSearchTerm, setSeedLastSearchTerm] = useState("");
+  const [seedLastSearchCity, setSeedLastSearchCity] = useState("");
+
   // Member availability tracking
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
