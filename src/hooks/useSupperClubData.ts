@@ -116,13 +116,13 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     setLoadingRestaurants(true);
     supabase
       .from("restaurants")
-      .select("*")
+      .select("*, members:suggested_by(name)")
       .eq("group_id", activeGroupId)
       .then(({ data }) => {
         if (data) {
           const pool: Restaurant[] = [];
           const visited: Restaurant[] = [];
-          data.forEach(r => {
+          data.forEach((r: any) => {
             const rest: Restaurant = {
               id: parseInt(r.id.replace(/\D/g, '').slice(0, 8)) || Math.random() * 10000,
               name: r.name,
@@ -136,7 +136,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
               googleReviewCount: r.google_review_count || 0,
               scRating: r.sc_rating ? Number(r.sc_rating) : null,
               scReviewCount: r.sc_review_count || 0,
-              suggested_by: r.suggested_by || undefined,
+              suggested_by: r.members?.name || undefined,
             };
             if (r.visited) visited.push(rest);
             else pool.push(rest);
