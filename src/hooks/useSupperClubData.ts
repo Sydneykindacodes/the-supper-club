@@ -98,6 +98,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             avatar: m.name.charAt(0).toUpperCase(),
             color: m.avatar_color || "#c9956a",
             is_host: m.is_host || false,
+            host_count: m.host_count || 0,
             user_id: m.user_id,
           })));
         }
