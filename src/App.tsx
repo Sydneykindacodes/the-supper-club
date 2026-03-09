@@ -15,11 +15,11 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div style={{ fontFamily: "'Georgia', serif", background: "#120a06", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div style={{ fontFamily: "'Georgia', serif", background: "#242424", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-          <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "4px", textTransform: "uppercase" }}>Loading</div>
-          <div style={{ width: "40px", height: "2px", background: "rgba(201,149,106,0.3)", borderRadius: "1px", overflow: "hidden", position: "relative" }}>
-            <div style={{ width: "20px", height: "2px", background: "#c9956a", borderRadius: "1px", animation: "slide 1s ease-in-out infinite alternate" }} />
+          <div style={{ fontSize: "11px", color: "#d4cdc4", letterSpacing: "4px", textTransform: "uppercase" }}>Loading</div>
+          <div style={{ width: "40px", height: "2px", background: "rgba(212,205,196,0.3)", borderRadius: "1px", overflow: "hidden", position: "relative" }}>
+            <div style={{ width: "20px", height: "2px", background: "#d4cdc4", borderRadius: "1px", animation: "slide 1s ease-in-out infinite alternate" }} />
           </div>
         </div>
         <style>{`@keyframes slide { from { transform: translateX(0); } to { transform: translateX(20px); } }`}</style>

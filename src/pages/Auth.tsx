@@ -76,9 +76,9 @@ export default function Auth() {
                     flex: 1, padding: "10px 0", textAlign: "center", fontSize: "11px",
                     letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer",
                     borderRadius: "10px",
-                    background: mode === m ? "rgba(201,149,106,0.15)" : "transparent",
-                    color: mode === m ? "#c9956a" : "#4a2e18",
-                    border: mode === m ? "1px solid rgba(201,149,106,0.3)" : "1px solid transparent",
+                    background: mode === m ? "rgba(212,205,196,0.12)" : "transparent",
+                    color: mode === m ? "#d4cdc4" : "#3d3d3d",
+                    border: mode === m ? "1px solid rgba(212,205,196,0.25)" : "1px solid transparent",
                     transition: "all 0.15s",
                   }}
                 >
@@ -103,9 +103,9 @@ export default function Auth() {
             </button>
 
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
-              <div style={{ flex: 1, height: "1px", background: "rgba(201,149,106,0.15)" }} />
-              <div style={{ fontSize: "10px", color: "#4a2e18", letterSpacing: "2px", textTransform: "uppercase" }}>or</div>
-              <div style={{ flex: 1, height: "1px", background: "rgba(201,149,106,0.15)" }} />
+              <div style={{ flex: 1, height: "1px", background: "rgba(212,205,196,0.15)" }} />
+              <div style={{ fontSize: "10px", color: "#3d3d3d", letterSpacing: "2px", textTransform: "uppercase" }}>or</div>
+              <div style={{ flex: 1, height: "1px", background: "rgba(212,205,196,0.15)" }} />
             </div>
 
             {mode === "signup" && (
@@ -159,7 +159,7 @@ export default function Auth() {
             </button>
           </div>
 
-          <div style={{ marginTop: "36px", fontSize: "11px", color: "#3d2010", letterSpacing: "1px", textAlign: "center" }}>
+          <div style={{ marginTop: "36px", fontSize: "11px", color: "#383838", letterSpacing: "1px", textAlign: "center" }}>
             A private dining experience for you & your people
           </div>
         </div>

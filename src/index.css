@@ -4,51 +4,51 @@
 
 @layer base {
   :root {
-    /* Supper Club Design System */
-    --background: 18 50% 6%;       /* #1A0F0A */
-    --background-warm: 18 60% 11%; /* #2D1208 */
-    --foreground: 26 50% 91%;      /* #F5E6D3 */
+    /* Supper Club Design System — Charcoal & Cream */
+    --background: 0 0% 14%;            /* #242424 */
+    --background-warm: 0 0% 18%;       /* #2e2e2e */
+    --foreground: 30 20% 88%;          /* #e5ded5 */
 
-    --card: 0 0% 100% / 0.035;
-    --card-foreground: 26 50% 91%;
+    --card: 0 0% 100% / 0.04;
+    --card-foreground: 30 20% 88%;
 
-    --popover: 18 50% 6%;
-    --popover-foreground: 26 50% 91%;
+    --popover: 0 0% 14%;
+    --popover-foreground: 30 20% 88%;
 
-    --primary: 28 45% 60%;         /* #C9956A */
-    --primary-foreground: 18 50% 6%;
-    --primary-dark: 22 40% 43%;    /* #9A6040 */
+    --primary: 30 14% 82%;             /* #d4cdc4 warm cream */
+    --primary-foreground: 0 0% 14%;
+    --primary-dark: 25 10% 62%;        /* #a49a8e */
 
-    --secondary: 18 60% 11%;
-    --secondary-foreground: 26 50% 91%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 30 20% 88%;
 
-    --muted: 25 25% 25%;           /* #5A3A25 */
-    --muted-foreground: 25 30% 37%; /* #7A5A40 */
+    --muted: 20 6% 32%;                /* #565250 */
+    --muted-foreground: 25 10% 52%;    /* #8c8278 */
 
-    --accent: 28 45% 60%;
-    --accent-foreground: 18 50% 6%;
+    --accent: 30 14% 82%;
+    --accent-foreground: 0 0% 14%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 55% 55%;
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 28 45% 60% / 0.1;
-    --input: 28 45% 60% / 0.2;
-    --ring: 28 45% 60%;
+    --border: 30 14% 82% / 0.1;
+    --input: 30 14% 82% / 0.15;
+    --ring: 30 14% 82%;
 
     --radius: 0.875rem;
 
-    --green: 135 17% 55%;          /* #7A9E7E */
-    --text-faint: 25 20% 18%;     /* #4A2E18 */
-    --border-warm: 25 25% 17%;    /* #3D2010 */
+    --green: 135 17% 55%;
+    --text-faint: 0 0% 24%;            /* #3d3d3d */
+    --border-warm: 0 0% 22%;           /* #383838 */
 
-    --sidebar-background: 18 50% 6%;
-    --sidebar-foreground: 26 50% 91%;
-    --sidebar-primary: 28 45% 60%;
-    --sidebar-primary-foreground: 18 50% 6%;
-    --sidebar-accent: 18 60% 11%;
-    --sidebar-accent-foreground: 26 50% 91%;
-    --sidebar-border: 28 45% 60% / 0.1;
-    --sidebar-ring: 28 45% 60%;
+    --sidebar-background: 0 0% 14%;
+    --sidebar-foreground: 30 20% 88%;
+    --sidebar-primary: 30 14% 82%;
+    --sidebar-primary-foreground: 0 0% 14%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 30 20% 88%;
+    --sidebar-border: 30 14% 82% / 0.1;
+    --sidebar-ring: 30 14% 82%;
   }
 }
 
