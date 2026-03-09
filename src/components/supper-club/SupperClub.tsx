@@ -456,13 +456,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
           <button style={S.primaryBtn} onClick={() => {
             if (!newGroupName.trim()) { showToast("Name your club first."); return; }
-            const code = `SUPR-${Math.floor(1000 + Math.random() * 9000)}`;
-            const newGroup: Group = { id: Date.now(), name: newGroupName.trim(), code, members: 1, city: newGroupCity.trim() || "New York, NY", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
-            setGroups(prev => [...prev, newGroup]);
-            setActiveGroup(newGroup);
-            setNewGroupName(""); setNewGroupCity("");
-            showToast(`${newGroup.name} created. Share code ${code}.`);
-            setScreen("club_home");
+            createGroupInDB(newGroupName.trim(), newGroupCity.trim() || "New York, NY");
           }}>Create & Get Invite Code</button>
           <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setScreen("club_home"); }}>Cancel</button>
         </div>
