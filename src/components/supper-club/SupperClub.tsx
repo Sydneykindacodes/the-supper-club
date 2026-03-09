@@ -1078,7 +1078,7 @@ export default function SupperClub() {
 
             {visitedRestaurants.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                <div style={{ fontSize:"36px", marginBottom:"12px" }}>🍽️</div>
+                <div style={{ fontSize:"24px", marginBottom:"12px", color:"#c9956a" }}>◈</div>
                 <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No dinners yet.</div>
                 <div style={{ fontSize:"12px", color:"#5a3a25" }}>Your dining history will appear here once you've been out together.</div>
               </div>
