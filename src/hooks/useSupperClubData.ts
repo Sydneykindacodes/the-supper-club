@@ -75,6 +75,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [userSelectedDates, setUserSelectedDates] = useState<string[]>([]);
   const [activeReservation, setActiveReservation] = useState<ActiveReservation | null>(null);
+  const [selectedRestaurantData, setSelectedRestaurantData] = useState<{ id: string; name: string; cuisine: string; city: string; address: string | null; google_place_id: string | null; price: number } | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [communityReviews, setCommunityReviews] = useState<DBReview[]>([]);
   const [userBadges, setUserBadges] = useState<DBBadge[]>([]);
