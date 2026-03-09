@@ -20,6 +20,7 @@ import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
 import MemberProfileView from "./MemberProfileView";
 import RestaurantReveal from "./RestaurantReveal";
+import HostReveal from "./HostReveal";
 
 interface SupperClubProps {
   user: User;
