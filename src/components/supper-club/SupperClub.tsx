@@ -1358,7 +1358,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ padding:"12px 16px" }}>
                     <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1.5px", textTransform:"uppercase", marginBottom:"10px" }}>Member Reviews</div>
                     {mockReviews.slice(0, 2 + (idx % 2)).map((rev, i) => {
-                      const member = MEMBERS.find(m => m.name === rev.member);
+                      const member = currentMembers.find(m => m.name === rev.member);
                       return (
                         <div key={i} style={{ marginBottom:"12px", paddingBottom:"12px", borderBottom: i < mockReviews.slice(0, 2 + (idx % 2)).length - 1 ? "1px solid rgba(201,149,106,0.06)" : "none" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" }}>
