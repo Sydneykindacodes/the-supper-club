@@ -396,6 +396,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
+  // Generate booking links via edge function
+  const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
+    if (!activeReservation) return null;
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-booking-url', {
+        body: {
+          restaurant_name: restaurantName,
+          google_place_id: googlePlaceId || null,
+          city,
+          dinner_date: activeReservation.dinner_date,
+          dinner_time: activeReservation.dinner_time || '19:00',
+          party_size: activeReservation.party_size,
+        },
+      });
+      if (error) return null;
+      return data?.links || null;
+    } catch {
+      return null;
+    }
+  }, [activeReservation]);
+
   // Reveal restaurant to group
   const revealRestaurant = useCallback(async () => {
     if (!activeReservation?.id) return false;
