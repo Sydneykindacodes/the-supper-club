@@ -1034,12 +1034,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
             <div style={{ display:"flex", gap:"14px", overflowX:"auto" }}>
-              {currentMembers.map(m => (
-                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
-                  <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
-                  <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
-                </div>
-              ))}
+              {dbData.loadingMembers ? (
+                [1,2,3,4].map(i => (
+                  <div key={i} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
+                    <SkeletonPulse width="48px" height="48px" borderRadius="50%" />
+                    <SkeletonPulse width="36px" height="10px" />
+                  </div>
+                ))
+              ) : (
+                currentMembers.map(m => (
+                  <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
+                    <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
+                    <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
