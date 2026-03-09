@@ -202,7 +202,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const visitedRestaurants = dbData.visitedRestaurants;
 
   // Use DB members when available, else fallback to static MEMBERS
-  const currentMembers = dbData.uiMembers.length > 0 ? dbData.uiMembers : MEMBERS;
+  const currentMembers = dbData.uiMembers;
 
   // Add restaurant to group pool(s) - DB-backed
   const addToGroupPool = (restaurant: Restaurant, groupIds: (number | string)[]) => {
