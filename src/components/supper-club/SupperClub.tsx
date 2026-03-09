@@ -2591,7 +2591,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
 
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-              {MEMBERS.map(m => {
+              {currentMembers.map(m => {
                 const isYou = m.name === "You";
                 const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
                 return (
