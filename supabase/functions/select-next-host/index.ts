@@ -91,26 +91,18 @@ Deno.serve(async (req) => {
         cycle_number: nextCycleNumber,
       });
 
-    // Notify all group members about the new host selection
-    const allMembers = members.filter(m => m.id !== nextHost.id);
-    if (allMembers.length > 0) {
-      const notifications = allMembers.map(m => ({
-        member_id: m.id,
-        reservation_id: reservation_id || null,
-        type: 'new_host_reveal',
-        channel: 'push',
-        delivered: false,
-      }));
-      await supabase.from('notifications').insert(notifications);
-    }
-    // Also notify the new host specifically
-    await supabase.from('notifications').insert({
-      member_id: nextHost.id,
+    // Notify ALL group members (including the new host) with the same generic message
+    // so the new host doesn't know they've been selected until the in-app reveal
+    const notifications = members.map(m => ({
+      member_id: m.id,
       reservation_id: reservation_id || null,
-      type: 'new_host_reveal',
+      type: 'new_host_selected',
       channel: 'push',
       delivered: false,
-    });
+    }));
+    if (notifications.length > 0) {
+      await supabase.from('notifications').insert(notifications);
+    }
 
     // Calculate 8 AM next day for host reveal
     const tomorrow = new Date();
