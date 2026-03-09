@@ -151,6 +151,9 @@ export default function ProfileScreen({ user, userReviews, userBadges, onClose, 
 
               <button style={S.ghostBtn} onClick={() => setEditing(true)}>Edit Profile</button>
 
+              {/* Individual Badges */}
+              <IndividualBadges badges={userBadges} isOwnProfile={true} />
+
               {/* Reviews Section */}
               <div style={{ marginTop:"24px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Your Reviews</div>
