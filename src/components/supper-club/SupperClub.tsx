@@ -1173,7 +1173,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap" }}>
                         <span style={{ fontSize:"11px", color:"#7a5a40" }}>Available:</span>
                         {available.map(name => {
-                          const member = MEMBERS.find(m => m.name === name);
+                          const member = currentMembers.find(m => m.name === name);
                           return (
                             <div key={name} style={{ width:"22px", height:"22px", borderRadius:"50%", background: member?.color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"9px", color:"#fff", fontWeight:"700" }}>
                               {member?.avatar || name[0]}
