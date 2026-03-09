@@ -2109,7 +2109,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
                 <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
-                {isHost ? (
+                {hostIsYou ? (
                   <>
                     <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
                     <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
