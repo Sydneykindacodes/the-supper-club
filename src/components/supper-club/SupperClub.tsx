@@ -1255,7 +1255,7 @@ export default function SupperClub() {
           <div style={S.screen}>
             <div style={S.header}>
               <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
-                <button onClick={() => setSelectedRestaurantDetail(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+                <button onClick={() => { setSelectedRestaurantDetail(null); setRestaurantDescription(null); }} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
                 <div style={S.headerEye}>Restaurant Details</div>
               </div>
               <div style={S.headerTitle}>{r.name}</div>
