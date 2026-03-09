@@ -1373,7 +1373,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 ))}
               </div>
               {!isHost && !confirmationVotes["You"] && (
-                <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setConfirmationVotes(v => ({...v, You:true})); showToast("Confirmed. Reservation will be placed shortly."); }}>
+                <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => { 
+                  const newVotes = {...confirmationVotes, You: true};
+                  setConfirmationVotes(newVotes);
+                  showToast("Confirmed. Reservation will be placed shortly.");
+                  // Check if all non-host members have now voted
+                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  if (allNowVoted) {
+                    await sendHostNotification("all_votes_in");
+                  }
+                }}>
                   Confirm — I'll Be There
                 </button>
               )}
