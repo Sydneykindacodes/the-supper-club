@@ -1489,6 +1489,28 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("past_dinners")}>Past Dinners · {visitedRestaurants.length}</button>
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
           </div>
+
+          {/* Subtle leave group option */}
+          <div style={{ padding:"16px 16px 8px", textAlign:"center" }}>
+            <span 
+              onClick={async () => {
+                if (!confirm(`Leave ${activeGroup.name}? You'll lose access to this group's pool, history, and badges.`)) return;
+                const remaining = groups.filter(g => g.id !== activeGroup.id);
+                const success = await dbData.leaveGroup();
+                if (success) {
+                  setGroups(remaining);
+                  if (remaining.length > 0) setActiveGroup(remaining[0]);
+                  showToast(`Left ${activeGroup.name}.`);
+                  setTimeout(() => setScreen("club_home"), 400);
+                } else {
+                  showToast("Failed to leave. Try again.");
+                }
+              }}
+              style={{ fontSize:"10px", color:"#3a2518", letterSpacing:"1px", cursor:"pointer", opacity:0.6 }}
+            >
+              Leave this club
+            </span>
+          </div>
         </div>
 
         {/* Notifications Panel */}
