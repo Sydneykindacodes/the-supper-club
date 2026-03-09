@@ -1929,12 +1929,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.12)", textAlign:"center", padding:"28px 20px" }}>
               <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"8px" }}>◫</div>
               <div style={{ fontSize:"14px", color:"#7a5a40", marginBottom:"6px", lineHeight:"1.6", fontStyle:"italic" }}>
-                Your group is out here living life without a dinner on the books. Bold strategy.
+                {dbData.isHost
+                  ? "You're the host — sit tight while the crew submits their available dates, then you'll pick the perfect night."
+                  : "Your group is out here living life without a dinner on the books. Bold strategy."}
               </div>
               <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"18px", lineHeight:"1.5" }}>
-                Once everyone submits their available dates, the host will pick the perfect night.
+                {dbData.isHost
+                  ? "Once members submit dates, you'll see them on the Schedule tab."
+                  : "Once everyone submits their available dates, the host will pick the perfect night."}
               </div>
-              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
+              {!dbData.isHost && (
+                <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
+              )}
               {dbData.isHost && <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>}
             </div>
           )}
