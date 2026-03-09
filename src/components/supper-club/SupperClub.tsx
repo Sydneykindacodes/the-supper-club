@@ -4055,8 +4055,51 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </>
           ) : (
             <>
-              {/* ── NON-HOST: Dates Already Submitted State ── */}
-              {datesAlreadySubmitted && !availabilityModifying ? (
+              {/* ── NON-HOST: Reservation Already Booked ── */}
+              {(dbData.dinnerStatus === "scheduled" || dbData.dinnerStatus === "pending_confirm" || dbData.dinnerStatus === "pending_restaurant") && dbData.nextDinner ? (
+                <div style={{ 
+                  background:"linear-gradient(135deg, rgba(122,158,126,0.08), rgba(26,15,10,0.95))", 
+                  border:"1px solid rgba(122,158,126,0.3)", 
+                  borderRadius:"16px", 
+                  padding:"28px 20px", 
+                  textAlign:"center",
+                  marginBottom:"20px"
+                }}>
+                  <div style={{ fontSize:"24px", marginBottom:"14px" }}>🍽️</div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                    Your seat is reserved.
+                  </div>
+                  <div style={{ fontSize:"20px", color:"#7a9e7e", marginBottom:"12px", fontWeight:"500" }}>
+                    {dbData.nextDinner}
+                  </div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8", marginBottom:"8px" }}>
+                    The calendar is closed. The date is set. The restaurant... well, that's the host's secret to keep.
+                  </div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.7", marginTop:"12px" }}>
+                    New availability opens <strong>1 hour 45 minutes</strong> after your supper ends — or when you submit your post-dinner review. Patience, gourmand.
+                  </div>
+                </div>
+              ) : dbData.dinnerStatus === "post_dinner" ? (
+                <div style={{ 
+                  background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))", 
+                  border:"1px solid rgba(201,149,106,0.3)", 
+                  borderRadius:"16px", 
+                  padding:"28px 20px", 
+                  textAlign:"center",
+                  marginBottom:"20px"
+                }}>
+                  <div style={{ fontSize:"24px", marginBottom:"14px" }}>✨</div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                    How was dinner?
+                  </div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8" }}>
+                    Submit your review and set your availability for the next feast — all in one go. Head to the home screen to get started.
+                  </div>
+                  <button style={{ ...S.ghostBtn, marginTop:"16px", marginBottom:0, fontSize:"12px" }} onClick={() => { setActiveTab("home"); setScreen("club_home"); }}>
+                    Go to Review
+                  </button>
+                </div>
+              ) : datesAlreadySubmitted && !availabilityModifying ? (
                 <>
                   <div style={{ 
                     background:"linear-gradient(135deg, rgba(122,158,126,0.08), rgba(26,15,10,0.95))", 
