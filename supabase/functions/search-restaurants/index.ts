@@ -29,7 +29,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ restaurants: [], error: 'City not found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { lat, lng } = geoData.results[0].geometry.location;
+    const results = geoData!.results as { geometry: { location: { lat: number; lng: number } } }[];
+    const { lat, lng } = results[0].geometry.location;
     const radiusMeters = Math.round(radius * 1609.34); // miles to meters
 
     // Step 2: Search for restaurants using Places API (New) Text Search
