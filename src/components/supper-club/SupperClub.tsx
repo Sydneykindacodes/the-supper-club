@@ -856,7 +856,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
         <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily: FONT_DISPLAY_FAMILY }}>{feature}</div>
           <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: userAvatarUrl ? `url(${userAvatarUrl}) center/cover no-repeat` : (user.user_metadata?.avatar_color || "#c9956a"), display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)", overflow:"hidden" }}>
@@ -1469,7 +1469,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       return (
         <div style={S.app}><div style={S.phone}>
           {toast && <div style={S.toast}>{toast}</div>}
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
           <div style={S.screen}>
             <div style={{ padding:"60px 28px 40px", textAlign:"center" }}>
               <div style={{ 
@@ -1567,7 +1567,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
@@ -3396,7 +3396,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
           <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Discover</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
@@ -3843,7 +3843,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
         <div style={{ ...S.header, paddingTop: "8px" }}>
           <div style={S.headerEye}>Schedule</div>
           <div style={S.headerTitle}>{dbData.isHost ? "Host Dashboard" : (datesAlreadySubmitted && !availabilityModifying ? "Your Dates" : "Set Availability")}</div>

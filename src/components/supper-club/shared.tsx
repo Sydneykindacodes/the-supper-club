@@ -131,6 +131,7 @@ export const GlobalGroupSwitcher = ({
   setActiveGroup,
   onNewClub,
   onJoinClub,
+  onGroupSelect,
   maxGroups = 15,
 }: {
   groups: { id: number; name: string }[];
@@ -138,6 +139,7 @@ export const GlobalGroupSwitcher = ({
   setActiveGroup: (g: any) => void;
   onNewClub: () => void;
   onJoinClub: () => void;
+  onGroupSelect?: (g: any) => void;
   maxGroups?: number;
 }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -148,7 +150,7 @@ export const GlobalGroupSwitcher = ({
         {groups.map(g => {
           const active = g.id === activeGroup.id;
           return (
-            <div key={g.id} onClick={() => setActiveGroup(g)}
+            <div key={g.id} onClick={() => { setActiveGroup(g); onGroupSelect?.(g); }}
               style={{
                 flexShrink: 0, padding: "8px 14px", borderRadius: "16px", cursor: "pointer",
                 background: active ? "linear-gradient(135deg,rgba(212,205,196,0.15),rgba(212,205,196,0.06))" : "rgba(255,255,255,0.02)",
