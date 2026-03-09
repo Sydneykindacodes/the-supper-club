@@ -623,7 +623,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const hostIsYou = dbData.isHost;
             const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
             
-            return isHost ? (
+            return hostIsYou ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
                   <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
