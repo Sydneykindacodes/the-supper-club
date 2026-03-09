@@ -1780,7 +1780,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ ...S.card, marginBottom:"16px", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", border:"1px solid rgba(201,149,106,0.18)" }}>
                 <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>About This Restaurant</div>
                 {descriptionLoading ? (
-                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>Composing a description...</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    <SkeletonPulse width="100%" height="14px" />
+                    <SkeletonPulse width="85%" height="14px" />
+                    <SkeletonPulse width="60%" height="14px" />
+                  </div>
                 ) : restaurantDescription ? (
                   <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.8", fontStyle:"italic" }}>{restaurantDescription}</div>
                 ) : (
