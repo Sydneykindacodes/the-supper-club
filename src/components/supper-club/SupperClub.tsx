@@ -795,6 +795,103 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   if (screen === "club_home") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Home" />;
     if (isSoloGroup) return <SoloPlaceholder feature="Home" />;
+
+    // ── AWAITING INITIATION: full blocking screen for new members ──
+    if (dbData.isAwaitingInitiation) {
+      const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner };
+      return (
+        <div style={S.app}><div style={S.phone}>
+          {toast && <div style={S.toast}>{toast}</div>}
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+          <div style={S.screen}>
+            <div style={{ padding:"60px 28px 40px", textAlign:"center" }}>
+              <div style={{ 
+                width:"80px", height:"80px", borderRadius:"50%", margin:"0 auto 24px",
+                background:"radial-gradient(circle, rgba(201,149,106,0.12) 0%, transparent 70%)",
+                border:"2px solid rgba(201,149,106,0.25)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:"28px", color:"#c9956a",
+              }}>🍷</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"12px" }}>
+                Fashionably Late
+              </div>
+              <div style={{ fontSize:"22px", color:"#f5e6d3", fontWeight:"400", lineHeight:"1.4", marginBottom:"16px" }}>
+                Welcome to {ag.name}
+              </div>
+              <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"28px", maxWidth:"300px", margin:"0 auto 28px" }}>
+                {WITTY_INITIATION_MESSAGES[wittyInitiationIdx]}
+              </div>
+
+              {/* Current dinner info */}
+              <div style={{ 
+                background:"rgba(201,149,106,0.06)", 
+                border:"1px solid rgba(201,149,106,0.15)", 
+                borderRadius:"16px", 
+                padding:"20px", 
+                marginBottom:"16px",
+                textAlign:"center",
+              }}>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>
+                  Dinner in Progress
+                </div>
+                <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>
+                  {ag.nextDinner || "Date TBD"}
+                </div>
+                <div style={{ fontSize:"12px", color:"#5a3a25" }}>
+                  The group is mid-feast · You'll join the next one
+                </div>
+              </div>
+
+              {/* What happens next */}
+              <div style={{ 
+                background:"rgba(122,158,126,0.06)", 
+                border:"1px solid rgba(122,158,126,0.15)", 
+                borderRadius:"12px", 
+                padding:"16px", 
+                marginBottom:"20px" 
+              }}>
+                <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.7" }}>
+                  <strong>What happens next?</strong><br/>
+                  Once the group finishes dinner (about 1 hour 45 minutes after the reservation), you'll be fully activated — eligible to add your availability, become host, and join the next dinner.
+                </div>
+              </div>
+
+              {/* What you can do */}
+              <div style={{ 
+                background:"rgba(201,149,106,0.04)", 
+                borderRadius:"12px", 
+                padding:"16px", 
+                marginBottom:"24px",
+                textAlign:"left",
+              }}>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>
+                  While You Wait
+                </div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.7", marginBottom:"8px" }}>
+                  ◇ Browse the restaurant pool and explore options
+                </div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.7", marginBottom:"8px" }}>
+                  ◇ Check out community reviews on the Explore tab
+                </div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.7" }}>
+                  ◇ Set up your profile — make a good first impression
+                </div>
+              </div>
+
+              <button style={S.ghostBtn} onClick={() => setScreen("group_pool")}>
+                Browse Restaurant Pool
+              </button>
+              <div style={{ height:"8px" }}/>
+              <button style={S.ghostBtn} onClick={() => { setActiveTab("explore"); setScreen("explore"); }}>
+                Explore Reviews
+              </button>
+            </div>
+          </div>
+          <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        </div></div>
+      );
+    }
+
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
