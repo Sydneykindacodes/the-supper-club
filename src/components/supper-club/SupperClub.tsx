@@ -1525,11 +1525,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
       </div></div>
     );
-          </div>
-        </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
-      </div></div>
-    );
   }
   if (screen === "explore") {
     // Merge static PUBLIC_REVIEWS with DB community reviews for display
