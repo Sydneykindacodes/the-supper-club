@@ -1051,7 +1051,7 @@ export default function SupperClub() {
 
   // ── PAST DINNERS ──
   if (screen === "past_dinners") {
-    const mockPhotos = ["📷", "🍽️", "🍷", "🥂"];
+    const mockPhotos = ["I", "II", "III", "IV"];
     const mockReviews = [
       { member: "Marisol", rating: 4.8, text: "The pasta was transcendent. I'm still thinking about that carbonara.", photo: true },
       { member: "Derek", rating: 4.5, text: "Solid experience. The wine pairing was worth every penny.", photo: true },
