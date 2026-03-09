@@ -1446,28 +1446,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   if (screen === "group_settings") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Settings" />;
     if (isSoloGroup) return <SoloPlaceholder feature="Settings" />;
-    const isCreator = dbData.isHost; // Host can manage settings
     
-    if (!isCreator) return (
-      <div style={S.app}><div style={S.phone}>
-        <div style={S.screen}>
-          <div style={S.header}>
-            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
-              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
-              <div style={S.headerEye}>{activeGroup.name}</div>
-            </div>
-            <div style={S.headerTitle}>Settings</div>
-          </div>
-          <div style={{ padding:"40px 24px", textAlign:"center" }}>
-            <div style={{ fontSize:"18px", color:"#c9956a", marginBottom:"12px" }}>◈</div>
-            <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>Creator Access Only</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
-              Only the group creator can modify these settings. If you need something changed, have a word with them.
-            </div>
-          </div>
-        </div>
-      </div></div>
-    );
     
     return (
     <div style={S.app}><div style={S.phone}>
