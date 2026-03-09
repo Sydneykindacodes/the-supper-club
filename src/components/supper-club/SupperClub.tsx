@@ -961,7 +961,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           {ag.dinnerStatus === "awaiting_host" && (() => {
             const isHost = dbData.isHost;
             const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-            const allSubmitted = submittedMembers.length === currentMembers.length;
             
             // Calculate overlapping dates
             const allDates: string[] = [];
@@ -984,7 +983,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 {isHost ? (
                   <>
                     <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
-                      {allSubmitted ? "Everyone's in. Time to decide." : "Some dates are in — you can pick anytime."}
+                      {submittedMembers.length === currentMembers.length ? "Everyone's in. Time to decide." : `${submittedMembers.length} of ${currentMembers.length} submitted — you can pick anytime.`}
                     </div>
                     <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
                       {WITTY_HOST_WAITING[wittyHostIdx]}
