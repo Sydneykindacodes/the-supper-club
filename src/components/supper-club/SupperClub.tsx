@@ -113,6 +113,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // Use DB members when available, else fallback to static MEMBERS
   const currentMembers = dbData.uiMembers.length > 0 ? dbData.uiMembers : MEMBERS;
+
+  // Add restaurant to group pool(s) - DB-backed
+  const addToGroupPool = (restaurant: Restaurant, groupIds: (number | string)[]) => {
+    groupIds.forEach(gid => {
+      const gidStr = String(gid);
+      dbData.addRestaurantToPool({
+        name: restaurant.name,
+        cuisine: restaurant.cuisine,
+        city: restaurant.city,
+        price: restaurant.price,
+        googleRating: restaurant.googleRating,
+        googleReviewCount: restaurant.googleReviewCount,
+      }, gidStr);
+    });
+  };
+
   const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
