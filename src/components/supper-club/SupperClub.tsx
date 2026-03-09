@@ -327,22 +327,20 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 16px", marginBottom:"4px", cursor:"pointer" }}
-            onClick={() => {
-              if (!inviteRevealed) { setInviteRevealed(true); }
-              else { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }
-            }}>
-            {!inviteRevealed ? (
-              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <span style={{ fontSize:"12px", color:"#c9956a", letterSpacing:"1.5px" }}>Tap to Invite</span>
-                <span style={{ fontSize:"10px", color:"#5a3a25" }}>›</span>
-              </div>
-            ) : (
-              <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
-                <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic" }}>tap to copy</span>
-              </div>
-            )}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 16px", marginBottom:"4px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+              <span style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase" }}>Invite Code</span>
+              <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
+            </div>
+            <button 
+              onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+              style={{ 
+                background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
+                borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+              }}>
+              Copy
+            </button>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
