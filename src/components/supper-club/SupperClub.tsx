@@ -191,7 +191,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const isTemporaryGroup = activeGroup.is_temporary || false;
-  const dbData = useSupperClubData(user, activeGroupId);
+  const dbData = useSupperClubData(user, activeGroupId, isTemporaryGroup);
 
   // Realtime subscriptions for live updates
   useRealtimeSubscriptions(activeGroupId, dbData.refresh);
