@@ -294,8 +294,43 @@ export const getMealsForDate = (entries: string[], date: string): string[] => {
   return entries.filter(e => parseDateMeal(e).date === date).map(e => parseDateMeal(e).meal);
 };
 
-const MEAL_ICONS: Record<string, string> = { Breakfast: "☀", Brunch: "🥂", Lunch: "☕", Dinner: "🌙" };
-const MEAL_COLORS: Record<string, string> = { Breakfast: "#e8c547", Brunch: "#d4a574", Lunch: "#7ab8c9", Dinner: "#c9956a" };
+// Sleek monochrome SVG icons for meal types
+const MealIcon = ({ type, size = 14, color = "currentColor" }: { type: string; size?: number; color?: string }) => {
+  const s = size;
+  switch (type) {
+    case "Breakfast":
+      // Sunrise icon
+      return (
+        <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 2v2" /><path d="M3.17 5.17l1.42 1.42" /><path d="M12.83 5.17l-1.42 1.42" /><path d="M2 11h12" /><path d="M4 11a4 4 0 0 1 8 0" />
+        </svg>
+      );
+    case "Brunch":
+      // Champagne glass icon
+      return (
+        <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 2l-1 6a3 3 0 0 0 3 3v0a3 3 0 0 0 3-3L9 2" /><path d="M7 11v3" /><path d="M5 14h4" />
+        </svg>
+      );
+    case "Lunch":
+      // Coffee cup icon
+      return (
+        <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 5h8v5a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V5z" /><path d="M11 7h1.5a1.5 1.5 0 0 1 0 3H11" /><path d="M5 3v1" /><path d="M7 2v2" /><path d="M9 3v1" />
+        </svg>
+      );
+    case "Dinner":
+      // Moon/crescent icon
+      return (
+        <svg width={s} height={s} viewBox="0 0 16 16" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M13 9A5 5 0 1 1 7 3a4 4 0 0 0 6 6z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+const MEAL_COLORS: Record<string, string> = { Breakfast: "#c9956a", Brunch: "#c9956a", Lunch: "#c9956a", Dinner: "#c9956a" };
 
 // ── CalendarGrid with per-date meal selection ──
 export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast, otherGroupDates = [] }: {
