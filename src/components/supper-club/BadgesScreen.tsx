@@ -1,7 +1,7 @@
 import { S } from "./styles";
 import { NavBar } from "./shared";
 import type { DBBadge } from "@/hooks/useSupperClubData";
-import { GROUP_BADGE_DEFS } from "./badgeDefs";
+import { GROUP_BADGE_DEFS, BADGE_ICONS } from "./badgeDefs";
 
 interface BadgesScreenProps {
   userBadges: DBBadge[];
