@@ -1655,7 +1655,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ padding:"16px 16px 8px", textAlign:"center" }}>
             <span 
               onClick={async () => {
-                if (!confirm(`Leave ${activeGroup.name}? You'll lose access to this group's pool, history, and badges.`)) return;
+                const isLastMember = currentMembers.length <= 1;
+                const msg = isLastMember
+                  ? `You're the last member of ${activeGroup.name}. Leaving will permanently delete all group badges, accomplishments, and history. This can't be undone. Leave anyway?`
+                  : `Leave ${activeGroup.name}? You'll lose access to this group's pool, history, and badges.`;
+                if (!confirm(msg)) return;
                 const remaining = groups.filter(g => g.id !== activeGroup.id);
                 const success = await dbData.leaveGroup();
                 if (success) {
