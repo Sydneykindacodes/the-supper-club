@@ -250,7 +250,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] = useState<Restaurant | GooglePlace | null>(null);
-  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: RESTAURANT_POOL[0], visible: false });
+  const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: { id: 0, name: "", cuisine: "", city: "", price: 0, visited: false, visitedDate: null, visitedRating: null } as Restaurant, visible: false });
   const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
   const [rCuisine, setRCuisine] = useState("");
