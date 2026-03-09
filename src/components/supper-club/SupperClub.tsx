@@ -2671,7 +2671,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         )}
                         <div style={{ padding:"14px 16px" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                            <div style={{ width:"32px", height:"32px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700", flexShrink:0, border:"1.5px solid rgba(201,149,106,0.25)" }}>
+                            <div onClick={(e) => { e.stopPropagation(); rev.user_id === user.id ? setShowProfile(true) : setViewingMemberUserId(rev.user_id); }} style={{ width:"32px", height:"32px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700", flexShrink:0, border:"1.5px solid rgba(201,149,106,0.25)", cursor:"pointer" }}>
                               {rev.reviewer.charAt(0).toUpperCase()}
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
