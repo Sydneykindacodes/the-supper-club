@@ -1950,9 +1950,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               ) : (
                 <>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-                  {MEMBERS.map(m => {
+                  {currentMembers.map(m => {
                     const isYou = m.name === "You";
-                    const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+                    const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
                     return (
                       <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                         <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
