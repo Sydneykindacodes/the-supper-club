@@ -1730,21 +1730,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
   if (screen === "explore") {
-    // Merge static PUBLIC_REVIEWS with DB community reviews for display
-    const allCommunityReviews = [
-      ...dbData.communityReviews.map(r => ({
-        group: "Supper Club Member",
-        restaurant: r.restaurant_name,
-        rating: r.rating,
-        review: r.review_text || "",
-        city: r.city || "Unknown",
-        date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-        photo_url: r.photo_url,
-      })),
-      ...PUBLIC_REVIEWS.map(r => ({ ...r, review: r.review, photo_url: null as string | null })),
-    ];
+    // Only use real DB community reviews — no fake/static data
+    const allCommunityReviews = dbData.communityReviews.map(r => ({
+      group: "Supper Club Member",
+      restaurant: r.restaurant_name,
+      rating: r.rating,
+      review: r.review_text || "",
+      city: r.city || "Unknown",
+      date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      photo_url: r.photo_url,
+    }));
     const uniqueRestaurants = [...new Set(allCommunityReviews.map(r => r.restaurant))];
-    const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
+    const cuisines = [...new Set(allCommunityReviews.map(r => r.city))]; // Use cities from real reviews
 
     // Restaurant Detail View
     if (selectedRestaurantDetail) {
