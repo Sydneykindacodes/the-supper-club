@@ -1540,17 +1540,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             }}>
               Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
             </button>
-            <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={() => {
-              if (activeGroup.dinnerStatus === "scheduled") {
-                setDinnerCompletedAt(new Date().toISOString());
-                showToast("Dinner marked complete. Reset available on home screen.");
+            <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={async () => {
+              if (dbData.dinnerStatus === "scheduled" || dbData.dinnerStatus === "post_dinner") {
+                await dbData.completeDinner();
+                showToast("Dinner completed. Post-dinner flow triggered.");
                 setScreen("club_home");
                 setActiveTab("home");
               } else {
                 showToast("No scheduled dinner to complete.");
               }
             }}>
-              Demo: Complete Dinner (2hr Reset)
+              Demo: Complete Dinner
             </button>
           </div>
 
