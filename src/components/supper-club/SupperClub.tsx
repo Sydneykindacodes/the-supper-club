@@ -104,7 +104,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
-  const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
+  const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null, is_temporary: false };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
 
@@ -125,7 +125,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
         .from("members")
-        .select("group_id, groups(id, name, code, city)")
+        .select("group_id, groups(id, name, code, city, is_temporary)")
         .eq("user_id", user.id);
       
       if (memberRows && memberRows.length > 0) {
@@ -140,6 +140,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             dinnerStatus: "no_date" as const,
             nextDinner: null,
             pendingDate: null,
+            is_temporary: m.groups.is_temporary || false,
           }));
         if (loadedGroups.length > 0) {
           setGroups(loadedGroups);
@@ -189,7 +190,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
-  const dbData = useSupperClubData(user, activeGroupId);
+  const isTemporaryGroup = activeGroup.is_temporary || false;
+  const dbData = useSupperClubData(user, activeGroupId, isTemporaryGroup);
 
   // Realtime subscriptions for live updates
   useRealtimeSubscriptions(activeGroupId, dbData.refresh);
@@ -249,6 +251,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
+  const [newGroupTemporary, setNewGroupTemporary] = useState(false);
   const [groupAdmin, setGroupAdmin] = useState(userName);
   const [groupCreator] = useState(userName);
   const [joinCode, setJoinCode] = useState("");
@@ -728,7 +731,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
         </div>
       </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
     </div></div>
   );
 
@@ -754,21 +757,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <button style={{ ...S.secondaryBtn, maxWidth:"260px" }} onClick={() => { setJoinMode("join"); setJoinCode(""); setScreen("join_create"); }}>Join with Invite Code</button>
         </div>
       </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
     </div></div>
   );
 
   // Helper: create group in DB
-  const createGroupInDB = async (name: string, city: string) => {
+  const createGroupInDB = async (name: string, city: string, isTemporary: boolean = false) => {
     const code = "SUPR-" + Math.floor(1000 + Math.random() * 9000);
     const { data: groupData, error: groupErr } = await supabase
       .from("groups")
-      .insert({ name, city, code })
+      .insert({ name, city, code, is_temporary: isTemporary })
       .select()
       .single();
     if (groupErr || !groupData) { showToast("Failed to create club. Try again."); return; }
 
-    // Add current user as a member
+    // Add current user as a member — creator is always host for temp groups
     const avatarColors = ["#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c"];
     const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
     await supabase.from("members").insert({
@@ -788,6 +791,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       dinnerStatus: "no_date",
       nextDinner: null,
       pendingDate: null,
+      is_temporary: isTemporary,
     };
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
@@ -800,6 +804,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setSeedPoolResults([]);
     setScreen("seed_pool");
     showToast(`${name} created! Now add 3 restaurants to your pool.`);
+    setNewGroupTemporary(false);
   };
 
   // Helper: join group by code
@@ -839,6 +844,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       dinnerStatus: "no_date",
       nextDinner: null,
       pendingDate: null,
+      is_temporary: (groupData as any).is_temporary || false,
     };
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
@@ -876,11 +882,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
               Restaurants within {searchRadius} miles of your city will appear in your pool.
             </div>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 0", borderBottom:"1px solid rgba(212,205,196,0.07)", marginBottom:"12px" }}>
+              <div>
+                <span style={{ fontSize:"14px", color:"#e5ded5" }}>Pop-Up Supper</span>
+                <div style={{ fontSize:"10px", color:"#7a5a40", fontStyle:"italic", marginTop:"2px" }}>One night only — dissolves after dinner</div>
+              </div>
+              <div onClick={() => setNewGroupTemporary(p => !p)} style={{ width:"44px", height:"24px", borderRadius:"12px", background:newGroupTemporary?"linear-gradient(135deg,#d4cdc4,#a49a8e)":"rgba(255,255,255,0.08)", border:newGroupTemporary?"none":"1px solid rgba(212,205,196,0.2)", position:"relative", cursor:"pointer", transition:"all 0.2s" }}>
+                <div style={{ position:"absolute", top:"3px", left:newGroupTemporary?"22px":"3px", width:"18px", height:"18px", borderRadius:"50%", background:newGroupTemporary?"#2a2a2a":"#565250", transition:"left 0.2s" }}/>
+              </div>
+            </div>
             <div style={{ height:"12px" }}/>
             <button style={S.primaryBtn} onClick={() => {
               if (!newGroupName.trim()) { showToast("Give your club a name."); return; }
               if (!newGroupCity.trim()) { showToast("Enter your city."); return; }
-              createGroupInDB(newGroupName.trim(), newGroupCity.trim());
+              createGroupInDB(newGroupName.trim(), newGroupCity.trim(), newGroupTemporary);
             }}>Create &amp; Get Invite Code</button>
           </>) : (<>
             <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
@@ -921,12 +936,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
             Restaurants within {searchRadius} miles of your city will appear in your pool.
           </div>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 0", borderBottom:"1px solid rgba(212,205,196,0.07)", marginBottom:"12px" }}>
+            <div>
+              <span style={{ fontSize:"14px", color:"#e5ded5" }}>Pop-Up Supper</span>
+              <div style={{ fontSize:"10px", color:"#7a5a40", fontStyle:"italic", marginTop:"2px" }}>One night only — dissolves after dinner</div>
+            </div>
+            <div onClick={() => setNewGroupTemporary(p => !p)} style={{ width:"44px", height:"24px", borderRadius:"12px", background:newGroupTemporary?"linear-gradient(135deg,#d4cdc4,#a49a8e)":"rgba(255,255,255,0.08)", border:newGroupTemporary?"none":"1px solid rgba(212,205,196,0.2)", position:"relative", cursor:"pointer", transition:"all 0.2s" }}>
+              <div style={{ position:"absolute", top:"3px", left:newGroupTemporary?"22px":"3px", width:"18px", height:"18px", borderRadius:"50%", background:newGroupTemporary?"#2a2a2a":"#565250", transition:"left 0.2s" }}/>
+            </div>
+          </div>
           <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
           <button style={S.primaryBtn} onClick={() => {
             if (!newGroupName.trim()) { showToast("Name your club first."); return; }
-            createGroupInDB(newGroupName.trim(), newGroupCity.trim() || "New York, NY");
+            createGroupInDB(newGroupName.trim(), newGroupCity.trim() || "New York, NY", newGroupTemporary);
           }}>Create & Get Invite Code</button>
-          <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setScreen("club_home"); }}>Cancel</button>
+          <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setNewGroupTemporary(false); setScreen("club_home"); }}>Cancel</button>
         </div>
       </div>
     </div></div>
@@ -1226,7 +1250,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </button>
             </div>
           </div>
-          <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+          <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
         </div></div>
       );
     }
@@ -1554,6 +1578,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             }
 
             if (currentStep === "availability") {
+              // Temporary groups — no next dinner, just wrap up
+              if (isTemporaryGroup) {
+                return (
+                  <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+                    <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"12px" }}>✧</div>
+                    <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>That's a Wrap</div>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                      One night. One table. No strings attached.
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                      This pop-up club will dissolve at midnight. Your badges and reviews live on forever.
+                    </div>
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
+                      setPostDinnerStep("completing");
+                      resetForNextDinner();
+                      setBookingLinks(null);
+                      await dbData.completeDinner();
+                      setPostDinnerStep(null);
+                      showToast("Pop-up complete. Until next time.");
+                    }}>
+                      Close the Chapter
+                    </button>
+                  </div>
+                );
+              }
+
               return (
                 <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
                   <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"12px" }}>◇</div>
@@ -2000,7 +2050,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           />
         )}
 
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
       </div></div>
     );
   }
@@ -2442,7 +2492,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             )}
           </div>
         </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
       </div></div>
     );
   }
@@ -2556,7 +2606,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             )}
           </div>
         </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
         {showReviewForm && (
           <ReviewForm
             restaurantName={showReviewForm.restaurant}
@@ -2777,7 +2827,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               )}
             </div>
           </div>
-          <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+          <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
 
           {/* Group Picker Modal */}
           {addToGroupPicker.visible && (
@@ -3263,7 +3313,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
         </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
       </div></div>
     );
   }
@@ -3465,7 +3515,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           )}
         </div>
       </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
     </div></div>
     );
   }
@@ -3635,7 +3685,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
         </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
       </div></div>
     );
   }
@@ -3655,8 +3705,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── BADGES ──
+  // ── BADGES (hidden for temporary groups) ──
   if (screen === "badges") {
+    if (isTemporaryGroup) {
+      // Redirect — temp groups don't have a badges section
+      setScreen("club_home");
+      setActiveTab("home");
+      return null;
+    }
     return (
       <BadgesScreen
         userBadges={dbData.userBadges}

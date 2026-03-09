@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.scheduled-notifications]
 verify_jwt = false
+
+[functions.dissolve-temp-groups]
+verify_jwt = false

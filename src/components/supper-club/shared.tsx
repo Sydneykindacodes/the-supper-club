@@ -260,7 +260,7 @@ const NavIcon = ({ id, active }: { id: string; active: boolean }) => {
 };
 
 // ── NavBar ──
-export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigate: (tab: string, screen: string) => void }) => (
+export const NavBar = ({ activeTab, onNavigate, hidebadges }: { activeTab: string; onNavigate: (tab: string, screen: string) => void; hidebadges?: boolean }) => (
   <div style={S.bottomNav}>
     {[
       { id:"home",        screen:"club_home" },
@@ -268,7 +268,7 @@ export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigat
       { id:"schedule",    screen:"availability" },
       { id:"reveal",      screen:"reveal" },
       { id:"badges",      screen:"badges" },
-    ].map(item => (
+    ].filter(item => !(hidebadges && item.id === "badges")).map(item => (
       <div key={item.id} style={S.navItem} onClick={() => onNavigate(item.id, item.screen)}>
         <NavIcon id={item.id} active={activeTab===item.id} />
       </div>

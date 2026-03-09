@@ -23,6 +23,7 @@ export interface Group {
   dinnerStatus: "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant" | "post_dinner" | "awaiting_next_host";
   nextDinner: string | null;
   pendingDate: string | null;
+  is_temporary?: boolean;
 }
 
 export interface MemberAvailability {
