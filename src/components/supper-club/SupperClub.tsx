@@ -674,6 +674,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
+  const copyToClipboard = async (text: string, successMsg: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      showToast(successMsg);
+    } catch {
+      showToast("Couldn't copy — try long-pressing the code instead.");
+    }
+  };
+
   const updateGroup = (id: number, patch: Partial<Group>) => {
     const updated = groups.map(g => g.id === id ? { ...g, ...patch } : g) as Group[];
     setGroups(updated);
@@ -880,15 +901,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{activeGroup.code}</div>
             </div>
             <button
-              onClick={() => { navigator.clipboard.writeText(activeGroup.code); showToast("Invite code copied!"); }}
+              onClick={() => copyToClipboard(activeGroup.code, "Invite code copied!")}
               style={{ background:"rgba(201,149,106,0.15)", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"8px", padding:"6px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", fontFamily:"Georgia,serif" }}
             >Copy</button>
           </div>
           <button
             onClick={() => {
               const link = `${window.location.origin}/?invite=${activeGroup.code}`;
-              navigator.clipboard.writeText(link);
-              showToast("Invite link copied!");
+              copyToClipboard(link, "Invite link copied!");
             }}
             style={{ ...S.primaryBtn, maxWidth:"300px", marginBottom:"8px" }}
           >Share Invite Link</button>
@@ -1601,7 +1621,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
             <div style={{ display:"flex", gap:"6px" }}>
               <button 
-                onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+                onClick={() => copyToClipboard(ag.code, "Invite code copied!")}
                 style={{ 
                   background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
                   borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
@@ -1612,8 +1632,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <button 
                 onClick={() => { 
                   const link = `${window.location.origin}/?invite=${ag.code}`;
-                  navigator.clipboard.writeText(link); 
-                  showToast("Invite link copied!"); 
+                  copyToClipboard(link, "Invite link copied!"); 
                 }}
                 style={{ 
                   background:"linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))", border:"1px solid rgba(201,149,106,0.35)", 
@@ -2559,8 +2578,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"20px", color:"#f5e6d3", letterSpacing:"6px", fontWeight:"700" }}>{activeGroup.code}</div>
               <button onClick={() => { 
                 const link = `${window.location.origin}/?invite=${activeGroup.code}`;
-                navigator.clipboard.writeText(link); 
-                showToast("Invite link copied!"); 
+                copyToClipboard(link, "Invite link copied!"); 
               }} style={{ marginTop:"10px", background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", borderRadius:"8px", padding:"8px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif", width:"100%" }}>
                 Copy Shareable Link
               </button>
