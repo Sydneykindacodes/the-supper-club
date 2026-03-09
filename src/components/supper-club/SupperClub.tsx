@@ -90,8 +90,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         window.history.replaceState({}, "", window.location.pathname);
         return;
       }
-      // New user — show welcome
-      setScreen("welcome");
+      // New user — show onboarding if not yet completed
+      const onboarded = localStorage.getItem("sc_onboarded");
+      setScreen(onboarded ? "welcome" : "onboarding");
     };
     loadGroups();
   }, [user.id]);
