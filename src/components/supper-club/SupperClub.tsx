@@ -1974,10 +1974,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
                         Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
                       </div>
-                      {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
+                      {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).length > 0 && (
                         <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
                           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
-                          {MEMBERS.filter(m => m.name === "Priya").map(m => (
+                          {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).map(m => (
                             <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
                               <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
