@@ -2265,13 +2265,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {detailReviews.map((rev, i) => (
                     <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                        <div style={{ 
+                        <div onClick={(e) => { e.stopPropagation(); rev.user_id === user.id ? setShowProfile(true) : setViewingMemberUserId(rev.user_id); }} style={{ 
                           width:"28px", height:"28px", borderRadius:"50%", 
-                          background: "#c9956a",
+                          background: rev.reviewerColor || "#c9956a",
                           display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:"11px", color:"#fff", fontWeight:"700"
+                          fontSize:"11px", color:"#fff", fontWeight:"700", cursor:"pointer"
                         }}>
-                          {rev.group[0]}
+                          {rev.reviewer?.charAt(0)?.toUpperCase() || rev.group[0]}
                         </div>
                         <div style={{ flex:1 }}>
                           <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.group}</div>
