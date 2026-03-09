@@ -614,8 +614,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <div style={S.screen}>
           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
-          <div style={{ padding:"16px 24px 12px" }}>
+          <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
+            <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
 
           {/* Awaiting Initiation - shown when user joins after host has booked */}
