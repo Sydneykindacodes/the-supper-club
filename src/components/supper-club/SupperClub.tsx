@@ -2107,6 +2107,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     const success = await dbData.selectRestaurantForReservation(restData.id);
                     if (success) {
+                      await sendGroupNotification("restaurant_selected");
                       showToast("Restaurant selected! Time to book.");
                       setScreen("club_home");
                       setActiveTab("home");
