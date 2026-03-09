@@ -2723,7 +2723,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <label style={S.label}>Price Range</label>
                 <div style={{ display:"flex", gap:"8px" }}>
                   {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
-                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => setExplorePriceFilter(id)}>{label}</div>
+                    <div key={id} style={chip(explorePriceFilter===id)} onClick={() => { setExplorePriceFilter(id); setSearchPage(1); }}>{label}</div>
                   ))}
                 </div>
               </div>
