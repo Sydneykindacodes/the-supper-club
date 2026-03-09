@@ -2940,12 +2940,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     );
                   }
 
+                  const capped = filtered.slice(0, MAX_ITEMS);
+                  const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
+                  const pageItems = capped.slice((communityPage - 1) * ITEMS_PER_PAGE, communityPage * ITEMS_PER_PAGE);
+
                   return (
                     <>
                       <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                        {filtered.length} review{filtered.length !== 1 ? "s" : ""}{query ? ` matching "${exploreCuisineFilter}"` : ""}
+                        {capped.length} review{capped.length !== 1 ? "s" : ""}{query ? ` matching "${exploreCuisineFilter}"` : ""}{capped.length < filtered.length ? ` (showing ${capped.length} of ${filtered.length})` : ""}
                       </div>
-                      {filtered.map(rev => (
+                      {pageItems.map(rev => (
                       <div key={rev.id} onClick={() => setSelectedPublicR(rev.id)} style={{ ...S.card, margin:"0 0 12px", cursor:"pointer", padding:0, overflow:"hidden" }}>
                         {rev.photo_url && (
                           <div style={{ width:"100%", height:"140px", overflow:"hidden" }}>
@@ -2982,6 +2986,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         </div>
                       </div>
                     ))}
+                    {totalPages > 1 && (
+                      <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"16px", padding:"16px 0 8px" }}>
+                        <button onClick={() => setCommunityPage(p => Math.max(1, p - 1))} disabled={communityPage <= 1}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: communityPage <= 1 ? "#3d2010" : "#c9956a", cursor: communityPage <= 1 ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: communityPage <= 1 ? 0.4 : 1 }}>
+                          ← Prev
+                        </button>
+                        <span style={{ fontSize:"12px", color:"#7a5a40" }}>{communityPage} / {totalPages}</span>
+                        <button onClick={() => setCommunityPage(p => Math.min(totalPages, p + 1))} disabled={communityPage >= totalPages}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: communityPage >= totalPages ? "#3d2010" : "#c9956a", cursor: communityPage >= totalPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: communityPage >= totalPages ? 0.4 : 1 }}>
+                          Next →
+                        </button>
+                      </div>
+                    )}
                     </>
                   );
                 })()}
