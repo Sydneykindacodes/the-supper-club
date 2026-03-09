@@ -1340,6 +1340,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── GROUP POOL ──
   if (screen === "group_pool") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Pool" />;
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
