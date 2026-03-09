@@ -1176,7 +1176,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           <div style={{ height:"16px" }}/>
-          <button style={S.primaryBtn} onClick={() => { showToast("Settings saved."); setTimeout(() => setScreen("club_home"), 800); }}>Save Settings</button>
+          <button style={S.primaryBtn} onClick={async () => {
+            const success = await dbData.saveGroupSettings({
+              auto_submit: autoSubmit,
+              no_repeats: noRepeats,
+              repeat_months: repeatMonths,
+              cutoff_days: cutoffDays,
+              allowed_meal_types: allowedMealTypes,
+              res_time_start: resTimeStart,
+              res_time_end: resTimeEnd,
+              search_radius: searchRadius,
+            });
+            showToast(success ? "Settings saved." : "Failed to save settings.");
+            if (success) setTimeout(() => setScreen("club_home"), 800);
+          }}>Save Settings</button>
           <div style={{ height:"12px" }}/>
           <button style={{ ...S.ghostBtn, color:"#c45c5c", borderColor:"rgba(197,92,92,0.3)" }} onClick={signOut}>Sign Out</button>
         </div>
