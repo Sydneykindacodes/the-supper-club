@@ -843,6 +843,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       dinnerStatus: "no_date",
       nextDinner: null,
       pendingDate: null,
+      is_temporary: (groupData as any).is_temporary || false,
     };
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
