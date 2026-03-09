@@ -877,6 +877,8 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     memberAvailability,
     userSelectedDates,
     saveAvailability,
+    dateConfirmations,
+    confirmDate,
     activeReservation,
     dinnerStatus,
     nextDinner,
