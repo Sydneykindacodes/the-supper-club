@@ -1943,7 +1943,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   Reviews from other Supper Club groups. Browse, discover, add to your pools.
                 </div>
                 {uniqueRestaurants.map(name => {
-                  const reviews = PUBLIC_REVIEWS.filter(r => r.restaurant === name);
+                  const reviews = allCommunityReviews.filter(r => r.restaurant === name);
                   const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
                   return (
                     <div key={name} onClick={() => setSelectedPublicR(name)} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}>
