@@ -13,6 +13,7 @@ import type { User } from "@supabase/supabase-js";
 import { useSupperClubData } from "@/hooks/useSupperClubData";
 import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
+import { useNotifications } from "@/hooks/useNotifications";
 import Onboarding from "./Onboarding";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
@@ -119,9 +120,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     activeGroupId
   );
 
+  // Notifications
+  const memberIdsForNotif = dbData.currentMember ? [dbData.currentMember.id] : [];
+  const notifs = useNotifications(user, memberIdsForNotif);
+
   // Review form and profile state
   const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
+  const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
@@ -616,8 +624,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
-            <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
-              {userName.charAt(0).toUpperCase()}
+            <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+              {/* Notification Bell */}
+              <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", padding:"4px" }}>
+                <span style={{ fontSize:"18px", color: notifs.unreadCount > 0 ? "#c9956a" : "#4a2e18" }}>◉</span>
+                {notifs.unreadCount > 0 && (
+                  <div style={{ position:"absolute", top:0, right:0, width:"14px", height:"14px", borderRadius:"50%", background:"#c45c5c", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"8px", color:"#fff", fontWeight:"700" }}>
+                    {notifs.unreadCount}
+                  </div>
+                )}
+              </div>
+              <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
             </div>
           </div>
 
@@ -710,6 +729,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const hostIsYou = dbData.isHost;
             const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
             
+            // Auto-fetch booking links for host
+            const fetchLinks = async () => {
+              if (hostIsYou && !bookingLinks) {
+                const links = await dbData.generateBookingLinks(mockRestaurant.name, mockRestaurant.city, mockRestaurant.googlePlaceId);
+                if (links) setBookingLinks(links);
+              }
+            };
+            if (hostIsYou && !bookingLinks) fetchLinks();
+            
             return hostIsYou ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
@@ -726,17 +754,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
-                  <a href={`https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking</span>
                   </a>
-                  <a href={`https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#c9956a" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>OpenTable</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability</span>
                   </a>
-                  <a href={`https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#9b7ec8" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Resy</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots</span>
@@ -812,10 +840,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 Another evening for the books.
               </div>
               <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
-                Time to start planning the next one. Your availability has been reset.
+                Time to share your thoughts and start planning the next one.
               </div>
+              <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #c9956a, #9a6040)" }} onClick={() => {
+                setPostDinnerReviewPrompt(true);
+              }}>
+                Write Your Review
+              </button>
               <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
                 resetForNextDinner();
+                setBookingLinks(null);
                 await dbData.completeDinner();
                 setDinnerCompletedAt(null);
                 setScreen("availability");
@@ -825,6 +859,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </button>
               <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
                 resetForNextDinner();
+                setBookingLinks(null);
                 await dbData.completeDinner();
                 setDinnerCompletedAt(null);
               }}>
@@ -983,6 +1018,68 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
           </div>
         </div>
+
+        {/* Notifications Panel */}
+        {showNotifications && (
+          <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(26,15,10,0.92)", zIndex:200, display:"flex", flexDirection:"column" }}>
+            <div style={{ padding:"20px 16px 12px", display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:"1px solid rgba(201,149,106,0.15)" }}>
+              <div style={{ fontSize:"20px", color:"#f5e6d3", fontWeight:"400" }}>Notifications</div>
+              <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
+                {notifs.unreadCount > 0 && (
+                  <span onClick={() => notifs.markAllRead()} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Mark all read</span>
+                )}
+                <span onClick={() => setShowNotifications(false)} style={{ fontSize:"22px", color:"#c9956a", cursor:"pointer" }}>×</span>
+              </div>
+            </div>
+            <div style={{ flex:1, overflow:"auto", padding:"12px 16px" }}>
+              {notifs.notifications.length === 0 ? (
+                <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                  <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◉</div>
+                  <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic" }}>No notifications yet.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"4px" }}>You'll be notified when important events happen.</div>
+                </div>
+              ) : (
+                notifs.notifications.map(n => (
+                  <div key={n.id} style={{
+                    padding:"14px", marginBottom:"8px", borderRadius:"12px",
+                    background: n.delivered ? "rgba(201,149,106,0.03)" : "rgba(201,149,106,0.08)",
+                    border: n.delivered ? "1px solid rgba(201,149,106,0.08)" : "1px solid rgba(201,149,106,0.2)",
+                  }}>
+                    <div style={{ fontSize:"13px", color: n.delivered ? "#7a5a40" : "#f5e6d3", lineHeight:"1.5" }}>
+                      {notifs.getNotificationMessage(n)}
+                    </div>
+                    <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"6px" }}>
+                      {new Date(n.sent_at).toLocaleDateString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Post-Dinner Review Prompt */}
+        {postDinnerReviewPrompt && (
+          <ReviewForm
+            restaurantName="Your Last Dinner"
+            cuisine={undefined}
+            city={activeGroup.city}
+            members={currentMembers}
+            reservationId={dbData.activeReservation?.id}
+            onSubmit={async (review) => {
+              const ok = await dbData.submitReview(review);
+              if (ok) {
+                setPostDinnerReviewPrompt(false);
+                showToast("Review submitted! 🎉");
+              }
+              return ok;
+            }}
+            onUploadPhoto={dbData.uploadReviewPhoto}
+            onClose={() => setPostDinnerReviewPrompt(false)}
+            showToast={showToast}
+          />
+        )}
+
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
       </div></div>
     );

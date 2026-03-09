@@ -396,6 +396,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
+  // Generate booking links via edge function
+  const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
+    if (!activeReservation) return null;
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-booking-url', {
+        body: {
+          restaurant_name: restaurantName,
+          google_place_id: googlePlaceId || null,
+          city,
+          dinner_date: activeReservation.dinner_date,
+          dinner_time: activeReservation.dinner_time || '19:00',
+          party_size: activeReservation.party_size,
+        },
+      });
+      if (error) return null;
+      return data?.links || null;
+    } catch {
+      return null;
+    }
+  }, [activeReservation]);
+
   // Reveal restaurant to group
   const revealRestaurant = useCallback(async () => {
     if (!activeReservation?.id) return false;
@@ -408,17 +429,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Complete dinner (post-dinner)
+  // Complete dinner (post-dinner) and trigger host rotation
   const completeDinner = useCallback(async () => {
-    if (!activeReservation?.id) return false;
+    if (!activeReservation?.id || !activeGroupId) return false;
     const { error } = await supabase
       .from("reservations")
       .update({ status: "completed" as const })
       .eq("id", activeReservation.id);
     if (error) return false;
+
+    // Trigger host rotation via edge function
+    try {
+      await supabase.functions.invoke('select-next-host', {
+        body: { group_id: activeGroupId, reservation_id: activeReservation.id },
+      });
+    } catch (e) {
+      console.error('Host rotation failed:', e);
+    }
+
     refresh();
     return true;
-  }, [activeReservation?.id, refresh]);
+  }, [activeReservation?.id, activeGroupId, refresh]);
 
   // Make a member the host
   const makeHost = useCallback(async (memberId: string) => {
@@ -609,6 +640,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     pendingDate,
     proposeDate,
     confirmBooking,
+    generateBookingLinks,
     revealRestaurant,
     completeDinner,
     makeHost,

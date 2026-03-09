@@ -29,6 +29,11 @@ export function useRealtimeSubscriptions(
         { event: "*", schema: "public", table: "reviews" },
         () => onUpdate()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "members", filter: `group_id=eq.${activeGroupId}` },
+        () => onUpdate()
+      )
       .subscribe();
 
     return () => {
