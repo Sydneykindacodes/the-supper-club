@@ -476,14 +476,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   }, [activeGroupId]);
 
   // Detect dinner cancellation — show notice to non-host members
-  // Skip on initial load (prevDinnerStatus null) or when status was already "no_date"
+  // Only triggers on a real status transition (not initial load or group switch)
+  // Uses sessionStorage to ensure each cancellation is only shown once per group
   useEffect(() => {
     const current = dbData.dinnerStatus;
-    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && current === "no_date" && !dbData.isHost) {
-      setShowCancellationNotice(true);
+    if (
+      prevDinnerStatus &&
+      prevDinnerStatus !== "no_date" &&
+      current === "no_date" &&
+      !dbData.isHost &&
+      activeGroupId
+    ) {
+      const dismissedKey = `sc_cancel_dismissed_${activeGroupId}`;
+      if (!sessionStorage.getItem(dismissedKey)) {
+        setShowCancellationNotice(true);
+      }
     }
     if (current) setPrevDinnerStatus(current);
-  }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus]);
+  }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus, activeGroupId]);
 
   // Restaurant detail reviews come from DB now
 
@@ -2147,7 +2157,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.6", marginBottom:"28px" }}>
                 You can update your availability for the next round once a new date is proposed.
               </div>
-              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => setShowCancellationNotice(false)}>
+              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => { setShowCancellationNotice(false); if (activeGroupId) sessionStorage.setItem(`sc_cancel_dismissed_${activeGroupId}`, "1"); }}>
                 Got It
               </button>
             </div>
