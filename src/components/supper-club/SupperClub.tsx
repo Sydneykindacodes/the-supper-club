@@ -3142,6 +3142,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ marginTop:"20px", padding:"12px 16px", background:"rgba(201,149,106,0.07)", borderRadius:"12px", fontSize:"12px", color:"#c9956a" }}>
                     Restaurant revealed at 8 AM on dinner day
                   </div>
+                  {/* Bail option for non-host */}
+                  <div style={{ marginTop:"20px", textAlign:"center" }}>
+                    <span onClick={() => {
+                      if (!confirm("Bail on this dinner? The host and group will be notified.")) return;
+                      showToast("You've bailed. The group has been notified. Shame.");
+                    }} style={{ fontSize:"10px", color:"#4a2e18", cursor:"pointer", letterSpacing:"1px" }}>
+                      I can't make it anymore
+                    </span>
+                  </div>
                 </div>
               )}
 
