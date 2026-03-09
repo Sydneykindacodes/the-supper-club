@@ -849,12 +849,41 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
                 </div>
                 {isBooked ? (
-                  <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"14px", textAlign:"center" }}>
-                    <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                      ✓ Booked for <strong>{ag.nextDinner}</strong> · Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                  <>
+                    <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"14px", textAlign:"center", marginBottom:"12px" }}>
+                      <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                        ✓ Booked for <strong>{ag.nextDinner}</strong> · Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                      </div>
+                      <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"6px", fontStyle:"italic" }}>Restaurant will be revealed to the group on dinner day</div>
                     </div>
-                    <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"6px", fontStyle:"italic" }}>Restaurant will be revealed to the group on dinner day</div>
-                  </div>
+                    {!showCancelConfirm ? (
+                      <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px", color:"#c45c5c" }} onClick={() => setShowCancelConfirm(true)}>
+                        Cancel This Dinner
+                      </button>
+                    ) : (
+                      <div style={{ background:"rgba(196,92,92,0.06)", border:"1px solid rgba(196,92,92,0.25)", borderRadius:"12px", padding:"16px", textAlign:"center" }}>
+                        <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Cancel this dinner?</div>
+                        <div style={{ fontSize:"11px", color:"#7a5a40", marginBottom:"14px", lineHeight:"1.5" }}>
+                          Please confirm you've cancelled the restaurant booking. Members will be prompted to update their availability.
+                        </div>
+                        <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)", fontSize:"13px" }} onClick={async () => {
+                          const success = await dbData.cancelDinner();
+                          if (success) {
+                            showToast("Dinner cancelled. Members can update availability.");
+                            setShowCancelConfirm(false);
+                            setBookingLinks(null);
+                          } else {
+                            showToast("Failed to cancel. Try again.");
+                          }
+                        }}>
+                          Yes, I've Cancelled the Booking
+                        </button>
+                        <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => setShowCancelConfirm(false)}>
+                          Never Mind
+                        </button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
