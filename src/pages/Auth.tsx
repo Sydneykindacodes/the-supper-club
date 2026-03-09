@@ -4,7 +4,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { S } from "@/components/supper-club/styles";
 
 export default function Auth() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
