@@ -1030,7 +1030,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
                     {!isYou && !isMemberHost && (
-                      <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
+                      <span onClick={async () => { 
+                        const dbMember = dbData.members.find(dm => dm.name === m.name || (m.name === "You" && dm.user_id === user.id));
+                        if (dbMember) {
+                          const success = await dbData.makeHost(dbMember.id);
+                          if (success) showToast(`${m.name} is now the host.`);
+                          else showToast("Failed to update host.");
+                        }
+                      }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
