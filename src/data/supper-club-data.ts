@@ -10,6 +10,7 @@ export interface Member {
   name: string;
   avatar: string;
   color: string;
+  user_id?: string | null;
 }
 
 export interface Group {
