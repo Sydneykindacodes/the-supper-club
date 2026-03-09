@@ -25,6 +25,44 @@ export interface ActiveReservation {
   booking_url: string | null;
 }
 
+export interface DBReview {
+  id: string;
+  user_id: string;
+  restaurant_name: string;
+  rating: number;
+  review_text: string | null;
+  meal_type: string | null;
+  best_dish_member: string | null;
+  return_choice: string | null;
+  photo_url: string | null;
+  cuisine: string | null;
+  city: string | null;
+  group_id: string | null;
+  reservation_id: string | null;
+  created_at: string;
+  // joined fields
+  group_name?: string;
+  member_name?: string;
+}
+
+export interface DBBadge {
+  badge_key: string;
+  badge_type: string;
+  group_id: string | null;
+  earned_at: string;
+}
+
+export interface GroupSettings {
+  auto_submit: boolean;
+  no_repeats: boolean;
+  repeat_months: number;
+  cutoff_days: number;
+  allowed_meal_types: string[];
+  res_time_start: string;
+  res_time_end: string;
+  search_radius: number;
+}
+
 export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host";
 
 export function useSupperClubData(user: User, activeGroupId: string | null) {
@@ -37,6 +75,9 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [userSelectedDates, setUserSelectedDates] = useState<string[]>([]);
   const [activeReservation, setActiveReservation] = useState<ActiveReservation | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [communityReviews, setCommunityReviews] = useState<DBReview[]>([]);
+  const [userBadges, setUserBadges] = useState<DBBadge[]>([]);
+  const [groupSettings, setGroupSettings] = useState<GroupSettings | null>(null);
 
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
@@ -165,6 +206,77 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       });
   }, [activeReservation?.id, members, user.id]);
 
+  // Load community reviews (all reviews visible to authenticated users)
+  useEffect(() => {
+    supabase
+      .from("reviews")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100)
+      .then(({ data }) => {
+        if (data) {
+          setCommunityReviews(data.map((r: any) => ({
+            id: r.id,
+            user_id: r.user_id,
+            restaurant_name: r.restaurant_name,
+            rating: Number(r.rating),
+            review_text: r.review_text,
+            meal_type: r.meal_type,
+            best_dish_member: r.best_dish_member,
+            return_choice: r.return_choice,
+            photo_url: r.photo_url,
+            cuisine: r.cuisine,
+            city: r.city,
+            group_id: r.group_id,
+            reservation_id: r.reservation_id,
+            created_at: r.created_at,
+          })));
+        }
+      });
+  }, [refreshCounter]);
+
+  // Load user badges
+  useEffect(() => {
+    supabase
+      .from("user_badges")
+      .select("*")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) {
+          setUserBadges(data.map((b: any) => ({
+            badge_key: b.badge_key,
+            badge_type: b.badge_type,
+            group_id: b.group_id,
+            earned_at: b.earned_at,
+          })));
+        }
+      });
+  }, [user.id, refreshCounter]);
+
+  // Load group settings
+  useEffect(() => {
+    if (!activeGroupId) { setGroupSettings(null); return; }
+    supabase
+      .from("groups")
+      .select("auto_submit, no_repeats, repeat_months, cutoff_days, allowed_meal_types, res_time_start, res_time_end, search_radius")
+      .eq("id", activeGroupId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setGroupSettings({
+            auto_submit: (data as any).auto_submit ?? false,
+            no_repeats: (data as any).no_repeats ?? true,
+            repeat_months: (data as any).repeat_months ?? 6,
+            cutoff_days: (data as any).cutoff_days ?? 7,
+            allowed_meal_types: (data as any).allowed_meal_types ?? ["Dinner"],
+            res_time_start: (data as any).res_time_start ?? "6:00 PM",
+            res_time_end: (data as any).res_time_end ?? "9:00 PM",
+            search_radius: (data as any).search_radius ?? 10,
+          });
+        }
+      });
+  }, [activeGroupId, refreshCounter]);
+
   // Compute dinner status from reservation
   const dinnerStatus: DinnerStatus = (() => {
     if (!activeReservation) return "no_date";
@@ -211,7 +323,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
           group_id: activeGroupId,
           dinner_date: new Date(Math.max(...dates.map(d => new Date(d).getTime()))).toISOString().split("T")[0],
           party_size: members.length,
-          status: "pending_selection",
+          status: "pending_selection" as const,
         })
         .select()
         .single();
@@ -242,7 +354,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeGroupId, activeReservation?.id, members, user.id, refresh]);
 
-  // Host proposes a date → update reservation
+  // Host proposes a date
   const proposeDate = useCallback(async (date: string) => {
     if (!activeGroupId) return false;
     let reservationId = activeReservation?.id;
@@ -250,7 +362,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     if (reservationId) {
       const { error } = await supabase
         .from("reservations")
-        .update({ dinner_date: date, status: "pending_host_booking" })
+        .update({ dinner_date: date, status: "pending_host_booking" as const })
         .eq("id", reservationId);
       if (error) return false;
     } else {
@@ -260,7 +372,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
           group_id: activeGroupId,
           dinner_date: date,
           party_size: members.length,
-          status: "pending_host_booking",
+          status: "pending_host_booking" as const,
         });
       if (error) return false;
     }
@@ -274,7 +386,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     const { error } = await supabase
       .from("reservations")
       .update({
-        status: "confirmed",
+        status: "confirmed" as const,
         confirmed_at: new Date().toISOString(),
         booking_url: bookingUrl || null,
       })
@@ -289,7 +401,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     if (!activeReservation?.id) return false;
     const { error } = await supabase
       .from("reservations")
-      .update({ status: "revealed", revealed_at: new Date().toISOString() })
+      .update({ status: "revealed" as const, revealed_at: new Date().toISOString() })
       .eq("id", activeReservation.id);
     if (error) return false;
     refresh();
@@ -301,7 +413,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     if (!activeReservation?.id) return false;
     const { error } = await supabase
       .from("reservations")
-      .update({ status: "completed" })
+      .update({ status: "completed" as const })
       .eq("id", activeReservation.id);
     if (error) return false;
     refresh();
@@ -311,9 +423,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   // Make a member the host
   const makeHost = useCallback(async (memberId: string) => {
     if (!activeGroupId) return false;
-    // Remove host from all members in group
     await supabase.from("members").update({ is_host: false }).eq("group_id", activeGroupId);
-    // Set new host
     const { error } = await supabase.from("members").update({ is_host: true }).eq("id", memberId);
     if (error) return false;
     refresh();
@@ -391,6 +501,78 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeGroupId]);
 
+  // ── REVIEWS ──
+  const submitReview = useCallback(async (review: {
+    restaurant_name: string;
+    rating: number;
+    review_text?: string;
+    meal_type?: string;
+    best_dish_member?: string;
+    return_choice?: string;
+    photo_url?: string;
+    cuisine?: string;
+    city?: string;
+    reservation_id?: string;
+  }) => {
+    const currentMember = members.find(m => m.user_id === user.id);
+    const { error } = await supabase
+      .from("reviews")
+      .insert({
+        user_id: user.id,
+        member_id: currentMember?.id || null,
+        group_id: activeGroupId || null,
+        restaurant_name: review.restaurant_name,
+        rating: review.rating,
+        review_text: review.review_text || null,
+        meal_type: review.meal_type || "Dinner",
+        best_dish_member: review.best_dish_member || null,
+        return_choice: review.return_choice || null,
+        photo_url: review.photo_url || null,
+        cuisine: review.cuisine || null,
+        city: review.city || null,
+        reservation_id: review.reservation_id || null,
+      });
+    if (error) return false;
+    refresh();
+    return true;
+  }, [user.id, activeGroupId, members, refresh]);
+
+  // Upload review photo
+  const uploadReviewPhoto = useCallback(async (file: File): Promise<string | null> => {
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("review-photos").upload(path, file);
+    if (error) return null;
+    const { data: urlData } = supabase.storage.from("review-photos").getPublicUrl(path);
+    return urlData?.publicUrl || null;
+  }, [user.id]);
+
+  // ── BADGES ──
+  const earnBadge = useCallback(async (badgeKey: string, badgeType: string = "individual") => {
+    // Check if already earned
+    if (userBadges.some(b => b.badge_key === badgeKey && (b.group_id === activeGroupId || !activeGroupId))) return;
+    
+    await supabase.from("user_badges").insert({
+      user_id: user.id,
+      badge_key: badgeKey,
+      badge_type: badgeType,
+      group_id: badgeType === "group" ? activeGroupId : null,
+    });
+    refresh();
+  }, [user.id, activeGroupId, userBadges, refresh]);
+
+  // ── GROUP SETTINGS ──
+  const saveGroupSettings = useCallback(async (settings: Partial<GroupSettings>) => {
+    if (!activeGroupId) return false;
+    const { error } = await supabase
+      .from("groups")
+      .update(settings as any)
+      .eq("id", activeGroupId);
+    if (error) return false;
+    setGroupSettings(prev => prev ? { ...prev, ...settings } : null);
+    return true;
+  }, [activeGroupId]);
+
   // Get current user's member record
   const currentMember = members.find(m => m.user_id === user.id);
   const isHost = currentMember?.is_host || false;
@@ -432,5 +614,13 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     makeHost,
     leaveGroup,
     refresh,
+    // New
+    communityReviews,
+    submitReview,
+    uploadReviewPhoto,
+    userBadges,
+    earnBadge,
+    groupSettings,
+    saveGroupSettings,
   };
 }
