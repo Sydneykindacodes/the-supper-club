@@ -88,7 +88,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
 
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
-  // Load members for active group
+  // Load members for active group (with avatar_url from profiles)
   useEffect(() => {
     if (!activeGroupId) { setMembers([]); return; }
     setLoadingMembers(true);
@@ -96,8 +96,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       .from("members")
       .select("*")
       .eq("group_id", activeGroupId)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data) {
+          // Batch-load avatar_urls from profiles for all members with user_ids
+          const userIds = data.map(m => m.user_id).filter(Boolean) as string[];
+          let profileMap: Record<string, string | null> = {};
+          if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("id, avatar_url")
+              .in("id", userIds);
+            if (profiles) {
+              profiles.forEach(p => { profileMap[p.id] = p.avatar_url; });
+            }
+          }
           setMembers(data.map(m => ({
             id: m.id,
             name: m.name,
@@ -106,6 +118,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             is_host: m.is_host || false,
             host_count: m.host_count || 0,
             user_id: m.user_id,
+            avatar_url: m.user_id ? (profileMap[m.user_id] || null) : null,
           })));
         }
         setLoadingMembers(false);
