@@ -313,6 +313,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     return new Date(b.visitedDate || 0).getTime() - new Date(a.visitedDate || 0).getTime();
   });
 
+  // ── ONBOARDING ──
+  if (screen === "onboarding") return (
+    <Onboarding
+      userName={userName}
+      onComplete={() => {
+        localStorage.setItem("sc_onboarded", "1");
+        setScreen("welcome");
+      }}
+    />
+  );
+
   // ── WELCOME ──
   if (screen === "welcome") return (
     <div style={S.app}><div style={S.phone}>
