@@ -503,7 +503,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // No-group placeholder helper
   const hasGroup = groups.length > 0 && activeGroup.id !== (EMPTY_GROUP.id as any);
   const isSoloGroup = hasGroup && currentMembers.length < 2;
-  const [wittysoloIdx] = useState(Math.floor(Math.random() * WITTY_SOLO_MESSAGES.length));
 
   const SoloPlaceholder = ({ feature }: { feature: string }) => (
     <div style={S.app}><div style={S.phone}>
