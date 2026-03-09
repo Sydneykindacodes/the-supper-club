@@ -1191,9 +1191,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const handleSeedSearch = () => {
       const cuisineQuery = seedCuisineFilter.length > 0 ? seedCuisineFilter.join(" or ") : "";
       const searchTerm = [seedPoolSearch.trim(), cuisineQuery].filter(Boolean).join(" ") || "restaurant";
-      setSeedLastSearchTerm(searchTerm);
-      setSeedLastSearchCity(seedSearchCity);
-      setSeedNextPageToken(null);
+      setGpLastSearchTerm(searchTerm);
+      setGpLastSearchCity(seedSearchCity);
+      setGpNextPageToken(null);
       setSeedSearchPage(1);
       searchGooglePlaces(searchTerm, seedSearchCity, setSeedPoolResults, setSeedPoolLoading);
     };
