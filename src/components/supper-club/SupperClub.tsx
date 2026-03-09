@@ -19,6 +19,7 @@ import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
 import MemberProfileView from "./MemberProfileView";
+import RestaurantReveal from "./RestaurantReveal";
 
 interface SupperClubProps {
   user: User;
