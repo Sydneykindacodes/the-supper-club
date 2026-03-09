@@ -1658,11 +1658,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   style={{ ...S.primaryBtn, opacity: selectedRestId ? 1 : 0.5, marginBottom:"8px" }} 
                   onClick={async () => {
                     if (!selectedRestId) { showToast("Select a restaurant first."); return; }
-                    // Find the restaurant DB record
+                    const groupId = typeof activeGroup.id === 'string' ? activeGroup.id : String(activeGroup.id);
                     const { data: restData } = await supabase
                       .from("restaurants")
                       .select("id")
-                      .eq("group_id", activeGroup.id)
+                      .eq("group_id", groupId)
                       .eq("name", selectedRestId)
                       .single();
                     if (!restData) { showToast("Restaurant not found. Try again."); return; }
