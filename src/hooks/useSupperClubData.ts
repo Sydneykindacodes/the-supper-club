@@ -578,6 +578,19 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     googlePlaceId?: string;
     address?: string;
   }, groupId: string) => {
+    // Duplicate check
+    const { data: existing } = await supabase
+      .from("restaurants")
+      .select("id")
+      .eq("group_id", groupId)
+      .ilike("name", restaurant.name)
+      .eq("visited", false)
+      .maybeSingle();
+    if (existing) return "duplicate";
+
+    // Get current member ID for suggested_by
+    const currentMember = members.find(m => m.user_id === user.id);
+
     const { data, error } = await supabase
       .from("restaurants")
       .insert({
@@ -590,6 +603,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         google_review_count: restaurant.googleReviewCount || 0,
         google_place_id: restaurant.googlePlaceId || null,
         address: restaurant.address || null,
+        suggested_by: currentMember?.id || null,
       })
       .select()
       .single();
@@ -608,12 +622,13 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         googleReviewCount: data.google_review_count || 0,
         scRating: null,
         scReviewCount: 0,
+        suggested_by: currentMember?.name || undefined,
       };
       setRestaurants(prev => [...prev, newRest]);
       return true;
     }
     return false;
-  }, []);
+  }, [members, user.id]);
 
   // Remove restaurant from pool
   const removeRestaurantFromPool = useCallback(async (restaurantName: string) => {
