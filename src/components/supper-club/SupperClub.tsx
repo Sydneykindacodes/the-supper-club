@@ -734,23 +734,24 @@ export default function SupperClub() {
               </div>
             )}
             {MEMBERS.map(m => {
-              const isAdmin = m.name === groupAdmin;
+              const isHost = m.name === groupAdmin;
+              const isCreator = m.name === groupCreator;
               const isYou = m.name === "You";
-              const youAreAdmin = groupAdmin === "You";
+              const youAreCreator = groupCreator === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>HOST</span>}
+                    {isCreator && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
+                    {isHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && youAreAdmin && !isAdmin && (
+                    {!isYou && youAreCreator && !isHost && (
                       <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
-                    {!isYou && youAreAdmin && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
-                    {isYou && isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
-                    {isYou && !isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
+                    {!isYou && youAreCreator && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
+                    {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
                   </div>
                 </div>
               );
