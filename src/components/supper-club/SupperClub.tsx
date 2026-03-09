@@ -919,7 +919,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   Confirm — I'll Be There
                 </button>
               )}
-              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {MEMBERS.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {currentMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
             </div>
           )}
 
