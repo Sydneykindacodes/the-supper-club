@@ -16,12 +16,16 @@ export function useNotifications(user: User, memberIds: string[]) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Only show these notification types to users
+  const VISIBLE_TYPES = ["date_proposed", "dinner_confirmed", "dinner_cancelled"];
+
   const fetchNotifications = useCallback(async () => {
     if (memberIds.length === 0) return;
     const { data } = await supabase
       .from("notifications")
       .select("*")
       .in("member_id", memberIds)
+      .in("type", VISIBLE_TYPES)
       .order("sent_at", { ascending: false })
       .limit(50);
     if (data) {
