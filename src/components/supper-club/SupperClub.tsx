@@ -1792,6 +1792,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             </div>
           )}
+          {showReviewForm && (
+            <ReviewForm
+              restaurantName={showReviewForm.restaurant}
+              cuisine={showReviewForm.cuisine}
+              city={showReviewForm.city}
+              members={currentMembers}
+              onSubmit={dbData.submitReview}
+              onUploadPhoto={dbData.uploadReviewPhoto}
+              onClose={() => setShowReviewForm(null)}
+              showToast={showToast}
+            />
+          )}
         </div></div>
       );
     }
