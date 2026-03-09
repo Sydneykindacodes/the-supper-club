@@ -834,5 +834,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     isSoloGroup,
     hasUserReviewedCurrentDinner,
     nextHostName,
+    isAwaitingInitiation,
   };
 }
