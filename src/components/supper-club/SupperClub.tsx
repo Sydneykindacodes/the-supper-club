@@ -3126,6 +3126,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     Unveil the Destination
                   </button>
                   <style>{`@keyframes sealPulseInline { 0%,100%{box-shadow:0 0 20px rgba(201,149,106,0.1);transform:scale(1)} 50%{box-shadow:0 0 40px rgba(201,149,106,0.25);transform:scale(1.05)} }`}</style>
+                  <div style={{ marginTop:"20px", textAlign:"center" }}>
+                    <span onClick={() => {
+                      if (!confirm("Bail on this dinner? The host and group will be notified.")) return;
+                      showToast("You've bailed. The group has been notified. Your chair will sit empty.");
+                    }} style={{ fontSize:"10px", color:"#4a2e18", cursor:"pointer", letterSpacing:"1px" }}>
+                      I can't make it anymore
+                    </span>
+                  </div>
                 </div>
               )}
 
