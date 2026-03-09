@@ -1556,6 +1556,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
         </div>
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        {showReviewForm && (
+          <ReviewForm
+            restaurantName={showReviewForm.restaurant}
+            cuisine={showReviewForm.cuisine}
+            city={showReviewForm.city}
+            members={currentMembers}
+            reservationId={showReviewForm.reservationId}
+            onSubmit={dbData.submitReview}
+            onUploadPhoto={dbData.uploadReviewPhoto}
+            onClose={() => setShowReviewForm(null)}
+            showToast={showToast}
+          />
+        )}
       </div></div>
     );
   }
