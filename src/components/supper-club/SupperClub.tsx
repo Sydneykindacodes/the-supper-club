@@ -43,9 +43,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
 
-  // Load user's groups from DB on mount
+  // Load user's groups from DB on mount (and handle invite links)
   useEffect(() => {
     const loadGroups = async () => {
+      // Check for invite link in URL
+      const params = new URLSearchParams(window.location.search);
+      const inviteCode = params.get("invite");
+
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
         .from("members")
@@ -70,8 +74,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setActiveGroup(loadedGroups[0]);
           setScreen("club_home");
           setActiveTab("home");
+          // Clear invite param from URL
+          if (inviteCode) {
+            window.history.replaceState({}, "", window.location.pathname);
+          }
           return;
         }
+      }
+      // New user — check for invite link
+      if (inviteCode) {
+        setJoinMode("join");
+        setJoinCode(inviteCode);
+        setScreen("join_create");
+        window.history.replaceState({}, "", window.location.pathname);
+        return;
       }
       // New user — show welcome
       setScreen("welcome");
