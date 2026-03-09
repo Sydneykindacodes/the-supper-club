@@ -219,6 +219,46 @@ export default function SupperClub() {
     </div></div>
   );
 
+  // ── NEW CLUB (in-app) ──
+  if (screen === "new_club") return (
+    <div style={S.app}><div style={S.phone}>
+      <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"72px" }}>
+        <div style={{ alignSelf:"flex-start", marginBottom:"28px" }}>
+          <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
+        </div>
+        <div style={{ width:"100%" }}>
+          <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Create New Club</div>
+          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Start a new circle of diners</div>
+          <label style={S.label}>Club Name</label>
+          <input style={S.input} placeholder="e.g. Wine Wednesday Crew" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
+          <label style={S.label}>City</label>
+          <input style={S.input} placeholder="e.g. New York, NY" value={newGroupCity} onChange={e => setNewGroupCity(e.target.value)} />
+          <label style={S.label}>Search Radius</label>
+          <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
+            {[5, 10, 15, 25, 50].map(r => (
+              <div key={r} onClick={() => setSearchRadius(r)} style={chip(searchRadius === r)}>{r} mi</div>
+            ))}
+          </div>
+          <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
+            Restaurants within {searchRadius} miles of your city will appear in your pool.
+          </div>
+          <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
+          <button style={S.primaryBtn} onClick={() => {
+            if (!newGroupName.trim()) { showToast("Name your club first."); return; }
+            const code = `SUPR-${Math.floor(1000 + Math.random() * 9000)}`;
+            const newGroup: Group = { id: Date.now(), name: newGroupName.trim(), code, members: 1, city: newGroupCity.trim() || "New York, NY", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
+            setGroups(prev => [...prev, newGroup]);
+            setActiveGroup(newGroup);
+            setNewGroupName(""); setNewGroupCity("");
+            showToast(`${newGroup.name} created. Share code ${code}.`);
+            setScreen("club_home");
+          }}>Create & Get Invite Code</button>
+          <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setScreen("club_home"); }}>Cancel</button>
+        </div>
+      </div>
+    </div></div>
+  );
+
   // ── CLUB HOME ──
   if (screen === "club_home") {
     const ag = activeGroup;
