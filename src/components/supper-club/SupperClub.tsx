@@ -557,7 +557,122 @@ export default function SupperClub() {
     );
   }
 
-  // ── EXPLORE ──
+  // ── PAST DINNERS ──
+  if (screen === "past_dinners") {
+    const mockPhotos = ["📷", "🍽️", "🍷", "🥂"];
+    const mockReviews = [
+      { member: "Marisol", rating: 4.8, text: "The pasta was transcendent. I'm still thinking about that carbonara.", photo: true },
+      { member: "Derek", rating: 4.5, text: "Solid experience. The wine pairing was worth every penny.", photo: true },
+      { member: "Priya", rating: 5.0, text: "Absolutely flawless. We need to come back immediately.", photo: false },
+      { member: "You", rating: 4.6, text: "Great ambiance, perfect service. The risotto was chef's kiss.", photo: true },
+    ];
+
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Past Dinners</div>
+          </div>
+
+          <div style={{ padding:"16px 16px 0" }}>
+            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px", fontStyle:"italic", lineHeight:"1.6" }}>
+              Relive the memories. View photos and reviews from your group's dining adventures.
+            </div>
+
+            {visitedRestaurants.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                <div style={{ fontSize:"36px", marginBottom:"12px" }}>🍽️</div>
+                <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No dinners yet.</div>
+                <div style={{ fontSize:"12px", color:"#5a3a25" }}>Your dining history will appear here once you've been out together.</div>
+              </div>
+            ) : (
+              visitedRestaurants.map((d, idx) => (
+                <div key={d.id} style={{ ...S.card, margin:"0 0 16px", padding:"0", overflow:"hidden" }}>
+                  {/* Restaurant Header */}
+                  <div style={{ padding:"16px 16px 12px", borderBottom:"1px solid rgba(201,149,106,0.1)" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                      <div>
+                        <div style={S.cardTitle}>{d.name}</div>
+                        <div style={S.cardSub}>{d.cuisine} · {d.city}</div>
+                        <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{d.visitedDate}</div>
+                      </div>
+                      <RatingBadge restaurant={d} large/>
+                    </div>
+                  </div>
+
+                  {/* Photos Section */}
+                  <div style={{ padding:"12px 16px", borderBottom:"1px solid rgba(201,149,106,0.1)" }}>
+                    <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1.5px", textTransform:"uppercase", marginBottom:"10px" }}>Photos · {3 + idx}</div>
+                    <div style={{ display:"flex", gap:"8px" }}>
+                      {mockPhotos.slice(0, 3 + (idx % 2)).map((emoji, i) => (
+                        <div key={i} style={{ 
+                          width:"64px", height:"64px", borderRadius:"8px", 
+                          background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.08))",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:"24px", border:"1px solid rgba(201,149,106,0.12)"
+                        }}>
+                          {emoji}
+                        </div>
+                      ))}
+                      <div style={{ 
+                        width:"64px", height:"64px", borderRadius:"8px", 
+                        background:"rgba(201,149,106,0.06)", border:"1px dashed rgba(201,149,106,0.2)",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:"11px", color:"#7a5a40", cursor:"pointer"
+                      }}>
+                        +{1 + idx}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Member Reviews Section */}
+                  <div style={{ padding:"12px 16px" }}>
+                    <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1.5px", textTransform:"uppercase", marginBottom:"10px" }}>Member Reviews</div>
+                    {mockReviews.slice(0, 2 + (idx % 2)).map((rev, i) => {
+                      const member = MEMBERS.find(m => m.name === rev.member);
+                      return (
+                        <div key={i} style={{ marginBottom:"12px", paddingBottom:"12px", borderBottom: i < mockReviews.slice(0, 2 + (idx % 2)).length - 1 ? "1px solid rgba(201,149,106,0.06)" : "none" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"6px" }}>
+                            <div style={{ 
+                              width:"24px", height:"24px", borderRadius:"50%", 
+                              background: member?.color || "#c9956a",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              fontSize:"10px", color:"#fff", fontWeight:"700"
+                            }}>
+                              {member?.avatar || rev.member[0]}
+                            </div>
+                            <span style={{ fontSize:"12px", color:"#f5e6d3", fontWeight:"600" }}>{rev.member}</span>
+                            <span style={{ fontSize:"12px", color:"#c9956a", fontWeight:"700", marginLeft:"auto" }}>★ {rev.rating}</span>
+                          </div>
+                          <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.5", fontStyle:"italic" }}>
+                            "{rev.text}"
+                          </div>
+                          {rev.photo && (
+                            <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px" }}>📷 Shared a photo</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {mockReviews.length > 2 + (idx % 2) && (
+                      <div style={{ fontSize:"11px", color:"#c9956a", cursor:"pointer", textAlign:"center", padding:"4px 0" }}>
+                        View all {MEMBERS.length} reviews →
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      </div></div>
+    );
+  }
   if (screen === "explore") {
     const uniqueRestaurants = [...new Set(PUBLIC_REVIEWS.map(r => r.restaurant))];
     const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
