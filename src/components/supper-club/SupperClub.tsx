@@ -2122,25 +2122,35 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ padding:"16px 16px 0" }}>
                 <button onClick={() => setSelectedPublicR(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"14px", cursor:"pointer", padding:0, marginBottom:"16px" }}>← All Restaurants</button>
                 <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{selectedPublicR}</div>
-                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>New York, NY</div>
-                
+                {(() => {
+                  const reviews = allCommunityReviews.filter(r => r.restaurant === selectedPublicR);
+                  const city = reviews[0]?.city || "Unknown";
+                  return <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>{city}</div>;
+                })()}
+
                 {/* Photos Section */}
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                  Photos · {mockRestaurantPhotos.length}
-                </div>
-                <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
-                  {mockRestaurantPhotos.slice(0,4).map((symbol, i) => (
-                    <div key={i} style={{ 
-                      minWidth:"72px", height:"72px", borderRadius:"10px", 
-                      background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
-                      display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:"24px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
-                      flexShrink:0
-                    }}>
-                      {symbol}
-                    </div>
-                  ))}
-                </div>
+                {(() => {
+                  const reviewPhotos = allCommunityReviews
+                    .filter(r => r.restaurant === selectedPublicR && r.photo_url)
+                    .map(r => r.photo_url!);
+                  return reviewPhotos.length > 0 ? (
+                    <>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                        Photos · {reviewPhotos.length}
+                      </div>
+                      <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+                        {reviewPhotos.map((url, i) => (
+                          <div key={i} style={{ 
+                            minWidth:"72px", height:"72px", borderRadius:"10px", 
+                            overflow:"hidden", flexShrink:0
+                          }}>
+                            <img src={url} alt={`Photo ${i + 1}`} style={{ width:"72px", height:"72px", objectFit:"cover" }} />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null;
+                })()}
 
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                   Reviews · {allCommunityReviews.filter(r => r.restaurant === selectedPublicR).length}
@@ -2161,7 +2171,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                 ))}
                 <button style={{ ...S.primaryBtn, marginTop:"8px" }} onClick={() => {
-                  const restaurant: Restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null };
+                  const restaurant: Restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city: allCommunityReviews.find(r => r.restaurant === selectedPublicR)?.city || "Unknown", price:3, visited:false, visitedDate:null, visitedRating:null };
                   setAddToGroupPicker({ restaurant, visible: true });
                   setAddToGroupSelected([activeGroup.id]);
                 }}>Add to Pool</button>
@@ -2169,23 +2179,76 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             ) : (
               <div style={{ padding:"16px 16px 0" }}>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                  Reviews from other Supper Club groups. Browse, discover, add to your pools.
+                  Reviews from Supper Club members. Only restaurants that have been reviewed appear here.
                 </div>
-                {uniqueRestaurants.map(name => {
-                  const reviews = allCommunityReviews.filter(r => r.restaurant === name);
-                  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
-                  return (
-                    <div key={name} onClick={() => setSelectedPublicR(name)} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px" }}>
-                        <div style={S.cardTitle}>{name}</div>
-                        <div style={{ fontSize:"16px", color:"#c9956a", fontWeight:"700" }}>{avg}</div>
+
+                {/* Community Filters */}
+                {allCommunityReviews.length > 0 && (
+                  <>
+                    <div style={{ marginBottom:"16px" }}>
+                      <label style={S.label}>Filter by City</label>
+                      <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+                        <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
+                        {[...new Set(allCommunityReviews.map(r => r.city))].slice(0, 5).map(c => (
+                          <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
+                        ))}
                       </div>
-                      <div style={S.cardSub}>New York, NY · {reviews.length} review{reviews.length > 1 ? "s" : ""}</div>
-                      <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic", marginTop:"8px" }}>"{reviews[0].review.slice(0,80)}..."</div>
-                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap to see photos and all reviews →</div>
                     </div>
-                  );
-                })}
+                    <div style={{ marginBottom:"16px" }}>
+                      <label style={S.label}>Sort By</label>
+                      <div style={{ display:"flex", gap:"8px" }}>
+                        {([["date","Most Recent"],["rating","Highest Rated"],["price","Price"]] as const).map(([id,label]) => (
+                          <div key={id} style={chip(visitedSort===id)} onClick={() => setVisitedSort(id)}>{label}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {allCommunityReviews.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                    <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◈</div>
+                    <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No community reviews yet.</div>
+                    <div style={{ fontSize:"12px", color:"#5a3a25" }}>Be the first to review a restaurant and it'll appear here for all Supper Club members.</div>
+                  </div>
+                ) : (
+                  (() => {
+                    // Filter and sort restaurants
+                    let filteredRestaurants = uniqueRestaurants.map(name => {
+                      const reviews = allCommunityReviews.filter(r => r.restaurant === name);
+                      const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+                      const city = reviews[0]?.city || "Unknown";
+                      const latestDate = reviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date || "";
+                      return { name, reviews, avg, city, latestDate, reviewCount: reviews.length };
+                    });
+
+                    // Apply city filter
+                    if (exploreCuisineFilter !== "all") {
+                      filteredRestaurants = filteredRestaurants.filter(r => r.city === exploreCuisineFilter);
+                    }
+
+                    // Apply sort
+                    if (visitedSort === "rating") {
+                      filteredRestaurants.sort((a, b) => b.avg - a.avg);
+                    } else if (visitedSort === "date") {
+                      filteredRestaurants.sort((a, b) => new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime());
+                    }
+
+                    return filteredRestaurants.map(({ name, reviews, avg, city }) => (
+                      <div key={name} onClick={() => setSelectedPublicR(name)} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px" }}>
+                          <div style={S.cardTitle}>{name}</div>
+                          <div style={{ fontSize:"16px", color:"#c9956a", fontWeight:"700" }}>{avg.toFixed(1)}</div>
+                        </div>
+                        <div style={S.cardSub}>{city} · {reviews.length} review{reviews.length > 1 ? "s" : ""}</div>
+                        {reviews[0]?.review && (
+                          <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic", marginTop:"8px" }}>"{reviews[0].review.slice(0,80)}{reviews[0].review.length > 80 ? "..." : ""}"</div>
+                        )}
+                        <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap to see all reviews →</div>
+                      </div>
+                    ));
+                  })()
+                )}
               </div>
             )
           )}
