@@ -1956,6 +1956,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── AVAILABILITY ──
   if (screen === "availability") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Availability" />;
     const datesAlreadySubmitted = selectedDates.length > 0;
     
     return (
