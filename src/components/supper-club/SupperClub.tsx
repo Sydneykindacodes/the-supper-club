@@ -1970,7 +1970,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
                 onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
               />
-              {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
+              {gpLoading && (
+                <div style={{ padding:"12px 0" }}>
+                  {[1,2,3].map(i => (
+                    <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
+                      <SkeletonPulse width="60%" height="16px" style={{ marginBottom:"8px" }} />
+                      <SkeletonPulse width="40%" height="12px" style={{ marginBottom:"6px" }} />
+                      <SkeletonPulse width="30%" height="10px" />
+                    </div>
+                  ))}
+                </div>
+              )}
               
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
               <div style={{ marginBottom:"16px" }}>
