@@ -3017,7 +3017,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               
               <label style={S.label}>Location (City or Zip Code)</label>
               <div style={{ position:"relative" }}>
-                <input style={S.input} placeholder="e.g. New York, NY or 10001" value={rCity || activeGroup.city}
+                <input style={S.input} placeholder="e.g. New York, NY or 10001" value={rCity !== null ? rCity : activeGroup.city}
                   onChange={e => handleCityInputChange(e.target.value)}
                   onFocus={() => { if (citySuggestions.length > 0) setShowCitySuggestions(true); }}
                 />
