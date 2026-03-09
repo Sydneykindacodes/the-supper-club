@@ -2664,11 +2664,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
               <label style={S.label}>Cuisine</label>
               <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"16px" }}>
-                {["American","Mexican","Italian","Mediterranean","Chinese","Seafood","Indian","Thai","Sushi","Japanese","BBQ","Korean","Other"].map(c => {
-                  const isActive = exploreCuisineFilter.includes(c);
+                {["All","American","Mexican","Italian","Mediterranean","Chinese","Seafood","Indian","Thai","Sushi","Japanese","BBQ","Korean"].map(c => {
+                  const isAll = c === "All";
+                  const isActive = isAll ? exploreCuisineFilter.length === 0 : exploreCuisineFilter.includes(c);
                   return (
                     <div key={c} style={chip(isActive)} onClick={() => {
-                      setExploreCuisineFilter(prev => isActive ? prev.filter(x => x !== c) : [...prev, c]);
+                      if (isAll) {
+                        setExploreCuisineFilter([]);
+                      } else {
+                        setExploreCuisineFilter(prev => isActive ? prev.filter(x => x !== c) : [...prev, c]);
+                      }
                       setSearchPage(1);
                     }}>{c}</div>
                   );
