@@ -1024,9 +1024,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"6px", fontStyle:"italic" }}>Restaurant will be revealed to the group on dinner day</div>
                     </div>
                     {!showCancelConfirm ? (
-                      <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px", color:"#c45c5c" }} onClick={() => setShowCancelConfirm(true)}>
-                        Cancel This Dinner
-                      </button>
+                      <div style={{ display:"flex", gap:"8px", justifyContent:"center" }}>
+                        <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px", flex:1 }} onClick={() => setScreen("host_select_restaurant")}>
+                          Change Restaurant
+                        </button>
+                        <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px", color:"#c45c5c", flex:1 }} onClick={() => setShowCancelConfirm(true)}>
+                          Cancel Dinner
+                        </button>
+                      </div>
                     ) : (
                       <div style={{ background:"rgba(196,92,92,0.06)", border:"1px solid rgba(196,92,92,0.25)", borderRadius:"12px", padding:"16px", textAlign:"center" }}>
                         <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Cancel this dinner?</div>
