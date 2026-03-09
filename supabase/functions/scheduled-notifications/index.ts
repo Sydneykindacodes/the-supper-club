@@ -107,6 +107,24 @@ Deno.serve(async (req) => {
       results.push({ type: 'post_dinner_review', group_id: res.group_id, sent: notifications.length });
     }
 
+    // ── 3. Dissolve temporary groups at midnight after dinner ──
+    try {
+      const dissolveUrl = Deno.env.get('SUPABASE_URL')! + '/functions/v1/dissolve-temp-groups';
+      const dissolveRes = await fetch(dissolveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+        },
+      });
+      const dissolveData = await dissolveRes.json();
+      if (dissolveData.results?.length > 0) {
+        results.push(...dissolveData.results.map((r: any) => ({ type: 'dissolve_temp_group', group_id: r.group_id, sent: r.members_removed })));
+      }
+    } catch (e) {
+      console.error('Temp group dissolution failed:', e);
+    }
+
     return new Response(JSON.stringify({ success: true, results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
