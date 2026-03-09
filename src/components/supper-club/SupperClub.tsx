@@ -829,82 +829,97 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             };
             if (hostIsYou && !bookingLinks) fetchLinks();
             
+            const isBooked = !!dbData.activeReservation?.confirmed_at;
+            
             return hostIsYou ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
-                  <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
-                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>For Your Eyes Only</div>
+                  <span style={{ fontSize:"14px", color: isBooked ? "#7a9e7e" : "#c9956a" }}>{isBooked ? "◈" : "◆"}</span>
+                  <div style={{ fontSize:"11px", color: isBooked ? "#7a9e7e" : "#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>{isBooked ? "Reservation Confirmed" : "For Your Eyes Only"}</div>
                 </div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.7" }}>
-                  You hold the secret. The group suspects nothing. Guard this information with your life (or at least until 8 AM on dinner day).
-                </div>
-                <div style={{ background:"rgba(201,149,106,0.1)", borderRadius:"12px", padding:"16px", marginBottom:"16px" }}>
-                  <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>The Secret Destination</div>
+                {!isBooked && (
+                  <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.7" }}>
+                    You hold the secret. The group suspects nothing. Guard this information with your life (or at least until 8 AM on dinner day).
+                  </div>
+                )}
+                <div style={{ background: isBooked ? "rgba(122,158,126,0.08)" : "rgba(201,149,106,0.1)", borderRadius:"12px", padding:"16px", marginBottom:"16px" }}>
+                  <div style={{ fontSize:"10px", color: isBooked ? "#7a9e7e" : "#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>{isBooked ? "Booked Restaurant" : "The Secret Destination"}</div>
                   <div style={{ fontSize:"24px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>{mockRestaurant.name}</div>
                   <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
                 </div>
-                <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
-                <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
-                  <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", borderRadius:"10px", border:"1px solid rgba(122,158,126,0.25)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
-                    <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
-                    <span style={{ fontSize:"11px", color:"#7a9e7e", marginLeft:"auto" }}>recommended</span>
-                  </a>
-                  <div style={{ fontSize:"10px", color:"#5a3a25", textAlign:"center", padding:"4px 0", letterSpacing:"1px", textTransform:"uppercase" }}>or try searching on</div>
-                  <div style={{ display:"flex", gap:"8px" }}>
-                    <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
-                      <span style={{ fontSize:"11px", color:"#7a5a40" }}>OpenTable</span>
-                    </a>
-                    <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
-                      <span style={{ fontSize:"11px", color:"#7a5a40" }}>Resy</span>
-                    </a>
+                {isBooked ? (
+                  <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"14px", textAlign:"center" }}>
+                    <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                      ✓ Booked for <strong>{ag.nextDinner}</strong> · Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                    </div>
+                    <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"6px", fontStyle:"italic" }}>Restaurant will be revealed to the group on dinner day</div>
                   </div>
-                  <div style={{ fontSize:"10px", color:"#4a2e18", fontStyle:"italic", textAlign:"center" }}>Not all restaurants are on every platform</div>
-                </div>
-                <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
-                  <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {currentMembers.length}.
-                  </div>
-                </div>
-                {!bookingDateConfirm ? (
-                  <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                    setBookingDateConfirm(true);
-                  }}>
-                    I've Booked It
-                  </button>
                 ) : (
-                  <div style={{ background:"rgba(122,158,126,0.06)", border:"1px solid rgba(122,158,126,0.3)", borderRadius:"14px", padding:"20px", marginBottom:"12px" }}>
-                    <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"10px", fontWeight:"500", textAlign:"center" }}>Confirm Booking Details</div>
-                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", textAlign:"center", lineHeight:"1.6" }}>
-                      Please confirm you booked the reservation for the date the group selected.
+                  <>
+                    <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
+                      <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", borderRadius:"10px", border:"1px solid rgba(122,158,126,0.25)", textDecoration:"none", cursor:"pointer" }}>
+                        <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
+                        <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
+                        <span style={{ fontSize:"11px", color:"#7a9e7e", marginLeft:"auto" }}>recommended</span>
+                      </a>
+                      <div style={{ fontSize:"10px", color:"#5a3a25", textAlign:"center", padding:"4px 0", letterSpacing:"1px", textTransform:"uppercase" }}>or try searching on</div>
+                      <div style={{ display:"flex", gap:"8px" }}>
+                        <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                          <span style={{ fontSize:"11px", color:"#7a5a40" }}>OpenTable</span>
+                        </a>
+                        <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                          <span style={{ fontSize:"11px", color:"#7a5a40" }}>Resy</span>
+                        </a>
+                      </div>
+                      <div style={{ fontSize:"10px", color:"#4a2e18", fontStyle:"italic", textAlign:"center" }}>Not all restaurants are on every platform</div>
                     </div>
-                    <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
-                      <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
-                      <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
-                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
+                    <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
+                      <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                        <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Party of {dbData.activeReservation?.party_size || currentMembers.length}.
+                      </div>
                     </div>
-                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
-                      const success = await dbData.confirmBooking();
-                      if (success) {
-                        showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
-                      } else {
-                        showToast("Failed to confirm. Try again.");
-                      }
-                      setBookingDateConfirm(false);
+                    {!bookingDateConfirm ? (
+                      <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                        setBookingDateConfirm(true);
+                      }}>
+                        I've Booked It
+                      </button>
+                    ) : (
+                      <div style={{ background:"rgba(122,158,126,0.06)", border:"1px solid rgba(122,158,126,0.3)", borderRadius:"14px", padding:"20px", marginBottom:"12px" }}>
+                        <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"10px", fontWeight:"500", textAlign:"center" }}>Confirm Booking Details</div>
+                        <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", textAlign:"center", lineHeight:"1.6" }}>
+                          Please confirm you booked the reservation for the date the group selected.
+                        </div>
+                        <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                          <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
+                          <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
+                          <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {dbData.activeReservation?.party_size || currentMembers.length}</div>
+                        </div>
+                        <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
+                          const success = await dbData.confirmBooking();
+                          if (success) {
+                            showToast("Reservation confirmed.");
+                          } else {
+                            showToast("Failed to confirm. Try again.");
+                          }
+                          setBookingDateConfirm(false);
+                        }}>
+                          Yes, Booked for {ag.nextDinner}
+                        </button>
+                        <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => setBookingDateConfirm(false)}>
+                          Go Back
+                        </button>
+                      </div>
+                    )}
+                    <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+                      const wittyMsg = WITTY_SKIP_MESSAGES[Math.floor(Math.random() * WITTY_SKIP_MESSAGES.length)];
+                      showToast(wittyMsg);
                     }}>
-                      Yes, Booked for {ag.nextDinner}
+                      Skip This One
                     </button>
-                    <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => setBookingDateConfirm(false)}>
-                      Go Back
-                    </button>
-                  </div>
+                  </>
                 )}
-                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
-                  const wittyMsg = WITTY_SKIP_MESSAGES[Math.floor(Math.random() * WITTY_SKIP_MESSAGES.length)];
-                  showToast(wittyMsg);
-                }}>
-                  Skip This One
-                </button>
               </div>
             ) : (
               <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.18)" }}>
