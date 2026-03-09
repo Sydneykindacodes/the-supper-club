@@ -1950,9 +1950,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
             const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
             
-            // Calculate overlapping dates
+            // Calculate overlapping dates (from non-host members only)
             const allDates: string[] = [];
-            currentMembers.forEach(m => {
+            nonHostMembers.forEach(m => {
               const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
               dates.forEach(d => allDates.push(d));
             });
@@ -1971,7 +1971,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 {isHost ? (
                   <>
                     <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
-                      {submittedMembers.length === currentMembers.length ? "Everyone's in. Time to decide." : `${submittedMembers.length} of ${currentMembers.length} submitted — you can pick anytime.`}
+                      {submittedMembers.length === nonHostMembers.length ? "Everyone's in. Time to decide." : `${submittedMembers.length} of ${nonHostMembers.length} members submitted — you can pick anytime.`}
                     </div>
                     <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
                       {WITTY_HOST_WAITING[wittyHostIdx]}
