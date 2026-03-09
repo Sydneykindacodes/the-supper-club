@@ -2575,8 +2575,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     {/* Full Review Detail */}
                     <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"20px" }}>
-                      <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ width:"44px", height:"44px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.3)", flexShrink:0, cursor:"pointer" }}>
-                        {rev.reviewer.charAt(0).toUpperCase()}
+                      <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ width:"44px", height:"44px", borderRadius:"50%", background: rev.reviewerAvatarUrl ? `url(${rev.reviewerAvatarUrl}) center/cover no-repeat` : rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.3)", flexShrink:0, cursor:"pointer", overflow:"hidden" }}>
+                        {!rev.reviewerAvatarUrl && rev.reviewer.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"600" }}>{rev.reviewer}</div>
