@@ -476,14 +476,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   }, [activeGroupId]);
 
   // Detect dinner cancellation — show notice to non-host members
-  // Skip on initial load (prevDinnerStatus null) or when status was already "no_date"
+  // Only triggers on a real status transition (not initial load or group switch)
+  // Uses sessionStorage to ensure each cancellation is only shown once per group
   useEffect(() => {
     const current = dbData.dinnerStatus;
-    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && current === "no_date" && !dbData.isHost) {
-      setShowCancellationNotice(true);
+    if (
+      prevDinnerStatus &&
+      prevDinnerStatus !== "no_date" &&
+      current === "no_date" &&
+      !dbData.isHost &&
+      activeGroupId
+    ) {
+      const dismissedKey = `sc_cancel_dismissed_${activeGroupId}`;
+      if (!sessionStorage.getItem(dismissedKey)) {
+        setShowCancellationNotice(true);
+      }
     }
     if (current) setPrevDinnerStatus(current);
-  }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus]);
+  }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus, activeGroupId]);
 
   // Restaurant detail reviews come from DB now
 
