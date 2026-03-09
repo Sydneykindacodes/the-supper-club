@@ -429,17 +429,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Complete dinner (post-dinner)
+  // Complete dinner (post-dinner) and trigger host rotation
   const completeDinner = useCallback(async () => {
-    if (!activeReservation?.id) return false;
+    if (!activeReservation?.id || !activeGroupId) return false;
     const { error } = await supabase
       .from("reservations")
       .update({ status: "completed" as const })
       .eq("id", activeReservation.id);
     if (error) return false;
+
+    // Trigger host rotation via edge function
+    try {
+      await supabase.functions.invoke('select-next-host', {
+        body: { group_id: activeGroupId, reservation_id: activeReservation.id },
+      });
+    } catch (e) {
+      console.error('Host rotation failed:', e);
+    }
+
     refresh();
     return true;
-  }, [activeReservation?.id, refresh]);
+  }, [activeReservation?.id, activeGroupId, refresh]);
 
   // Make a member the host
   const makeHost = useCallback(async (memberId: string) => {
