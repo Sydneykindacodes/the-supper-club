@@ -147,14 +147,14 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       });
   }, [activeGroupId, refreshCounter]);
 
-  // Load active reservation for group
+  // Load active reservation for group (include "completed" for post-dinner flow)
   useEffect(() => {
     if (!activeGroupId) { setActiveReservation(null); return; }
     supabase
       .from("reservations")
       .select("*")
       .eq("group_id", activeGroupId)
-      .not("status", "in", '("completed","cancelled")')
+      .not("status", "in", '("cancelled")')
       .order("created_at", { ascending: false })
       .limit(1)
       .then(({ data }) => {
@@ -171,6 +171,8 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             revealed_at: r.revealed_at,
             reveal_at: r.reveal_at,
             booking_url: r.booking_url,
+            next_host_id: r.next_host_id,
+            next_host_notified_at: r.next_host_notified_at,
           });
         } else {
           setActiveReservation(null);
