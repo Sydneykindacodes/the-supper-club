@@ -2310,7 +2310,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         {showNotifications && (
           <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(26,15,10,0.92)", zIndex:200, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"20px 16px 12px", display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:"1px solid rgba(201,149,106,0.15)" }}>
-              <div style={{ fontSize:"20px", color:"#f5e6d3", fontWeight:"400" }}>Notifications</div>
+              <div>
+                <div style={{ fontSize:"20px", color:"#f5e6d3", fontWeight:"400" }}>Notifications</div>
+                <div style={{ fontSize:"11px", color:"#7a5a40", fontStyle:"italic", marginTop:"2px" }}>{activeGroup.name}</div>
+              </div>
               <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
                 {notifs.unreadCount > 0 && (
                   <span onClick={() => notifs.markAllRead()} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Mark all read</span>
