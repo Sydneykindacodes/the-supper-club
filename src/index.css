@@ -59,7 +59,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Montserrat', sans-serif;
   }
 
   /* Hide scrollbar for photo galleries */
