@@ -829,10 +829,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 Another evening for the books.
               </div>
               <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
-                Time to start planning the next one. Your availability has been reset.
+                Time to share your thoughts and start planning the next one.
               </div>
+              <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #c9956a, #9a6040)" }} onClick={() => {
+                setPostDinnerReviewPrompt(true);
+              }}>
+                Write Your Review
+              </button>
               <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
                 resetForNextDinner();
+                setBookingLinks(null);
                 await dbData.completeDinner();
                 setDinnerCompletedAt(null);
                 setScreen("availability");
@@ -842,6 +848,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </button>
               <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
                 resetForNextDinner();
+                setBookingLinks(null);
                 await dbData.completeDinner();
                 setDinnerCompletedAt(null);
               }}>
