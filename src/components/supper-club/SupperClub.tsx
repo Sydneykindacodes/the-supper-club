@@ -1621,7 +1621,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
             <div style={{ display:"flex", gap:"6px" }}>
               <button 
-                onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+                onClick={() => copyToClipboard(ag.code, "Invite code copied!")}
                 style={{ 
                   background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
                   borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
