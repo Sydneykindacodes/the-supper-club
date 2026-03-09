@@ -62,7 +62,7 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
         <div style={{ padding: "16px 16px 0" }}>
           <div style={{ marginBottom: "16px" }}>
             <div style={{ fontSize: "13px", color: "#7a5a40", fontStyle: "italic" }}>
-              {earned} of {defs.length} earned
+              {earned} badge{earned !== 1 ? "s" : ""} earned
             </div>
           </div>
 
