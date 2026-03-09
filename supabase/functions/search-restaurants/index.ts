@@ -15,34 +15,16 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Step 1: Geocode the city to get lat/lng
-    // Try the city as-is first, then with ", USA" appended for better results
-    let geoData: Record<string, unknown> | null = null;
-    for (const suffix of ['', ', USA', ', United States']) {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city + suffix)}&key=${apiKey}`;
-      const geoRes = await fetch(geocodeUrl);
-      geoData = await geoRes.json() as Record<string, unknown>;
-      if ((geoData.results as unknown[])?.length) break;
-    }
-    
-    if (!(geoData?.results as unknown[])?.length) {
-      return new Response(JSON.stringify({ restaurants: [], error: 'City not found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
+    // Build search query including the city for location context
+    // This avoids needing the Geocoding API
+    const searchQuery = query 
+      ? `${query} restaurant in ${city}`
+      : `restaurant in ${city}`;
 
-    const results = geoData!.results as { geometry: { location: { lat: number; lng: number } } }[];
-    const { lat, lng } = results[0].geometry.location;
-    const radiusMeters = Math.round(radius * 1609.34); // miles to meters
-
-    // Step 2: Search for restaurants using Places API (New) Text Search
+    // Search for restaurants using Places API (New) Text Search
     const searchUrl = 'https://places.googleapis.com/v1/places:searchText';
     const searchBody: Record<string, unknown> = {
-      textQuery: query ? `${query} restaurant` : 'restaurant',
-      locationBias: {
-        circle: {
-          center: { latitude: lat, longitude: lng },
-          radius: Math.min(radiusMeters, 50000),
-        },
-      },
+      textQuery: searchQuery,
       includedType: 'restaurant',
       maxResultCount: 15,
     };
@@ -58,6 +40,12 @@ Deno.serve(async (req) => {
     });
 
     const placesData = await placesRes.json();
+
+    // Log for debugging
+    if (placesData.error) {
+      console.error('Places API error:', placesData.error);
+      return new Response(JSON.stringify({ restaurants: [], error: placesData.error.message || 'Search failed' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     if (!placesData.places) {
       return new Response(JSON.stringify({ restaurants: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -89,6 +77,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ restaurants }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (err) {
+    console.error('Search error:', err);
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
