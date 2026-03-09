@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { S, chip } from "./styles";
 import type { User } from "@supabase/supabase-js";
-import type { DBReview } from "@/hooks/useSupperClubData";
+import type { DBReview, DBBadge } from "@/hooks/useSupperClubData";
+import IndividualBadges from "./IndividualBadges";
 
 const AVATAR_COLORS = [
   "#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c",
