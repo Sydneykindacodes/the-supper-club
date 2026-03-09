@@ -567,6 +567,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
 
   if (screen === "club_home") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Home" />;
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
