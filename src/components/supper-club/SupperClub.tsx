@@ -98,11 +98,19 @@ const LoadingScreen = () => (
 export default function SupperClub({ user, signOut }: SupperClubProps) {
   const MAX_GROUPS = 10;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
   const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
   const [activeTab, setActiveTab] = useState("home");
+
+  // Load current user's avatar_url
+  useEffect(() => {
+    supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if (data?.avatar_url) setUserAvatarUrl(data.avatar_url);
+    });
+  }, [user.id]);
 
   // Load user's groups from DB on mount (and handle invite links)
   useEffect(() => {
