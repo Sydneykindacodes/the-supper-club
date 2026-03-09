@@ -45,6 +45,7 @@ export default function SupperClub() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
+  const [groupCreator] = useState("You"); // Creator is fixed - can't change
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
 
