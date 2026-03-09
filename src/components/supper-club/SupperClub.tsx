@@ -1192,23 +1192,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           })()}
 
           {/* Awaiting Next Host Reveal */}
-          {ag.dinnerStatus === "awaiting_next_host" && (
+          {ag.dinnerStatus === "awaiting_next_host" && !hasSeenHostReveal && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"linear-gradient(140deg, rgba(26,15,10,0.98), rgba(45,18,8,0.9))", textAlign:"center", padding:"32px 20px" }}>
-              <div style={{ fontSize:"28px", color:"#c9956a", marginBottom:"16px", opacity:0.6 }}>◉</div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"14px" }}>The Wait Begins</div>
+              <div style={{ fontSize:"28px", color:"#c9956a", marginBottom:"16px", opacity:0.6 }}>✉</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"14px" }}>A New Host Has Been Chosen</div>
               <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400", lineHeight:"1.5" }}>
-                {WITTY_AWAITING_HOST[wittyAwaitingIdx]}
+                The envelope is sealed.<br/>Are you the one?
               </div>
               <div style={{ width:"40px", height:"1px", background:"rgba(201,149,106,0.3)", margin:"16px auto" }} />
-              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"16px" }}>
-                The next host will be revealed at <strong style={{ color:"#c9956a" }}>8:00 AM tomorrow</strong>. 
-                Until then, the identity remains sealed.
+              <button style={{ ...S.primaryBtn, maxWidth:"240px", margin:"0 auto" }} onClick={() => setShowHostRevealAnimation(true)}>
+                Open the Envelope
+              </button>
+            </div>
+          )}
+          {ag.dinnerStatus === "awaiting_next_host" && hasSeenHostReveal && (
+            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", textAlign:"center", padding:"24px 20px" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Next Cycle</div>
+              <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"8px" }}>
+                {dbData.isHost ? "You are the next host. The group awaits your command." : "A new host has been chosen. Submit your availability for the next dinner."}
               </div>
-              <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"12px", padding:"14px", border:"1px solid rgba(201,149,106,0.1)" }}>
-                <div style={{ fontSize:"10px", color:"#5a3a25", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>What Happens Next</div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.6" }}>
-                  Once the host is revealed, submit your availability and the cycle begins anew.
-                </div>
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic" }}>
+                The cycle begins anew.
               </div>
             </div>
           )}
