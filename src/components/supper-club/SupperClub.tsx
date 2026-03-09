@@ -125,7 +125,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
         .from("members")
-        .select("group_id, groups(id, name, code, city)")
+        .select("group_id, groups(id, name, code, city, is_temporary)")
         .eq("user_id", user.id);
       
       if (memberRows && memberRows.length > 0) {
