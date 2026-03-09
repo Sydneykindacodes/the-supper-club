@@ -227,7 +227,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
   const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
-  const [awaitingInitiation, setAwaitingInitiation] = useState(false);
+  
   const [availabilityModifying, setAvailabilityModifying] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
