@@ -966,8 +966,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             );
           })()}
-
-
+          {ag.dinnerStatus === "no_date" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.12)", textAlign:"center", padding:"28px 20px" }}>
               <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"8px" }}>◫</div>
               <div style={{ fontSize:"14px", color:"#7a5a40", marginBottom:"6px", lineHeight:"1.6", fontStyle:"italic" }}>
