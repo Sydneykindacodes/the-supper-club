@@ -786,9 +786,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           )}
 
           {ag.dinnerStatus === "awaiting_host" && (() => {
-            const isHost = groupAdmin === "You";
-            const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-            const allSubmitted = submittedMembers.length === MEMBERS.length;
+            const isHost = dbData.isHost;
+            const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+            const allSubmitted = submittedMembers.length === currentMembers.length;
             
             // Calculate overlapping dates
             const allDates: string[] = [];
