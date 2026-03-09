@@ -710,6 +710,19 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     color: m.color,
   }));
 
+  // Check if user has reviewed the current dinner
+  const hasUserReviewedCurrentDinner = activeReservation
+    ? communityReviews.some(r => r.user_id === user.id && r.reservation_id === activeReservation.id)
+    : false;
+
+  // Get the next host name (for awaiting_next_host display after reveal time)
+  const nextHostMember = activeReservation?.next_host_id 
+    ? members.find(m => m.id === activeReservation.next_host_id)
+    : null;
+  const nextHostName = nextHostMember 
+    ? (nextHostMember.user_id === user.id ? "You" : nextHostMember.name)
+    : null;
+
   return {
     members,
     uiMembers,
@@ -741,7 +754,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     makeHost,
     leaveGroup,
     refresh,
-    // New
     communityReviews,
     submitReview,
     uploadReviewPhoto,
@@ -752,5 +764,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     selectRestaurantForReservation,
     selectedRestaurantData,
     isSoloGroup,
+    hasUserReviewedCurrentDinner,
+    nextHostName,
   };
 }
