@@ -4421,6 +4421,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setShowHostRevealAnimation(false);
           setHasSeenHostReveal(true);
         }}
+        onDecline={isNextHost ? () => {
+          setShowHostRevealAnimation(false);
+          setHasSeenHostReveal(true);
+          setScreen("relinquish_host");
+        } : undefined}
       />
     );
   }
