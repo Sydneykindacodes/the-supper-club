@@ -8,6 +8,8 @@ interface BookingLinks {
   opentable?: string;
   resy?: string;
   yelp?: string;
+  phone?: string;
+  website?: string;
 }
 
 Deno.serve(async (req) => {
@@ -25,43 +27,49 @@ Deno.serve(async (req) => {
       party_size 
     } = await req.json();
 
-    // Format date for URL params
     const date = new Date(dinner_date);
     const dateStr = date.toISOString().split('T')[0];
     const timeStr = dinner_time || '19:00';
 
-    // Encode restaurant name for search
     const encodedName = encodeURIComponent(restaurant_name);
     const encodedCity = encodeURIComponent(city);
 
     const links: BookingLinks = {
-      // Google Maps with reservation intent
       google: google_place_id 
         ? `https://www.google.com/maps/reserve/v/dine/${google_place_id}?hl=en`
         : `https://www.google.com/maps/search/${encodedName}+${encodedCity}`,
     };
 
-    // OpenTable search URL
     links.opentable = `https://www.opentable.com/s?dateTime=${dateStr}T${timeStr}&covers=${party_size}&term=${encodedName}`;
-
-    // Resy search URL  
     links.resy = `https://resy.com/cities/${encodedCity.toLowerCase().replace(/[^a-z]/g, '-')}?date=${dateStr}&seats=${party_size}&query=${encodedName}`;
-
-    // Yelp reservation search
     links.yelp = `https://www.yelp.com/reservations/${encodedName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${encodedCity.toLowerCase().replace(/[^a-z0-9]/g, '-')}?date=${dateStr}&time=${timeStr.replace(':', '')}&covers=${party_size}`;
+
+    // Fetch phone number and website from Google Places API
+    const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
+    if (apiKey && google_place_id) {
+      try {
+        const detailsUrl = `https://places.googleapis.com/v1/places/${google_place_id}`;
+        const detailsRes = await fetch(detailsUrl, {
+          headers: {
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask': 'nationalPhoneNumber,internationalPhoneNumber,websiteUri',
+          },
+        });
+        const details = await detailsRes.json();
+        if (details.nationalPhoneNumber || details.internationalPhoneNumber) {
+          links.phone = details.nationalPhoneNumber || details.internationalPhoneNumber;
+        }
+        if (details.websiteUri) {
+          links.website = details.websiteUri;
+        }
+      } catch (e) {
+        console.error('Failed to fetch place details:', e);
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
       links,
-      instructions: {
-        title: "🔗 Secure the Reservation",
-        subtitle: "The venue awaits. Click any link to check availability.",
-        tips: [
-          "Google Maps often has direct booking for popular spots",
-          "OpenTable and Resy show real-time availability",
-          "If you can't find it, try calling — old school works too"
-        ]
-      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

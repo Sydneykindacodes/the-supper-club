@@ -202,7 +202,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showRevealAnimation, setShowRevealAnimation] = useState(false);
   const [hasSeenReveal, setHasSeenReveal] = useState(false);
-  const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
+  const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string; phone?: string; website?: string } | null>(null);
+  const [showBookingLinks, setShowBookingLinks] = useState(false);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [postDinnerStep, setPostDinnerStep] = useState<"review" | "availability" | "completing" | null>(null);
@@ -988,8 +989,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 )}
                 <div style={{ background: isBooked ? "rgba(122,158,126,0.08)" : "rgba(201,149,106,0.1)", borderRadius:"12px", padding:"16px", marginBottom:"16px" }}>
                   <div style={{ fontSize:"10px", color: isBooked ? "#7a9e7e" : "#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>{isBooked ? "Booked Restaurant" : "The Secret Destination"}</div>
-                  <div style={{ fontSize:"24px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>{mockRestaurant.name}</div>
-                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
+                  {/* Hide restaurant name until booked — just show cuisine & city hint */}
+                  {isBooked ? (
+                    <>
+                      <div style={{ fontSize:"24px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>{mockRestaurant.name}</div>
+                      <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500", letterSpacing:"1px" }}>? ? ?</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
+                        Even you don't get to peek yet. Call the number below and let the adventure begin.
+                      </div>
+                    </>
+                  )}
                 </div>
                 {isBooked ? (
                   <>
@@ -1029,29 +1042,81 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </>
                 ) : (
                   <>
-                    <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
-                    <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
-                      <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", borderRadius:"10px", border:"1px solid rgba(122,158,126,0.25)", textDecoration:"none", cursor:"pointer" }}>
-                        <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
-                        <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
-                        <span style={{ fontSize:"11px", color:"#7a9e7e", marginLeft:"auto" }}>recommended</span>
-                      </a>
-                      <div style={{ fontSize:"10px", color:"#5a3a25", textAlign:"center", padding:"4px 0", letterSpacing:"1px", textTransform:"uppercase" }}>or try searching on</div>
-                      <div style={{ display:"flex", gap:"8px" }}>
-                        <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
-                          <span style={{ fontSize:"11px", color:"#7a5a40" }}>OpenTable</span>
-                        </a>
-                        <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
-                          <span style={{ fontSize:"11px", color:"#7a5a40" }}>Resy</span>
-                        </a>
-                      </div>
-                      <div style={{ fontSize:"10px", color:"#4a2e18", fontStyle:"italic", textAlign:"center" }}>Not all restaurants are on every platform</div>
+                    {/* Phone-first booking */}
+                    <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>Make the Reservation</div>
+                    <div style={{ fontSize:"11px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+                      The old-fashioned way is the best way. Pick up the phone, call the restaurant, and book it like a proper host.
                     </div>
-                    <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
-                      <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                        <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Party of {dbData.activeReservation?.party_size || currentMembers.length}.
+                    
+                    {/* Phone number CTA */}
+                    <a 
+                      href={bookingLinks?.phone ? `tel:${bookingLinks.phone.replace(/[^+\d]/g, '')}` : undefined}
+                      onClick={!bookingLinks?.phone ? (e) => { e.preventDefault(); showToast("Phone number not available — try the online options below."); } : undefined}
+                      style={{ 
+                        display:"flex", alignItems:"center", justifyContent:"center", gap:"10px", 
+                        padding:"16px", background:"linear-gradient(135deg, rgba(122,158,126,0.15), rgba(122,158,126,0.08))", 
+                        borderRadius:"14px", border:"2px solid rgba(122,158,126,0.35)", 
+                        textDecoration:"none", cursor:"pointer", marginBottom:"8px",
+                        transition:"all 0.2s ease",
+                      }}>
+                      <span style={{ fontSize:"18px" }}>📞</span>
+                      <div style={{ textAlign:"left" }}>
+                        <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500", letterSpacing:"1px" }}>
+                          {bookingLinks?.phone || "Fetching number..."}
+                        </div>
+                        <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"1px", textTransform:"uppercase", marginTop:"2px" }}>
+                          Tap to Call
+                        </div>
                       </div>
+                    </a>
+                    
+                    <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"12px", marginBottom:"16px", textAlign:"center" }}>
+                      <div style={{ fontSize:"11px", color:"#7a9e7e", lineHeight:"1.5" }}>
+                        📅 <strong>{ag.nextDinner}</strong> · 🍽️ Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                      </div>
+                      <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px", fontStyle:"italic" }}>Tell them this when you call</div>
                     </div>
+
+                    {/* Witty online fallback */}
+                    {!showBookingLinks ? (
+                      <button 
+                        style={{ ...S.ghostBtn, marginBottom:"12px", fontSize:"11px" }} 
+                        onClick={() => setShowBookingLinks(true)}
+                      >
+                        Can't call right now? Fine, book online...
+                      </button>
+                    ) : (
+                      <div style={{ marginBottom:"16px" }}>
+                        <div style={{ fontSize:"11px", color:"#c9956a", fontStyle:"italic", textAlign:"center", marginBottom:"10px", lineHeight:"1.6" }}>
+                          Really? You'd rather tap a screen than have a real human interaction? Alright, here you go — but where's the fun in that?
+                        </div>
+                        <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                          {bookingLinks?.website && (
+                            <a href={bookingLinks.website} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(201,149,106,0.08)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.2)", textDecoration:"none", cursor:"pointer" }}>
+                              <span style={{ fontSize:"12px" }}>🌐</span>
+                              <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Restaurant Website</span>
+                              <span style={{ fontSize:"10px", color:"#7a5a40", marginLeft:"auto", fontStyle:"italic" }}>boring but effective</span>
+                            </a>
+                          )}
+                          <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(122,158,126,0.06)", borderRadius:"10px", border:"1px solid rgba(122,158,126,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                            <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
+                            <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
+                          </a>
+                          <div style={{ display:"flex", gap:"8px" }}>
+                            <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                              <span style={{ fontSize:"11px", color:"#7a5a40" }}>OpenTable</span>
+                            </a>
+                            <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:"6px", padding:"10px", background:"rgba(255,255,255,0.02)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.08)", textDecoration:"none", cursor:"pointer" }}>
+                              <span style={{ fontSize:"11px", color:"#7a5a40" }}>Resy</span>
+                            </a>
+                          </div>
+                          <div style={{ fontSize:"10px", color:"#4a2e18", fontStyle:"italic", textAlign:"center" }}>
+                            The phone was right there. Just saying.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {!bookingDateConfirm ? (
                       <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
                         setBookingDateConfirm(true);
@@ -1077,6 +1142,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                             showToast("Failed to confirm. Try again.");
                           }
                           setBookingDateConfirm(false);
+                          setShowBookingLinks(false);
                         }}>
                           Yes, Booked for {ag.nextDinner}
                         </button>
