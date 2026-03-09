@@ -2498,7 +2498,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {gpResults
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
-                    .map(r => (
+                    .map(r => {
+                    const isInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
+                    return (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
                       onClick={() => openRestaurantDetail(r)}>
                       {/* Restaurant photo */}
@@ -2506,6 +2508,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <RestaurantPhotoStrip photoRefs={r.photoRefs} fetchPhotoUrl={fetchPhotoUrl} />
                       )}
                       <div style={{ padding:"12px 14px" }}>
+                        {isInPool && (
+                          <div style={{ display:"inline-block", fontSize:"10px", color:"#7a9e7e", background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)", borderRadius:"6px", padding:"3px 8px", marginBottom:"8px", fontWeight:"600", letterSpacing:"0.5px" }}>
+                            ✓ Already in your pool
+                          </div>
+                        )}
                         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                           <div style={{ flex:1 }}>
                             <div style={S.cardTitle}>{r.name}</div>
