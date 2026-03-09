@@ -581,6 +581,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
   }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
 
+  // Check if pool is low (<5) and send a notification — only after at least 1 completed dinner
+  const checkLowPoolNotification = useCallback(async (poolSizeAfterAction: number) => {
+    if (!activeGroupId || poolSizeAfterAction >= 5) return;
+    // Check if group has at least 1 completed reservation
+    const { data: completed } = await supabase
+      .from("reservations")
+      .select("id")
+      .eq("group_id", activeGroupId)
+      .eq("status", "completed")
+      .limit(1);
+    if (!completed || completed.length === 0) return;
+    // Send notification to all members
+    await supabase.functions.invoke('send-group-notification', {
+      body: {
+        group_id: activeGroupId,
+        type: "low_pool",
+        reservation_id: null,
+      },
+    });
+  }, [activeGroupId]);
+
   // Helper to send a notification to the host only
   const sendHostNotification = useCallback(async (type: string) => {
     if (!activeGroupId) return;
@@ -1547,6 +1568,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     resetForNextDinner();
                     setBookingLinks(null);
                     await dbData.completeDinner();
+                    checkLowPoolNotification(poolRestaurants.length - 1);
                     setPostDinnerStep(null);
                     setScreen("availability");
                     setActiveTab("schedule");
@@ -1558,6 +1580,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     resetForNextDinner();
                     setBookingLinks(null);
                     await dbData.completeDinner();
+                    checkLowPoolNotification(poolRestaurants.length - 1);
                     setPostDinnerStep(null);
                   }}>
                     Skip for Now
@@ -2122,6 +2145,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={async () => {
               if (dbData.dinnerStatus === "scheduled" || dbData.dinnerStatus === "post_dinner") {
                 await dbData.completeDinner();
+                checkLowPoolNotification(poolRestaurants.length - 1);
                 showToast("Dinner completed. Post-dinner flow triggered.");
                 setScreen("club_home");
                 setActiveTab("home");
@@ -2396,8 +2420,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     onClick={async () => { 
                       const success = await dbData.removeRestaurantFromPool(r.name);
                       if (success) {
+                        const newPool = poolRestaurants.filter(rest => rest.id !== r.id);
                         setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
                         showToast(`${r.name} removed from pool.`);
+                        // Check low pool
+                        checkLowPoolNotification(newPool.length);
                       } else {
                         showToast("Failed to remove restaurant.");
                       }
