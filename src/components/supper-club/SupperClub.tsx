@@ -370,8 +370,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
-  const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
-  const allConfirmed = confirmedCount === currentMembers.length;
 
   const sortedVisited = [...visitedRestaurants].sort((a, b) => {
     if (visitedSort === "rating") return (b.visitedRating || 0) - (a.visitedRating || 0);
