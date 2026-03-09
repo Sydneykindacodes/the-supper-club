@@ -393,12 +393,100 @@ export default function SupperClub() {
                 Your group is out here living life without a dinner on the books. Bold strategy.
               </div>
               <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"18px", lineHeight:"1.5" }}>
-                Once everyone submits their available dates, the app will find the overlap and propose a night out.
+                Once everyone submits their available dates, the host will pick the perfect night.
               </div>
               <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
               <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => showToast("Nudge sent. They'll get the hint.")}>Nudge the Group</button>
             </div>
           )}
+
+          {ag.dinnerStatus === "awaiting_host" && (() => {
+            const isHost = groupAdmin === "You";
+            const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+            const allSubmitted = submittedMembers.length === MEMBERS.length;
+            
+            // Calculate overlapping dates
+            const allDates: string[] = [];
+            MEMBERS.forEach(m => {
+              const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+              dates.forEach(d => allDates.push(d));
+            });
+            const dateCount: Record<string, number> = {};
+            allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+            const overlappingDates = Object.entries(dateCount)
+              .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 0)
+              .map(([date]) => date)
+              .sort();
+
+            return (
+              <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"rgba(201,149,106,0.04)" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>
+                  {isHost ? "Your Move, Host" : "Awaiting Host"}
+                </div>
+                {isHost ? (
+                  <>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
+                      {allSubmitted ? "Everyone's in. Time to decide." : "Some dates are in — you can pick anytime."}
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                      {WITTY_HOST_WAITING[wittyHostIdx]}
+                    </div>
+                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px", marginBottom:"16px" }}>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>Submissions</div>
+                      {MEMBERS.map(m => {
+                        const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                        const hasSubmitted = dates.length > 0;
+                        return (
+                          <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                            </div>
+                            <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
+                              {hasSubmitted ? `${dates.length} dates` : "Waiting"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {overlappingDates.length > 0 && (
+                      <div style={{ fontSize:"12px", color:"#7a9e7e", marginBottom:"12px", textAlign:"center" }}>
+                        {overlappingDates.length} date{overlappingDates.length > 1 ? "s" : ""} work for everyone who's submitted
+                      </div>
+                    )}
+                    <button style={S.primaryBtn} onClick={() => setScreen("host_select_date")}>
+                      Pick the Night
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>The host is deciding</div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                      Everyone's dates are in. Now we wait for the host to work their magic.
+                    </div>
+                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px" }}>
+                      {MEMBERS.map(m => {
+                        const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                        const hasSubmitted = dates.length > 0;
+                        return (
+                          <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                              {m.name === groupAdmin && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
+                            </div>
+                            <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                              {hasSubmitted ? "✓" : "..."}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
 
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
