@@ -1180,6 +1180,178 @@ export default function SupperClub() {
     const uniqueRestaurants = [...new Set(PUBLIC_REVIEWS.map(r => r.restaurant))];
     const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
 
+    // Restaurant Detail View
+    if (selectedRestaurantDetail) {
+      const r = selectedRestaurantDetail;
+      const isGooglePlace = 'googlePlaceId' in r;
+      const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name);
+      const avgRating = reviews.length > 0 ? (reviews.reduce((s, rev) => s + rev.rating, 0) / reviews.length).toFixed(1) : null;
+      
+      return (
+        <div style={S.app}><div style={S.phone}>
+          {toast && <div style={S.toast}>{toast}</div>}
+          <div style={S.screen}>
+            <div style={S.header}>
+              <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+                <button onClick={() => setSelectedRestaurantDetail(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+                <div style={S.headerEye}>Restaurant Details</div>
+              </div>
+              <div style={S.headerTitle}>{r.name}</div>
+            </div>
+            
+            <div style={{ padding:"16px 16px 0" }}>
+              {/* Hero Info */}
+              <div style={{ ...S.card, marginBottom:"16px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"12px" }}>
+                  <div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40" }}>{'cuisine' in r ? r.cuisine : 'Restaurant'} · {r.city}</div>
+                    {'address' in r && r.address && <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"4px" }}>{r.address}</div>}
+                  </div>
+                  <PriceTag price={r.price}/>
+                </div>
+                <div style={{ display:"flex", gap:"16px", alignItems:"center" }}>
+                  {('googleRating' in r && r.googleRating) && (
+                    <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+                      <span style={{ fontSize:"18px", color:"#7a9e7e", fontWeight:"700" }}>{r.googleRating}</span>
+                      <div style={{ fontSize:"11px", color:"#5a3a25" }}>
+                        <div>Google</div>
+                        <div>{('googleReviewCount' in r ? r.googleReviewCount : 0)} reviews</div>
+                      </div>
+                    </div>
+                  )}
+                  {avgRating && (
+                    <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+                      <span style={{ fontSize:"18px", color:"#c9956a", fontWeight:"700" }}>{avgRating}</span>
+                      <div style={{ fontSize:"11px", color:"#5a3a25" }}>
+                        <div>Supper Club</div>
+                        <div>{reviews.length} review{reviews.length !== 1 ? "s" : ""}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Photos Section */}
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                Photos · {mockRestaurantPhotos.length}
+              </div>
+              <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+                {mockRestaurantPhotos.map((symbol, i) => (
+                  <div key={i} style={{ 
+                    minWidth:"90px", height:"90px", borderRadius:"12px", 
+                    background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:"28px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
+                    flexShrink:0
+                  }}>
+                    {symbol}
+                  </div>
+                ))}
+              </div>
+
+              {/* Reviews Section */}
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                Member Reviews · {mockRestaurantReviews.length}
+              </div>
+              {mockRestaurantReviews.map((rev, i) => {
+                const member = MEMBERS.find(m => m.name === rev.member);
+                return (
+                  <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
+                      <div style={{ 
+                        width:"28px", height:"28px", borderRadius:"50%", 
+                        background: member?.color || "#c9956a",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:"11px", color:"#fff", fontWeight:"700"
+                      }}>
+                        {member?.avatar || rev.member[0]}
+                      </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.member}</div>
+                        <div style={{ fontSize:"11px", color:"#5a3a25" }}>{rev.group} · {rev.date}</div>
+                      </div>
+                      <div style={{ fontSize:"15px", color:"#c9956a", fontWeight:"700" }}>{rev.rating}</div>
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.6", fontStyle:"italic" }}>
+                      "{rev.text}"
+                    </div>
+                    {rev.hasPhoto && (
+                      <div style={{ 
+                        marginTop:"10px", height:"48px", width:"48px", borderRadius:"8px",
+                        background:"linear-gradient(135deg, rgba(201,149,106,0.12), rgba(201,149,106,0.04))",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:"16px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.1)"
+                      }}>
+                        ◈
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Add to Pool Button */}
+              <button style={{ ...S.primaryBtn, marginTop:"16px", marginBottom:"24px" }} onClick={() => {
+                const restaurant: Restaurant = {
+                  id: Date.now(), 
+                  name: r.name, 
+                  cuisine: 'cuisine' in r ? r.cuisine : "Restaurant", 
+                  suggested_by: "You",
+                  city: r.city, 
+                  price: r.price, 
+                  visited: false, 
+                  visitedDate: null, 
+                  visitedRating: null,
+                  googleRating: 'googleRating' in r ? r.googleRating : null,
+                  googleReviewCount: 'googleReviewCount' in r ? r.googleReviewCount : 0,
+                  scRating: null, 
+                  scReviewCount: 0,
+                };
+                setAddToGroupPicker({ restaurant, visible: true });
+                setAddToGroupSelected([activeGroup.id]);
+              }}>
+                Add to Pool
+              </button>
+            </div>
+          </div>
+          <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+
+          {/* Group Picker Modal */}
+          {addToGroupPicker.visible && (
+            <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(26,15,10,0.9)", zIndex:100, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px" }}>
+              <div style={{ background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"16px", padding:"20px", maxWidth:"320px", width:"100%" }}>
+                <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"600" }}>Add to Groups</div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic" }}>{addToGroupPicker.restaurant.name}</div>
+                <div style={{ marginBottom:"20px" }}>
+                  {groups.map(g => (
+                    <div key={g.id} onClick={() => {
+                      const isSelected = addToGroupSelected.includes(g.id);
+                      setAddToGroupSelected(prev => isSelected ? prev.filter(id => id !== g.id) : [...prev, g.id]);
+                    }} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px", cursor:"pointer", borderRadius:"10px", background:addToGroupSelected.includes(g.id)?"rgba(201,149,106,0.1)":"transparent", marginBottom:"8px" }}>
+                      <div style={{ width:"20px", height:"20px", borderRadius:"4px", border:"1px solid rgba(201,149,106,0.3)", background:addToGroupSelected.includes(g.id)?"#c9956a":"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {addToGroupSelected.includes(g.id) && <span style={{ fontSize:"12px", color:"#1a0f0a" }}>*</span>}
+                      </div>
+                      <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{g.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display:"flex", gap:"10px" }}>
+                  <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => { setAddToGroupPicker(prev => ({ ...prev, visible: false })); setAddToGroupSelected([]); setSelectedRestaurantDetail(null); }}>Cancel</button>
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                    if (addToGroupSelected.length === 0) { showToast("Select at least one group."); return; }
+                    addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
+                    showToast(`Added to ${addToGroupSelected.length} group${addToGroupSelected.length > 1 ? "s" : ""}.`);
+                    setAddToGroupPicker(prev => ({ ...prev, visible: false }));
+                    setAddToGroupSelected([]);
+                    setSelectedRestaurantDetail(null);
+                  }}>Add to {addToGroupSelected.length} Group{addToGroupSelected.length !== 1 ? "s" : ""}</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div></div>
+      );
+    }
+
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
@@ -1212,40 +1384,10 @@ export default function SupperClub() {
               </div>
 
               <label style={S.label}>Search Restaurants</label>
-              <div style={{ position:"relative" }}>
-                <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
-                />
-                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
-                {gpResults.length > 0 && (
-                  <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
-                    {gpResults
-                      .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
-                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
-                      .map(r => (
-                      <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
-                        onClick={() => {
-                          const restaurant = {
-                            id: Date.now(), name: r.name, cuisine: r.cuisine, suggested_by: "You",
-                            city: r.city, price: r.price, visited: false, visitedDate: null, visitedRating: null,
-                            googleRating: r.googleRating, googleReviewCount: r.googleReviewCount, scRating: null, scReviewCount: 0,
-                          };
-                          setAddToGroupPicker({ restaurant, visible: true });
-                          setAddToGroupSelected([activeGroup.id]);
-                          setGpResults([]);
-                          setRName("");
-                        }}>
-                        <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
-                        <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
-                          {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
-                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>* {r.googleRating}</span>}
-                          {r.price && <span style={{ marginLeft:"6px" }}>{PRICE_LABELS[r.price]}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
+                onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
+              />
+              {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
               
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
               <div style={{ marginBottom:"16px" }}>
@@ -1271,13 +1413,47 @@ export default function SupperClub() {
               }}>
                 Search
               </button>
+
+              {/* Search Results */}
+              {gpResults.length > 0 && (
+                <>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                    Results · {gpResults.filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter).length}
+                  </div>
+                  {gpResults
+                    .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                    .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
+                    .map(r => (
+                    <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}
+                      onClick={() => setSelectedRestaurantDetail(r)}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                        <div style={{ flex:1 }}>
+                          <div style={S.cardTitle}>{r.name}</div>
+                          <div style={S.cardSub}>{r.cuisine}</div>
+                          <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                        </div>
+                        <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                          <PriceTag price={r.price}/>
+                          {r.googleRating && (
+                            <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700" }}>
+                              {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>G</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
 
           {exploreView === "visited" && (
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                Restaurants you've visited across all groups. Add to other group pools.
+                Restaurants you've visited across all groups. Tap for details.
               </div>
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Sort By</label>
@@ -1298,8 +1474,8 @@ export default function SupperClub() {
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                 {visitedRestaurants.length} Previously Visited
               </div>
-              {visitedRestaurants.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px" }}>
+              {sortedVisited.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => setSelectedRestaurantDetail(r as any)}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
                       <div style={S.cardTitle}>{r.name}</div>
@@ -1311,13 +1487,7 @@ export default function SupperClub() {
                       <RatingBadge restaurant={r} large/>
                     </div>
                   </div>
-                  <button onClick={() => {
-                    const restaurant = { ...r, visited:false, visitedDate:null, visitedRating:null, suggested_by:"You", id: Date.now() };
-                    setAddToGroupPicker({ restaurant, visible: true });
-                    setAddToGroupSelected([activeGroup.id]);
-                  }} style={{ ...S.ghostBtn, marginTop:"12px", fontSize:"11px", padding:"10px" }}>
-                    Add to Pool
-                  </button>
+                  <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for photos and reviews →</div>
                 </div>
               ))}
             </div>
@@ -1329,6 +1499,28 @@ export default function SupperClub() {
                 <button onClick={() => setSelectedPublicR(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"14px", cursor:"pointer", padding:0, marginBottom:"16px" }}>← All Restaurants</button>
                 <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{selectedPublicR}</div>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>New York, NY</div>
+                
+                {/* Photos Section */}
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                  Photos · {mockRestaurantPhotos.length}
+                </div>
+                <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+                  {mockRestaurantPhotos.slice(0,4).map((symbol, i) => (
+                    <div key={i} style={{ 
+                      minWidth:"72px", height:"72px", borderRadius:"10px", 
+                      background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      fontSize:"24px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
+                      flexShrink:0
+                    }}>
+                      {symbol}
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                  Reviews · {PUBLIC_REVIEWS.filter(r => r.restaurant === selectedPublicR).length}
+                </div>
                 {PUBLIC_REVIEWS.filter(r => r.restaurant === selectedPublicR).map((rev, i) => (
                   <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"8px" }}>
@@ -1340,7 +1532,7 @@ export default function SupperClub() {
                   </div>
                 ))}
                 <button style={{ ...S.primaryBtn, marginTop:"8px" }} onClick={() => {
-                  const restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null };
+                  const restaurant: Restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null };
                   setAddToGroupPicker({ restaurant, visible: true });
                   setAddToGroupSelected([activeGroup.id]);
                 }}>Add to Pool</button>
@@ -1361,7 +1553,7 @@ export default function SupperClub() {
                       </div>
                       <div style={S.cardSub}>New York, NY · {reviews.length} review{reviews.length > 1 ? "s" : ""}</div>
                       <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic", marginTop:"8px" }}>"{reviews[0].review.slice(0,80)}..."</div>
-                      <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"8px" }}>{reviews[0].group} · {reviews[0].date}</div>
+                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap to see photos and all reviews →</div>
                     </div>
                   );
                 })}
@@ -1382,7 +1574,7 @@ export default function SupperClub() {
                       setAddToGroupSelected(prev => isSelected ? prev.filter(id => id !== g.id) : [...prev, g.id]);
                     }} style={{ display:"flex", alignItems:"center", gap:"10px", padding:"10px", cursor:"pointer", borderRadius:"10px", background:addToGroupSelected.includes(g.id)?"rgba(201,149,106,0.1)":"transparent", marginBottom:"8px" }}>
                       <div style={{ width:"20px", height:"20px", borderRadius:"4px", border:"1px solid rgba(201,149,106,0.3)", background:addToGroupSelected.includes(g.id)?"#c9956a":"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                        {addToGroupSelected.includes(g.id) && <span style={{ fontSize:"12px", color:"#1a0f0a" }}>✓</span>}
+                        {addToGroupSelected.includes(g.id) && <span style={{ fontSize:"12px", color:"#1a0f0a" }}>*</span>}
                       </div>
                       <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{g.name}</span>
                     </div>
