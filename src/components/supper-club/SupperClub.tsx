@@ -188,6 +188,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Review form and profile state
   const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [viewingMemberUserId, setViewingMemberUserId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
