@@ -581,6 +581,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
   }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
 
+  // Check if pool is low (<5) and send a notification — only after at least 1 completed dinner
+  const checkLowPoolNotification = useCallback(async (poolSizeAfterAction: number) => {
+    if (!activeGroupId || poolSizeAfterAction >= 5) return;
+    // Check if group has at least 1 completed reservation
+    const { data: completed } = await supabase
+      .from("reservations")
+      .select("id")
+      .eq("group_id", activeGroupId)
+      .eq("status", "completed")
+      .limit(1);
+    if (!completed || completed.length === 0) return;
+    // Send notification to all members
+    await supabase.functions.invoke('send-group-notification', {
+      body: {
+        group_id: activeGroupId,
+        type: "low_pool",
+        reservation_id: null,
+      },
+    });
+  }, [activeGroupId]);
+
   // Helper to send a notification to the host only
   const sendHostNotification = useCallback(async (type: string) => {
     if (!activeGroupId) return;
