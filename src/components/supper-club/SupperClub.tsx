@@ -658,6 +658,171 @@ export default function SupperClub() {
     </div></div>
   );
 
+  // ── HOST SELECT DATE ──
+  if (screen === "host_select_date") {
+    const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+    const notSubmittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
+    
+    // Gather all dates from submitted members
+    const allDatesFromSubmitted: string[] = [];
+    submittedMembers.forEach(m => {
+      const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+      dates.forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
+    });
+    
+    // Count how many members are available on each date
+    const dateAvailability: Record<string, string[]> = {};
+    submittedMembers.forEach(m => {
+      const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+      dates.forEach(d => {
+        if (!dateAvailability[d]) dateAvailability[d] = [];
+        dateAvailability[d].push(m.name);
+      });
+    });
+    
+    // Sort dates: full overlap first, then by number of available members, then by date
+    const sortedDates = allDatesFromSubmitted.sort((a, b) => {
+      const aCount = dateAvailability[a]?.length || 0;
+      const bCount = dateAvailability[b]?.length || 0;
+      if (aCount !== bCount) return bCount - aCount;
+      return new Date(a).getTime() - new Date(b).getTime();
+    });
+    
+    const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
+    
+    const formatDateDisplay = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Pick the Night</div>
+          </div>
+          
+          <div style={{ padding:"16px 16px 0" }}>
+            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+              As the host, you have the sacred duty of choosing the dinner date. Choose wisely. No pressure.
+            </div>
+            
+            {/* Submission Status */}
+            <div style={{ ...S.card, marginBottom:"16px" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Who's Submitted</div>
+              {MEMBERS.map(m => {
+                const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                const hasSubmitted = dates.length > 0;
+                return (
+                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                      <div style={{ width:"28px", height:"28px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
+                    </div>
+                    <span style={{ fontSize:"12px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
+                      {hasSubmitted ? `${dates.length} dates` : "Not submitted"}
+                    </span>
+                  </div>
+                );
+              })}
+              {notSubmittedMembers.length > 0 && (
+                <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"10px", lineHeight:"1.5" }}>
+                  {notSubmittedMembers.map(m => m.name).join(", ")} {notSubmittedMembers.length === 1 ? "hasn't" : "haven't"} submitted yet. You can still pick a date — they'll be marked as unable to attend.
+                </div>
+              )}
+            </div>
+            
+            {/* Date Selection */}
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Available Dates</div>
+            
+            {sortedDates.length === 0 ? (
+              <div style={{ ...S.card, textAlign:"center", padding:"24px" }}>
+                <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic" }}>No dates submitted yet. Check back later or nudge the group.</div>
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:"10px", marginBottom:"20px" }}>
+                {sortedDates.map(date => {
+                  const available = dateAvailability[date] || [];
+                  const isFullOverlap = available.length === submittedMembers.length;
+                  const isSelected = hostSelectedDate === date;
+                  
+                  return (
+                    <div 
+                      key={date} 
+                      onClick={() => setHostSelectedDate(date)}
+                      style={{ 
+                        ...S.card, 
+                        margin: 0, 
+                        cursor: "pointer",
+                        border: isSelected ? "2px solid #c9956a" : isFullOverlap ? "1px solid rgba(122,158,126,0.4)" : "1px solid rgba(201,149,106,0.12)",
+                        background: isSelected ? "rgba(201,149,106,0.12)" : isFullOverlap ? "rgba(122,158,126,0.06)" : "rgba(201,149,106,0.02)",
+                        transition: "all 0.2s ease"
+                      }}
+                    >
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
+                        <div style={{ fontSize:"15px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(date)}</div>
+                        {isFullOverlap && <span style={{ fontSize:"10px", color:"#7a9e7e", background:"rgba(122,158,126,0.2)", padding:"3px 8px", borderRadius:"6px", fontWeight:"600" }}>FULL OVERLAP</span>}
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap" }}>
+                        <span style={{ fontSize:"11px", color:"#7a5a40" }}>Available:</span>
+                        {available.map(name => {
+                          const member = MEMBERS.find(m => m.name === name);
+                          return (
+                            <div key={name} style={{ width:"22px", height:"22px", borderRadius:"50%", background: member?.color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"9px", color:"#fff", fontWeight:"700" }}>
+                              {member?.avatar || name[0]}
+                            </div>
+                          );
+                        })}
+                        {notSubmittedMembers.length > 0 && (
+                          <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"4px" }}>
+                            ({notSubmittedMembers.length} pending)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {hostSelectedDate && (
+              <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"12px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                <div style={{ fontSize:"12px", color:"#c9956a", marginBottom:"4px" }}>Selected Date</div>
+                <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(hostSelectedDate)}</div>
+                <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"4px" }}>
+                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {MEMBERS.length} members available
+                </div>
+              </div>
+            )}
+            
+            <button 
+              style={{ ...S.primaryBtn, opacity: hostSelectedDate ? 1 : 0.5 }} 
+              onClick={() => {
+                if (!hostSelectedDate) { showToast("Select a date first."); return; }
+                const formattedDate = new Date(hostSelectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                updateGroup(activeGroup.id, { dinnerStatus: "pending_confirm", pendingDate: formattedDate });
+                showToast("Date proposed! Members will be asked to confirm.");
+                setScreen("club_home");
+                setActiveTab("home");
+              }}
+            >
+              Propose This Date
+            </button>
+            
+            <button style={{ ...S.ghostBtn, marginTop:"8px" }} onClick={() => setScreen("club_home")}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div></div>
+    );
+  }
+
   // ── GROUP POOL ──
   if (screen === "group_pool") {
     return (
