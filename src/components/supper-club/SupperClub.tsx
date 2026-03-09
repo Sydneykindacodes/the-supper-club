@@ -1560,7 +1560,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (selectedRestaurantDetail) {
       const r = selectedRestaurantDetail;
       const isGooglePlace = 'googlePlaceId' in r;
-      const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name);
+      const reviews = allCommunityReviews.filter(rev => rev.restaurant === r.name);
       const avgRating = reviews.length > 0 ? (reviews.reduce((s, rev) => s + rev.rating, 0) / reviews.length).toFixed(1) : null;
       
       return (
