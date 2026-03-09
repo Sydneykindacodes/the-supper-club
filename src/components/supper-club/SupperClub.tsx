@@ -78,51 +78,41 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     };
     loadGroups();
   }, [user.id]);
+
+  // Data hook for DB-backed members, restaurants
+  const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
+  const dbData = useSupperClubData(user, activeGroupId);
+
   const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
   const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
-  // Track if user is awaiting initiation (joined after host booked)
   const [awaitingInitiation, setAwaitingInitiation] = useState(false);
   const [availabilityModifying, setAvailabilityModifying] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
-  const [groupAdmin, setGroupAdmin] = useState("You");
-  const [groupCreator] = useState("You"); // Creator is fixed - can't change
+  const [groupAdmin, setGroupAdmin] = useState(userName);
+  const [groupCreator] = useState(userName);
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
 
-  // Member availability tracking (mock data for demo)
-  const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({
-    "Marisol": ["2026-03-18", "2026-03-19", "2026-03-25", "2026-04-01"],
-    "Derek": ["2026-03-18", "2026-03-20", "2026-03-25", "2026-03-27"],
-    "Priya": [], // hasn't submitted yet
-  });
+  // Member availability tracking
+  const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
 
-  // Per-group pool: map groupId -> Restaurant[]
+  // Use DB-backed restaurants when available, else local pool
   const [groupPools, setGroupPools] = useState<Record<string | number, Restaurant[]>>({});
-  const poolRestaurants = groupPools[activeGroup.id] || [];
+  const poolRestaurants = dbData.restaurants.length > 0 ? dbData.restaurants : (groupPools[activeGroup.id] || []);
   const setPoolRestaurants = (fn: (p: Restaurant[]) => Restaurant[]) => {
     setGroupPools(prev => ({ ...prev, [activeGroup.id]: fn(prev[activeGroup.id] || []) }));
   };
-  const addToGroupPool = (restaurant: Restaurant, groupIds: number[]) => {
-    setGroupPools(prev => {
-      const next = { ...prev };
-      groupIds.forEach(gid => {
-        const existing = next[gid] || [];
-        if (!existing.find(r => r.name === restaurant.name)) {
-          next[gid] = [...existing, restaurant];
-        }
-      });
-      return next;
-    });
-  };
+  const visitedRestaurants = dbData.visitedRestaurants;
 
-  const [visitedRestaurants] = useState<Restaurant[]>(PREVIOUSLY_VISITED);
+  // Use DB members when available, else fallback to static MEMBERS
+  const currentMembers = dbData.uiMembers.length > 0 ? dbData.uiMembers : MEMBERS;
   const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
