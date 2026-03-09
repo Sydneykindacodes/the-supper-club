@@ -16,11 +16,16 @@ Deno.serve(async (req) => {
     }
 
     // Step 1: Geocode the city to get lat/lng
-    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${apiKey}`;
-    const geoRes = await fetch(geocodeUrl);
-    const geoData = await geoRes.json();
+    // Try the city as-is first, then with ", USA" appended for better results
+    let geoData: Record<string, unknown> | null = null;
+    for (const suffix of ['', ', USA', ', United States']) {
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city + suffix)}&key=${apiKey}`;
+      const geoRes = await fetch(geocodeUrl);
+      geoData = await geoRes.json() as Record<string, unknown>;
+      if ((geoData.results as unknown[])?.length) break;
+    }
     
-    if (!geoData.results?.length) {
+    if (!(geoData?.results as unknown[])?.length) {
       return new Response(JSON.stringify({ restaurants: [], error: 'City not found' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
