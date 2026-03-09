@@ -242,10 +242,49 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [freeReviewCuisine, setFreeReviewCuisine] = useState("");
   const [freeReviewShowSuggestions, setFreeReviewShowSuggestions] = useState(false);
 
-  const allKnownRestaurants = [...RESTAURANT_POOL, ...PREVIOUSLY_VISITED];
+  // Restaurant suggestions for free review from DB restaurants only
+  const allKnownRestaurants = [...poolRestaurants, ...visitedRestaurants];
   const restaurantSuggestions = freeReviewRestaurant.length >= 2
     ? allKnownRestaurants.filter(r => r.name.toLowerCase().includes(freeReviewRestaurant.toLowerCase()))
     : [];
+
+  // City autocomplete state
+  const [citySuggestions, setCitySuggestions] = useState<{ description: string; placeId: string }[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [citySearchTimeout, setCitySearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Photo URL cache
+  const [photoCache, setPhotoCache] = useState<Record<string, string>>({});
+
+  const searchCityAutocomplete = useCallback(async (input: string) => {
+    if (input.length < 2) { setCitySuggestions([]); return; }
+    try {
+      const { data, error } = await supabase.functions.invoke('autocomplete-city', { body: { input } });
+      if (!error && data?.suggestions) {
+        setCitySuggestions(data.suggestions);
+        setShowCitySuggestions(true);
+      }
+    } catch { setCitySuggestions([]); }
+  }, []);
+
+  const handleCityInputChange = useCallback((value: string) => {
+    setRCity(value);
+    if (citySearchTimeout) clearTimeout(citySearchTimeout);
+    const timeout = setTimeout(() => searchCityAutocomplete(value), 300);
+    setCitySearchTimeout(timeout);
+  }, [citySearchTimeout, searchCityAutocomplete]);
+
+  const fetchPhotoUrl = useCallback(async (photoRef: string) => {
+    if (photoCache[photoRef]) return photoCache[photoRef];
+    try {
+      const { data, error } = await supabase.functions.invoke('place-photo', { body: { photoName: photoRef, maxWidth: 400 } });
+      if (!error && data?.url) {
+        setPhotoCache(prev => ({ ...prev, [photoRef]: data.url }));
+        return data.url as string;
+      }
+    } catch {}
+    return null;
+  }, [photoCache]);
 
   const [searchRadius, setSearchRadius] = useState(10);
 
