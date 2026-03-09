@@ -276,7 +276,28 @@ export const NavBar = ({ activeTab, onNavigate, hidebadges }: { activeTab: strin
   </div>
 );
 
-// ── CalendarGrid ──
+// ── Helpers for date:meal encoding ──
+export const parseDateMeal = (entry: string): { date: string; meal: string } => {
+  const idx = entry.indexOf(":");
+  if (idx === -1) return { date: entry, meal: "Dinner" }; // backward compat
+  return { date: entry.substring(0, idx), meal: entry.substring(idx + 1) };
+};
+
+export const encodeDateMeal = (date: string, meal: string) => `${date}:${meal}`;
+
+export const getUniqueDates = (entries: string[]): string[] => {
+  const dates = new Set(entries.map(e => parseDateMeal(e).date));
+  return Array.from(dates);
+};
+
+export const getMealsForDate = (entries: string[], date: string): string[] => {
+  return entries.filter(e => parseDateMeal(e).date === date).map(e => parseDateMeal(e).meal);
+};
+
+const MEAL_ICONS: Record<string, string> = { Breakfast: "☀", Brunch: "🥂", Lunch: "☕", Dinner: "🌙" };
+const MEAL_COLORS: Record<string, string> = { Breakfast: "#e8c547", Brunch: "#d4a574", Lunch: "#7ab8c9", Dinner: "#c9956a" };
+
+// ── CalendarGrid with per-date meal selection ──
 export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast, otherGroupDates = [] }: {
   selectedArr: string[];
   setArr: React.Dispatch<React.SetStateAction<string[]>>;
@@ -285,6 +306,7 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
   showToast: (msg: string) => void;
   otherGroupDates?: string[];
 }) => {
+  const [expandedDate, setExpandedDate] = React.useState<string | null>(null);
   const today = new Date();
   const cutoffDate = new Date(today);
   cutoffDate.setDate(today.getDate() + cutoffDays);
@@ -308,39 +330,83 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
     "You've already pledged this evening to another crew. Double-book anyway?",
     "Your other club called dibs on this night. Feeling rebellious?",
     "Careful — you're flirting with a scheduling love triangle.",
-    "This date's already spoken for by another club. Risk the drama?",
+    "This date's spoken for by another club. Risk the drama?",
   ];
 
   const toggleDate = (key: string, isPast: boolean) => {
     if (isPast) { showToast("Cutoff has passed for this date."); return; }
-    const isAdding = !selectedArr.includes(key);
-    if (isAdding && otherGroupDates.includes(key)) {
-      const quip = CONFLICT_QUIPS[Math.floor(Math.random() * CONFLICT_QUIPS.length)];
-      if (!confirm(quip)) return;
+    
+    const existingMeals = getMealsForDate(selectedArr, key);
+    
+    if (existingMeals.length > 0 && expandedDate === key) {
+      // If already expanded and has meals, collapse — clicking again removes all meals for this date
+      setArr(p => p.filter(e => parseDateMeal(e).date !== key));
+      setExpandedDate(null);
+    } else {
+      // Check for cross-group conflicts
+      const otherDates = otherGroupDates.map(e => parseDateMeal(e).date);
+      if (existingMeals.length === 0 && otherDates.includes(key)) {
+        const quip = CONFLICT_QUIPS[Math.floor(Math.random() * CONFLICT_QUIPS.length)];
+        if (!confirm(quip)) return;
+      }
+      
+      if (existingMeals.length === 0) {
+        // First tap: add "Dinner" by default and expand
+        setArr(p => [...p, encodeDateMeal(key, "Dinner")]);
+      }
+      setExpandedDate(key);
     }
-    setArr(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
   };
+
+  const toggleMealForDate = (date: string, meal: string) => {
+    const entry = encodeDateMeal(date, meal);
+    const has = selectedArr.includes(entry);
+    if (has) {
+      // Don't allow removing the last meal — instead remove the whole date
+      const mealsForDate = getMealsForDate(selectedArr, date);
+      if (mealsForDate.length <= 1) {
+        setArr(p => p.filter(e => parseDateMeal(e).date !== date));
+        setExpandedDate(null);
+        return;
+      }
+      setArr(p => p.filter(e => e !== entry));
+    } else {
+      setArr(p => [...p, entry]);
+    }
+  };
+
+  const uniqueSelectedDates = getUniqueDates(selectedArr);
 
   return (
     <>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", marginBottom: otherGroupDates.length > 0 ? "10px" : "20px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", marginBottom: "6px" }}>
         {dates.map(d => {
           const fd = formatDate(d);
           const key = d.toISOString().split("T")[0];
-          const sel = selectedArr.includes(key);
-          const inOtherGroup = otherGroupDates.includes(key);
+          const mealsSelected = getMealsForDate(selectedArr, key);
+          const sel = mealsSelected.length > 0;
+          const isExpanded = expandedDate === key;
+          const inOtherGroup = otherGroupDates.map(e => parseDateMeal(e).date).includes(key);
           return (
             <div key={key} onClick={() => toggleDate(key, fd.isPast)} style={{
               borderRadius:"10px", padding:"8px 4px", textAlign:"center",
               cursor:fd.isPast?"not-allowed":"pointer",
-              background:sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
-              border:sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
+              background: isExpanded ? "linear-gradient(135deg,#c9956a,#a47a50)" : sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
+              border: isExpanded ? "none" : sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
               opacity:fd.isPast?0.3:1, transition:"all 0.15s",
               position:"relative",
             }}>
               <div style={{ fontSize:"9px", color:sel?"#2a2a2a":"#8c8278", marginBottom:"2px" }}>{fd.day}</div>
               <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a":"#e5ded5" }}>{fd.date}</div>
               <div style={{ fontSize:"8px", color:sel?"#2a2a2a":"#3d3d3d" }}>{fd.month}</div>
+              {/* Meal dots */}
+              {sel && !isExpanded && (
+                <div style={{ display:"flex", justifyContent:"center", gap:"2px", marginTop:"3px" }}>
+                  {mealsSelected.map(m => (
+                    <div key={m} style={{ width:"4px", height:"4px", borderRadius:"50%", background: MEAL_COLORS[m] || "#c9956a" }} />
+                  ))}
+                </div>
+              )}
               {inOtherGroup && !fd.isPast && (
                 <div style={{
                   position:"absolute", top:"3px", right:"3px",
@@ -353,17 +419,59 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
           );
         })}
       </div>
+
+      {/* Per-date meal type picker */}
+      {expandedDate && (
+        <div style={{
+          background:"rgba(201,149,106,0.08)", border:"1px solid rgba(201,149,106,0.2)",
+          borderRadius:"12px", padding:"12px 14px", marginBottom:"6px",
+        }}>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", marginBottom:"10px" }}>
+            {new Date(expandedDate + "T12:00:00").toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })} — pick meal types:
+          </div>
+          <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+            {["Breakfast","Brunch","Lunch","Dinner"].map(meal => {
+              const active = getMealsForDate(selectedArr, expandedDate).includes(meal);
+              return (
+                <div key={meal} onClick={(e) => { e.stopPropagation(); toggleMealForDate(expandedDate, meal); }}
+                  style={{
+                    ...chip(active),
+                    display:"flex", alignItems:"center", gap:"5px",
+                  }}>
+                  <span>{MEAL_ICONS[meal]}</span> {meal}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px" }}>
+            Tap a meal to toggle. Removing all meals removes the date.
+          </div>
+        </div>
+      )}
+
       {otherGroupDates.length > 0 && (
-        <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"16px", fontSize:"10px", color:"#8c8278" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"10px", fontSize:"10px", color:"#8c8278" }}>
           <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#9b7ec8", flexShrink:0 }} />
           Available in another club
+        </div>
+      )}
+
+      {/* Legend */}
+      {uniqueSelectedDates.length > 0 && (
+        <div style={{ display:"flex", gap:"10px", flexWrap:"wrap", marginBottom:"10px", fontSize:"10px", color:"#8c8278" }}>
+          {Object.entries(MEAL_COLORS).map(([meal, color]) => (
+            <div key={meal} style={{ display:"flex", alignItems:"center", gap:"4px" }}>
+              <div style={{ width:"6px", height:"6px", borderRadius:"50%", background: color }} />
+              {meal}
+            </div>
+          ))}
         </div>
       )}
     </>
   );
 };
 
-// ── MealTypeSelector ──
+// ── MealTypeSelector (kept for settings) ──
 export const MealTypeSelector = ({ selected, onToggle, label = "Meal Type" }: {
   selected: string[];
   onToggle: (type: string) => void;
