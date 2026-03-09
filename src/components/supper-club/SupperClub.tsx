@@ -993,7 +993,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
+            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
             <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
               {/* Notification Bell */}
               <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", padding:"4px" }}>

@@ -59,7 +59,12 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Override any lingering inline Georgia declarations */
+  [style*="Georgia"] {
+    font-family: 'Montserrat', sans-serif !important;
   }
 
   /* Hide scrollbar for photo galleries */

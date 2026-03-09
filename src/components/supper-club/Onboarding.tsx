@@ -26,7 +26,7 @@ export default function Onboarding({ userName, onComplete }: OnboardingProps) {
         <div style={{ width:"100%", zIndex:1 }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"20px" }}>
             <div style={{ fontSize:"11px", color:"#565250", letterSpacing:"1px" }}>{step + 1} of {STEPS.length}</div>
-            <button onClick={handleSkip} style={{ background:"none", border:"none", color:"#8c8278", fontSize:"12px", letterSpacing:"1px", cursor:"pointer", fontFamily:"Georgia, serif", padding:"4px 8px" }}>Skip</button>
+            <button onClick={handleSkip} style={{ background:"none", border:"none", color:"#8c8278", fontSize:"12px", letterSpacing:"1px", cursor:"pointer", fontFamily:"'Montserrat', sans-serif", padding:"4px 8px" }}>Skip</button>
           </div>
           <div style={{ width:"100%", height:"2px", background:"rgba(212,205,196,0.12)", borderRadius:"1px", overflow:"hidden" }}>
             <div style={{ height:"2px", background:"#d4cdc4", borderRadius:"1px", width:`${progress}%`, transition:"width 0.4s ease" }} />
