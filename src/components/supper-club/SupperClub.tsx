@@ -985,40 +985,108 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             );
           })()}
 
-          {/* Post-Dinner Reset Card */}
-          {dinnerCompletedAt && (
-            <div style={{ ...S.card, border:"1px solid rgba(122,158,126,0.3)", background:"linear-gradient(135deg, rgba(122,158,126,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
-              <div style={{ fontSize:"20px", color:"#7a9e7e", marginBottom:"12px" }}>◈</div>
-              <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Dinner Complete</div>
-              <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
-                Another evening for the books.
+          {/* Post-Dinner Flow: Review → Availability → Complete */}
+          {ag.dinnerStatus === "post_dinner" && (() => {
+            const restaurantName = dbData.selectedRestaurantData?.name || "Your Last Dinner";
+            const hasReviewed = dbData.hasUserReviewedCurrentDinner;
+            const currentStep = postDinnerStep || (hasReviewed ? "availability" : "review");
+
+            if (currentStep === "review" && !hasReviewed) {
+              return (
+                <div style={{ ...S.card, border:"1px solid rgba(122,158,126,0.3)", background:"linear-gradient(135deg, rgba(122,158,126,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+                  <div style={{ fontSize:"20px", color:"#7a9e7e", marginBottom:"12px" }}>◈</div>
+                  <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Dinner Complete</div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                    Another evening for the books.
+                  </div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                    How was {restaurantName}? Share your thoughts before we plan the next one.
+                  </div>
+                  <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #c9956a, #9a6040)" }} onClick={() => {
+                    setPostDinnerReviewPrompt(true);
+                  }}>
+                    Write Your Review
+                  </button>
+                  <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+                    setPostDinnerStep("availability");
+                  }}>
+                    Skip Review
+                  </button>
+                </div>
+              );
+            }
+
+            if (currentStep === "review" && hasReviewed) {
+              // Auto-advance if they already reviewed
+              setTimeout(() => setPostDinnerStep("availability"), 0);
+            }
+
+            if (currentStep === "availability") {
+              return (
+                <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+                  <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"12px" }}>◇</div>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>What's Next?</div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                    Time to plan the next gathering.
+                  </div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                    Submit your available dates so the next host can pick the perfect night.
+                  </div>
+                  <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
+                    setPostDinnerStep("completing");
+                    resetForNextDinner();
+                    setBookingLinks(null);
+                    await dbData.completeDinner();
+                    setPostDinnerStep(null);
+                    setScreen("availability");
+                    setActiveTab("schedule");
+                  }}>
+                    Set My Availability
+                  </button>
+                  <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
+                    setPostDinnerStep("completing");
+                    resetForNextDinner();
+                    setBookingLinks(null);
+                    await dbData.completeDinner();
+                    setPostDinnerStep(null);
+                  }}>
+                    Skip for Now
+                  </button>
+                </div>
+              );
+            }
+
+            if (currentStep === "completing") {
+              return (
+                <div style={{ ...S.card, textAlign:"center", padding:"28px 20px" }}>
+                  <div style={{ width:"20px", height:"20px", border:"2px solid rgba(201,149,106,0.3)", borderTop:"2px solid #c9956a", borderRadius:"50%", animation:"spin 1s linear infinite", margin:"0 auto 12px" }} />
+                  <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>Wrapping things up...</div>
+                </div>
+              );
+            }
+
+            return null;
+          })()}
+
+          {/* Awaiting Next Host Reveal */}
+          {ag.dinnerStatus === "awaiting_next_host" && (
+            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"linear-gradient(140deg, rgba(26,15,10,0.98), rgba(45,18,8,0.9))", textAlign:"center", padding:"32px 20px" }}>
+              <div style={{ fontSize:"28px", color:"#c9956a", marginBottom:"16px", opacity:0.6 }}>◉</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"14px" }}>The Wait Begins</div>
+              <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400", lineHeight:"1.5" }}>
+                {WITTY_AWAITING_HOST[wittyAwaitingIdx]}
               </div>
-              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
-                Time to share your thoughts and start planning the next one.
+              <div style={{ width:"40px", height:"1px", background:"rgba(201,149,106,0.3)", margin:"16px auto" }} />
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"16px" }}>
+                The next host will be revealed at <strong style={{ color:"#c9956a" }}>8:00 AM tomorrow</strong>. 
+                Until then, the identity remains sealed.
               </div>
-              <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #c9956a, #9a6040)" }} onClick={() => {
-                setPostDinnerReviewPrompt(true);
-              }}>
-                Write Your Review
-              </button>
-              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
-                resetForNextDinner();
-                setBookingLinks(null);
-                await dbData.completeDinner();
-                setDinnerCompletedAt(null);
-                setScreen("availability");
-                setActiveTab("schedule");
-              }}>
-                Set Availability for Next Dinner
-              </button>
-              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
-                resetForNextDinner();
-                setBookingLinks(null);
-                await dbData.completeDinner();
-                setDinnerCompletedAt(null);
-              }}>
-                I'll Do It Later
-              </button>
+              <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"12px", padding:"14px", border:"1px solid rgba(201,149,106,0.1)" }}>
+                <div style={{ fontSize:"10px", color:"#5a3a25", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>What Happens Next</div>
+                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.6" }}>
+                  Once the host is revealed, submit your availability and the cycle begins anew.
+                </div>
+              </div>
             </div>
           )}
 
