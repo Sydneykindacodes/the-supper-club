@@ -449,6 +449,41 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     return true;
   }, [activeGroupId, activeReservation?.id, members, user.id, refresh]);
 
+  // Confirm attendance for the proposed date
+  const confirmDate = useCallback(async () => {
+    if (!activeReservation?.id) return false;
+    const currentMember = members.find(m => m.user_id === user.id);
+    if (!currentMember) return false;
+
+    // Upsert: set confirmed_at on existing availability row, or create one
+    const { data: existing } = await supabase
+      .from("member_availability")
+      .select("id")
+      .eq("reservation_id", activeReservation.id)
+      .eq("member_id", currentMember.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("member_availability")
+        .update({ confirmed_at: new Date().toISOString() } as any)
+        .eq("id", existing.id);
+    } else {
+      await supabase
+        .from("member_availability")
+        .insert({
+          reservation_id: activeReservation.id,
+          member_id: currentMember.id,
+          available_dates: [activeReservation.dinner_date],
+          confirmed_at: new Date().toISOString(),
+        } as any);
+    }
+
+    setDateConfirmations(prev => ({ ...prev, You: true }));
+    refresh();
+    return true;
+  }, [activeReservation?.id, members, user.id, refresh]);
+
   // Host proposes a date
   const proposeDate = useCallback(async (date: string) => {
     if (!activeGroupId) return false;
