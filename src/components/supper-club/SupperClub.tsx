@@ -54,6 +54,7 @@ import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
+  parseDateMeal, getUniqueDates, getMealsForDate,
 } from "./shared";
 
 // ── Restaurant Photo Strip (fetches Google Places photos) ──
@@ -2124,14 +2125,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
             const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
             
-            // Calculate overlapping dates (from non-host members only)
-            const allDates: string[] = [];
+            // Calculate overlapping dates (from non-host members only, using unique dates)
+            const allDateEntries: string[] = [];
             nonHostMembers.forEach(m => {
               const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-              dates.forEach(d => allDates.push(d));
+              getUniqueDates(dates).forEach(d => allDateEntries.push(d));
             });
             const dateCount: Record<string, number> = {};
-            allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+            allDateEntries.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
             const overlappingDates = Object.entries(dateCount)
               .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 0)
               .map(([date]) => date)
@@ -2162,7 +2163,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
                             </div>
                             <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
-                              {hasSubmitted ? `${dates.length} dates` : "Waiting"}
+                              {hasSubmitted ? `${getUniqueDates(dates).length} dates` : "Waiting"}
                             </span>
                           </div>
                         );
@@ -2609,18 +2610,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
     const notSubmittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
-    // Gather all dates from submitted members
+    // Gather all unique dates from submitted members
     const allDatesFromSubmitted: string[] = [];
     submittedMembers.forEach(m => {
       const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-      dates.forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
+      getUniqueDates(dates).forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
     });
     
     // Count how many members are available on each date
     const dateAvailability: Record<string, string[]> = {};
     submittedMembers.forEach(m => {
       const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-      dates.forEach(d => {
+      getUniqueDates(dates).forEach(d => {
         if (!dateAvailability[d]) dateAvailability[d] = [];
         dateAvailability[d].push(m.name);
       });
@@ -2635,7 +2636,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     });
     
     const formatDateDisplay = (dateStr: string) => {
-      const date = new Date(dateStr);
+      const date = new Date(dateStr + "T12:00:00");
       return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     };
     
@@ -3745,20 +3746,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                         </div>
                         <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                          {hasSubmitted ? `${dates.length} date${dates.length > 1 ? "s" : ""}` : "Waiting"}
+                          {hasSubmitted ? `${getUniqueDates(dates).length} date${getUniqueDates(dates).length > 1 ? "s" : ""}` : "Waiting"}
                         </span>
                       </div>
                       {hasSubmitted && (
-                        <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", padding:"8px 0 4px 42px" }}>
-                          {[...dates].sort().map(d => (
-                            <div key={d} style={{
-                              padding:"4px 10px", borderRadius:"8px",
-                              background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
-                              fontSize:"11px", color:"#7a9e7e"
-                            }}>
-                              {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                            </div>
-                          ))}
+                        <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"8px 0 4px 42px" }}>
+                          {[...getUniqueDates(dates)].sort().map(d => {
+                            const meals = getMealsForDate(dates, d);
+                            return (
+                              <div key={d} style={{
+                                padding:"4px 10px", borderRadius:"8px",
+                                background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
+                                fontSize:"11px", color:"#7a9e7e"
+                              }}>
+                                {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                                <span style={{ color:"#5a3a25", marginLeft:"6px" }}>{meals.join(", ")}</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -3770,17 +3775,28 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {(() => {
                 const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
                 const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-                const allDates: string[] = [];
+                const allEntries: string[] = [];
                 nonHostMembers.forEach(m => {
                   const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-                  dates.forEach(d => allDates.push(d));
+                  // Extract unique dates (ignoring meal type for overlap)
+                  getUniqueDates(dates).forEach(d => allEntries.push(d));
                 });
                 const dateCount: Record<string, number> = {};
-                allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+                allEntries.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
                 const overlappingDates = Object.entries(dateCount)
                   .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 1)
                   .map(([date]) => date)
                   .sort();
+
+                // For overlapping dates, find common meal types
+                const getCommonMeals = (date: string) => {
+                  const memberMeals = submittedMembers.map(m => {
+                    const entries = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                    return getMealsForDate(entries, date);
+                  });
+                  if (memberMeals.length === 0) return [];
+                  return memberMeals[0].filter(meal => memberMeals.every(mm => mm.includes(meal)));
+                };
                 
                 if (overlappingDates.length === 0 && submittedMembers.length > 0) return (
                   <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", textAlign:"center", marginTop:"16px", marginBottom:"16px" }}>
@@ -3792,22 +3808,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 return (
                   <div style={{ marginTop:"16px", marginBottom:"16px" }}>
                     <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Overlapping Dates</div>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px" }}>
-                      {overlappingDates.map(d => (
-                        <div key={d} style={{
-                          padding:"8px 14px", borderRadius:"10px",
-                          background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.3)",
-                          fontSize:"12px", color:"#f5e6d3", fontWeight:"500", cursor:"pointer"
-                        }}
-                        onClick={() => {
-                          dbData.proposeDate(d).then(async ok => {
-                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
-                            else showToast("Failed. Try again.");
-                          });
-                        }}>
-                          {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                        </div>
-                      ))}
+                    <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                      {overlappingDates.map(d => {
+                        const commonMeals = getCommonMeals(d);
+                        return (
+                          <div key={d} style={{
+                            padding:"10px 14px", borderRadius:"10px",
+                            background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.3)",
+                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500", cursor:"pointer",
+                            display:"flex", justifyContent:"space-between", alignItems:"center"
+                          }}
+                          onClick={() => {
+                            dbData.proposeDate(d).then(async ok => {
+                              if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
+                              else showToast("Failed. Try again.");
+                            });
+                          }}>
+                            <div>
+                              {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                              {commonMeals.length > 0 && (
+                                <div style={{ fontSize:"10px", color:"#7a9e7e", marginTop:"2px" }}>{commonMeals.join(", ")}</div>
+                              )}
+                            </div>
+                            <span style={{ fontSize:"10px", color:"#c9956a" }}>Propose →</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"6px" }}>Tap a date to propose it to the group.</div>
                   </div>
@@ -3858,18 +3884,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       Your dates for your upcoming meal have been selected.
                     </div>
                     <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6", marginBottom:"16px" }}>
-                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} submitted · {selectedMealTypes.join(", ")}
+                      {getUniqueDates(selectedDates).length} date{getUniqueDates(selectedDates).length > 1 ? "s" : ""} submitted
                     </div>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
-                      {[...selectedDates].sort().map(d => {
-                        const date = new Date(d);
+                    <div style={{ display:"flex", flexDirection:"column", gap:"8px", alignItems:"center", marginBottom:"20px" }}>
+                      {[...getUniqueDates(selectedDates)].sort().map(d => {
+                        const date = new Date(d + "T12:00:00");
+                        const meals = getMealsForDate(selectedDates, d);
                         return (
                           <div key={d} style={{
                             padding:"8px 14px", borderRadius:"10px",
                             background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)",
-                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500"
+                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500", textAlign:"center"
                           }}>
                             {date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                            <div style={{ fontSize:"10px", color:"#7a9e7e", marginTop:"3px" }}>{meals.join(", ")}</div>
                           </div>
                         );
                       })}
@@ -3890,7 +3918,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                         </div>
                         <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                          {isYou ? `${selectedDates.length} dates` : hasSubmitted ? "Submitted" : "Waiting"}
+                          {isYou ? `${getUniqueDates(selectedDates).length} dates` : hasSubmitted ? "Submitted" : "Waiting"}
                         </span>
                       </div>
                     );
@@ -3906,9 +3934,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
                     Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
                   </div>
-                  <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
                   <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
-                    The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
+                    Tap a date, then pick which meal types you're free for that day.
                   </div>
                   <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
                     Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
@@ -3917,11 +3944,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
                   <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
-                  {selectedDates.length > 0 && (
-                    <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
-                    </div>
-                  )}
+                  {selectedDates.length > 0 && (() => {
+                    const uniqueDates = getUniqueDates(selectedDates);
+                    const allMeals = [...new Set(selectedDates.map(e => parseDateMeal(e).meal))];
+                    return (
+                      <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
+                        {uniqueDates.length} date{uniqueDates.length > 1 ? "s" : ""} selected · {allMeals.join(", ")}
+                      </div>
+                    );
+                  })()}
 
                   {availabilityModifying ? (
                     <div style={{ display:"flex", gap:"10px", marginBottom:"16px" }}>
@@ -3953,7 +3984,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                               <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                             </div>
                             <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                              {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                              {isYou ? (selectedDates.length > 0 ? `${getUniqueDates(selectedDates).length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
                             </span>
                           </div>
                         );
