@@ -288,7 +288,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [exploreView, setExploreView] = useState("search");
   const [visitedSort, setVisitedSort] = useState("date");
   const [visitedFilter, setVisitedFilter] = useState("all");
-  const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
+  const [exploreCuisineFilter, setExploreCuisineFilter] = useState<string[]>([]);
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [searchPage, setSearchPage] = useState(1);
   const [communityPage, setCommunityPage] = useState(1);
