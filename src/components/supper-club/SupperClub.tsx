@@ -3126,6 +3126,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     Unveil the Destination
                   </button>
                   <style>{`@keyframes sealPulseInline { 0%,100%{box-shadow:0 0 20px rgba(201,149,106,0.1);transform:scale(1)} 50%{box-shadow:0 0 40px rgba(201,149,106,0.25);transform:scale(1.05)} }`}</style>
+                  <div style={{ marginTop:"20px", textAlign:"center" }}>
+                    <span onClick={() => {
+                      if (!confirm("Bail on this dinner? The host and group will be notified.")) return;
+                      showToast("You've bailed. The group has been notified. Your chair will sit empty.");
+                    }} style={{ fontSize:"10px", color:"#4a2e18", cursor:"pointer", letterSpacing:"1px" }}>
+                      I can't make it anymore
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -3142,6 +3150,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ marginTop:"20px", padding:"12px 16px", background:"rgba(201,149,106,0.07)", borderRadius:"12px", fontSize:"12px", color:"#c9956a" }}>
                     Restaurant revealed at 8 AM on dinner day
                   </div>
+                  {/* Bail option for non-host */}
+                  <div style={{ marginTop:"20px", textAlign:"center" }}>
+                    <span onClick={() => {
+                      if (!confirm("Bail on this dinner? The host and group will be notified.")) return;
+                      showToast("You've bailed. The group has been notified. Shame.");
+                    }} style={{ fontSize:"10px", color:"#4a2e18", cursor:"pointer", letterSpacing:"1px" }}>
+                      I can't make it anymore
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -3153,6 +3170,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>{selectedRest!.cuisine} · {selectedRest!.city}</div>
                   <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 16px" }}/>
                   <div style={{ fontSize:"13px", color:"#7a5a40" }}>{ag.nextDinner} · 7:30 PM</div>
+                  {/* Bail option */}
+                  <div style={{ marginTop:"24px", textAlign:"center" }}>
+                    <span onClick={() => {
+                      if (!confirm("Bail on this dinner? The host and group will be notified.")) return;
+                      showToast("You've bailed. The group has been notified. We'll miss you... maybe.");
+                    }} style={{ fontSize:"10px", color:"#4a2e18", cursor:"pointer", letterSpacing:"1px" }}>
+                      I can't make it anymore
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -3164,7 +3190,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
                   <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
                   <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
-                  <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"24px" }}>The group will find out at 8 AM on dinner day.</div>
+                  {/* Cancel reservation for host */}
+                  <div style={{ textAlign:"center" }}>
+                    <span onClick={async () => {
+                      if (!confirm("Cancel this dinner? The entire group will be notified.")) return;
+                      const success = await dbData.cancelDinner();
+                      if (success) {
+                        showToast("Dinner cancelled. The group has been notified.");
+                        setBookingLinks(null);
+                      } else {
+                        showToast("Failed to cancel. Try again.");
+                      }
+                    }} style={{ fontSize:"10px", color:"#c45c5c", cursor:"pointer", letterSpacing:"1px", opacity:0.7 }}>
+                      Cancel this reservation
+                    </span>
+                  </div>
                 </div>
               )}
 
