@@ -12,17 +12,26 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for recovery event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+    // Check if user already has a session (recovery token was already processed)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
         setReady(true);
       }
     });
+
     // Also check hash for type=recovery
     if (window.location.hash.includes("type=recovery")) {
       setReady(true);
     }
-    return () => subscription.unsubscribe();
+
+    // Fallback: show the form after a short delay if we're on this page
+    const fallbackTimer = setTimeout(() => setReady(true), 2000);
+
+    return () => { subscription.unsubscribe(); clearTimeout(fallbackTimer); };
   }, []);
 
   const handleReset = async () => {
