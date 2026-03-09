@@ -603,8 +603,13 @@ export default function SupperClub() {
             </>)}
           </div>
 
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members</div>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
           <div style={S.card}>
+            {MEMBERS.length >= MAX_GROUP_MEMBERS && (
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"12px", lineHeight:"1.5" }}>
+                This group is at capacity. No more members can join.
+              </div>
+            )}
             {MEMBERS.map(m => {
               const isAdmin = m.name === groupAdmin;
               const isYou = m.name === "You";
