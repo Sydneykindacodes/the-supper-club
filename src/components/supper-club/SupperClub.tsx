@@ -769,14 +769,14 @@ export default function SupperClub() {
               Preview the secret notification a new host receives when they're randomly selected.
             </div>
             <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => setScreen("new_host_reveal")}>
-              🤫 Demo: New Host Reveal
+              Demo: New Host Reveal
             </button>
             <button style={{ ...S.primaryBtn, marginBottom:"0", background:"linear-gradient(135deg, #9b7ec8, #7a5ea8)" }} onClick={() => {
               setAwaitingInitiation(!awaitingInitiation);
               updateGroup(activeGroup.id, { dinnerStatus: "scheduled", nextDinner: "March 18, 2026" });
               showToast(awaitingInitiation ? "Initiation cleared — you're in!" : "Now viewing as new member awaiting initiation");
             }}>
-              🍷 Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
+              Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
             </button>
           </div>
 
