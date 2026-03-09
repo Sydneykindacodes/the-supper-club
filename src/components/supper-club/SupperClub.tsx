@@ -814,9 +814,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     };
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
-    setScreen("club_home");
-    setActiveTab("home");
-    showToast(`Welcome to ${groupData.name}!`);
+    // New member must add 1-3 restaurants
+    setSeedPoolMin(1);
+    setSeedPoolMax(3);
+    setSeedPoolPicks([]);
+    setSeedPoolSearch("");
+    setSeedPoolResults([]);
+    setScreen("seed_pool");
+    showToast(`Welcome to ${groupData.name}! Add at least 1 restaurant to the pool.`);
   };
 
   // ── JOIN/CREATE ──
