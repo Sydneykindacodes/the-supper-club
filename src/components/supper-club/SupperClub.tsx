@@ -2030,12 +2030,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
 
                   <div style={{ height:"18px" }}/>
-                  <button style={S.primaryBtn} onClick={() => { 
+                  <button style={S.primaryBtn} onClick={async () => { 
                     if (selectedDates.length > 0) { 
-                      showToast("Availability saved. Waiting on host to pick a date."); 
-                      updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
-                      setScreen("club_home");
-                      setActiveTab("home");
+                      const saved = await dbData.saveAvailability(selectedDates);
+                      if (saved) {
+                        showToast("Availability saved. Waiting on host to pick a date."); 
+                        updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+                        setScreen("club_home");
+                        setActiveTab("home");
+                      } else {
+                        showToast("Failed to save. Try again.");
+                      }
                     } 
                   }}>
                     Submit Availability
