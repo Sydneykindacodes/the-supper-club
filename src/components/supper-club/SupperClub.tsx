@@ -3919,11 +3919,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
                   <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
-                  {selectedDates.length > 0 && (
-                    <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
-                    </div>
-                  )}
+                  {selectedDates.length > 0 && (() => {
+                    const uniqueDates = getUniqueDates(selectedDates);
+                    const allMeals = [...new Set(selectedDates.map(e => parseDateMeal(e).meal))];
+                    return (
+                      <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
+                        {uniqueDates.length} date{uniqueDates.length > 1 ? "s" : ""} selected · {allMeals.join(", ")}
+                      </div>
+                    );
+                  })()}
 
                   {availabilityModifying ? (
                     <div style={{ display:"flex", gap:"10px", marginBottom:"16px" }}>
