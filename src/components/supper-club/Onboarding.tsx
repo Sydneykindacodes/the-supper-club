@@ -4,7 +4,7 @@ import { S } from "./styles";
 const STEPS = [
   {
     icon: "◈",
-    title: "Welcome to The Supper Club",
+    title: "Welcome to The Supper Club Social",
     body: "A private dining experience where your group takes turns hosting secret restaurant reservations. No one knows where you're going until the day arrives.",
   },
   {
