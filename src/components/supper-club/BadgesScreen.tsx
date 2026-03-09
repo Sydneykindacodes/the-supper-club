@@ -50,10 +50,8 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
                   ...S.badgeSymbol,
                   background: isEarned ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
                   border: isEarned ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.1)",
-                  color: isEarned ? "#c9956a" : "#3d2010",
-                }}>
-                  {badge.symbol}
-                </div>
+                  color: isEarned ? "#ffffff" : "#3d2010",
+                }} dangerouslySetInnerHTML={{ __html: BADGE_ICONS[badge.key] || "" }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: "14px", color: isEarned ? "#f5e6d3" : "#5a3a25", fontWeight: "500", marginBottom: "2px" }}>
                     {badge.name}
