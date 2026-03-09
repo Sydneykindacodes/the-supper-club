@@ -757,7 +757,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <button style={{ ...S.secondaryBtn, maxWidth:"260px" }} onClick={() => { setJoinMode("join"); setJoinCode(""); setScreen("join_create"); }}>Join with Invite Code</button>
         </div>
       </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
     </div></div>
   );
 
