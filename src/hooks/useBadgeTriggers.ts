@@ -35,8 +35,10 @@ export function useBadgeTriggers(
     if (myPhotos.length >= 1) tryEarn("first_photo");
     // 10 photos
     if (myPhotos.length >= 10) tryEarn("ten_photos");
-    // First host
-    if (isHost) tryEarn("first_host");
+    // First host - awarded when user has actually hosted at least one dinner
+    if (hostCount >= 1) tryEarn("first_host");
+    // Three hosts
+    if (hostCount >= 3) tryEarn("three_hosts");
     // Best dish vote (if someone voted for you)
     const bestDishVotes = reviews.filter(r => r.best_dish_member === "You" || r.best_dish_member === userId);
     if (bestDishVotes.length >= 1) tryEarn("best_dish");
