@@ -276,8 +276,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const addToGroupPool = async (restaurant: Restaurant, groupIds: (number | string)[]) => {
     let added = 0;
     let dupes = 0;
+    let full = false;
     for (const gid of groupIds) {
       const gidStr = String(gid);
+      // Check pool size limit
+      const currentPoolSize = poolRestaurants.length + visitedRestaurants.length;
+      if (currentPoolSize >= MAX_POOL_SIZE) { full = true; continue; }
       const result = await dbData.addRestaurantToPool({
         name: restaurant.name,
         cuisine: restaurant.cuisine,
@@ -289,7 +293,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       if (result === "duplicate") dupes++;
       else if (result === true) added++;
     }
-    if (dupes > 0 && added === 0) {
+    if (full) {
+      showToast(`Pool is full (max ${MAX_POOL_SIZE} restaurants).`);
+    } else if (dupes > 0 && added === 0) {
       showToast(`${restaurant.name} is already in the pool.`);
     } else if (added > 0 && dupes > 0) {
       showToast(`Added to ${added} group${added > 1 ? "s" : ""}. Already in ${dupes} pool${dupes > 1 ? "s" : ""}.`);
