@@ -385,8 +385,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [restaurantDescription, setRestaurantDescription] = useState<string | null>(null);
   const [descriptionLoading, setDescriptionLoading] = useState(false);
 
-  // Post-dinner reset: 2 hours after reservation time, reset for next cycle
-  const [dinnerCompletedAt, setDinnerCompletedAt] = useState<string | null>(null);
+  // Post-dinner reset
+  // dinnerCompletedAt is no longer needed - post-dinner is auto-detected via dinnerStatus
 
   const resetForNextDinner = useCallback(() => {
     setSelectedDates([]);
