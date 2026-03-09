@@ -2733,6 +2733,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       </button>
                     </div>
                   )}
+                  {gpNextPageToken && (
+                    <div style={{ display:"flex", justifyContent:"center", padding:"12px 0" }}>
+                      <button
+                        disabled={gpLoadingMore}
+                        onClick={() => {
+                          setGpLoadingMore(true);
+                          searchGooglePlaces(gpLastSearchTerm, gpLastSearchCity, setGpResults, (b: boolean) => setGpLoadingMore(b), gpNextPageToken);
+                        }}
+                        style={{ ...S.primaryBtn, opacity: gpLoadingMore ? 0.6 : 1, fontSize:"13px", padding:"10px 24px" }}>
+                        {gpLoadingMore ? "Loading..." : "Load More Results"}
+                      </button>
+                    </div>
+                  )}
                   </>
                   );
                 })()
