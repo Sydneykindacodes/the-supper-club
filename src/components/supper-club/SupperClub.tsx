@@ -1293,18 +1293,37 @@ export default function SupperClub() {
                 </div>
               </div>
 
+              {/* AI Description */}
+              <div style={{ ...S.card, marginBottom:"16px", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", border:"1px solid rgba(201,149,106,0.18)" }}>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>About This Restaurant</div>
+                {descriptionLoading ? (
+                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>Composing a description...</div>
+                ) : restaurantDescription ? (
+                  <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.8", fontStyle:"italic" }}>{restaurantDescription}</div>
+                ) : (
+                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>A distinguished establishment worthy of your attention.</div>
+                )}
+              </div>
+
               {/* Photos Section */}
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                 Photos · {mockRestaurantPhotos.length}
               </div>
-              <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+              <div style={{ 
+                display:"flex", gap:"10px", overflowX:"auto", paddingBottom:"16px", marginBottom:"16px",
+                scrollSnapType:"x mandatory", WebkitOverflowScrolling:"touch" as any,
+                scrollbarWidth:"none" as any, msOverflowStyle:"none" as any,
+              }}>
                 {mockRestaurantPhotos.map((symbol, i) => (
                   <div key={i} style={{ 
-                    minWidth:"90px", height:"90px", borderRadius:"12px", 
-                    background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
+                    minWidth:"110px", height:"110px", borderRadius:"16px", 
+                    background:`linear-gradient(${135 + i * 15}deg, rgba(201,149,106,${0.12 + i * 0.02}), rgba(201,149,106,0.03))`,
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:"28px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
-                    flexShrink:0
+                    fontSize:"32px", color:"#c9956a", 
+                    border:"1px solid rgba(201,149,106,0.15)",
+                    flexShrink:0, scrollSnapAlign:"start",
+                    boxShadow:"0 4px 20px rgba(0,0,0,0.3)",
+                    transition:"transform 0.2s ease",
                   }}>
                     {symbol}
                   </div>
