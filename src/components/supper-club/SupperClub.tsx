@@ -3101,8 +3101,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
                         onClick={() => {
                           if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                          dbData.proposeDate(selectedDates[0]).then(ok => {
-                            if (ok) showToast("Date locked. Members not submitted marked as absent.");
+                          dbData.proposeDate(selectedDates[0]).then(async ok => {
+                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date locked. Members not submitted marked as absent."); }
                             else showToast("Failed. Try again.");
                           });
                         }}>
