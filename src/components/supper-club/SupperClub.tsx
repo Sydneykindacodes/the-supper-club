@@ -535,10 +535,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       });
       if (error) throw error;
       const newResults = data?.restaurants || [];
+      // Deduplicate by googlePlaceId, falling back to name
+      const dedup = (list: GooglePlace[]) => {
+        const seen = new Set<string>();
+        return list.filter(r => {
+          const key = r.googlePlaceId || r.name.toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      };
       if (pageToken) {
-        setGpResults(prev => [...prev, ...newResults]);
+        setGpResults(prev => dedup([...prev, ...newResults]));
       } else {
-        setter(newResults);
+        setter(dedup(newResults));
       }
       setGpNextPageToken(data?.nextPageToken || null);
       // Cache group city center from search results
