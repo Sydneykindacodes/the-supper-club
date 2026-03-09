@@ -14,6 +14,7 @@ import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
 import { useNotifications } from "@/hooks/useNotifications";
 import Onboarding from "./Onboarding";
+import NotificationConsent from "./NotificationConsent";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
