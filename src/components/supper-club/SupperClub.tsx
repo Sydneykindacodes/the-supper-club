@@ -329,10 +329,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [seedCuisineFilter, setSeedCuisineFilter] = useState<string[]>([]);
   const [seedPriceFilter, setSeedPriceFilter] = useState("all");
   const [seedSearchPage, setSeedSearchPage] = useState(1);
-  const [seedNextPageToken, setSeedNextPageToken] = useState<string | null>(null);
-  const [seedLoadingMore, setSeedLoadingMore] = useState(false);
-  const [seedLastSearchTerm, setSeedLastSearchTerm] = useState("");
-  const [seedLastSearchCity, setSeedLastSearchCity] = useState("");
+  // Seed pool reuses gpNextPageToken/gpLoadingMore from explore search
 
   // Member availability tracking
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
