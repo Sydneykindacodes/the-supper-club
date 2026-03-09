@@ -54,5 +54,5 @@ export function useBadgeTriggers(
       const groupCuisines = new Set(groupReviews.map(r => r.cuisine).filter(Boolean));
       if (groupCuisines.size >= 5) tryEarn("group_five_cuisines", "group");
     }
-  }, [reviews.length, userBadges.length, userId, isHost, activeGroupId]);
+  }, [reviews.length, userBadges.length, userId, hostCount, activeGroupId]);
 }
