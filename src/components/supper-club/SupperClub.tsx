@@ -565,6 +565,36 @@ export default function SupperClub() {
             );
           })()}
 
+          {/* Post-Dinner Reset Card */}
+          {dinnerCompletedAt && (
+            <div style={{ ...S.card, border:"1px solid rgba(122,158,126,0.3)", background:"linear-gradient(135deg, rgba(122,158,126,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+              <div style={{ fontSize:"20px", color:"#7a9e7e", marginBottom:"12px" }}>◈</div>
+              <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Dinner Complete</div>
+              <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                Another evening for the books.
+              </div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                Time to start planning the next one. Your availability has been reset.
+              </div>
+              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => {
+                resetForNextDinner();
+                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                setDinnerCompletedAt(null);
+                setScreen("availability");
+                setActiveTab("schedule");
+              }}>
+                Set Availability for Next Dinner
+              </button>
+              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+                resetForNextDinner();
+                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                setDinnerCompletedAt(null);
+              }}>
+                I'll Do It Later
+              </button>
+            </div>
+          )}
+
           {ag.dinnerStatus === "pending_confirm" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"rgba(201,149,106,0.04)" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Proposed Date</div>
