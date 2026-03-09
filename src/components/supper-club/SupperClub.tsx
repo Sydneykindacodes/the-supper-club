@@ -3746,20 +3746,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                         </div>
                         <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                          {hasSubmitted ? `${dates.length} date${dates.length > 1 ? "s" : ""}` : "Waiting"}
+                          {hasSubmitted ? `${getUniqueDates(dates).length} date${getUniqueDates(dates).length > 1 ? "s" : ""}` : "Waiting"}
                         </span>
                       </div>
                       {hasSubmitted && (
-                        <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", padding:"8px 0 4px 42px" }}>
-                          {[...dates].sort().map(d => (
-                            <div key={d} style={{
-                              padding:"4px 10px", borderRadius:"8px",
-                              background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
-                              fontSize:"11px", color:"#7a9e7e"
-                            }}>
-                              {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                            </div>
-                          ))}
+                        <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"8px 0 4px 42px" }}>
+                          {[...getUniqueDates(dates)].sort().map(d => {
+                            const meals = getMealsForDate(dates, d);
+                            return (
+                              <div key={d} style={{
+                                padding:"4px 10px", borderRadius:"8px",
+                                background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
+                                fontSize:"11px", color:"#7a9e7e"
+                              }}>
+                                {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                                <span style={{ color:"#5a3a25", marginLeft:"6px" }}>{meals.join(", ")}</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
