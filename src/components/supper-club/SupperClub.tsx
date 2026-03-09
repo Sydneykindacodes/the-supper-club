@@ -87,6 +87,7 @@ export default function SupperClub() {
   const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
+  const [selectedRestaurantDetail, setSelectedRestaurantDetail] = useState<Restaurant | GooglePlace | null>(null);
   const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: RESTAURANT_POOL[0], visible: false });
   const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
@@ -115,6 +116,15 @@ export default function SupperClub() {
   const [gpLoading, setGpLoading] = useState(false);
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
+
+  // Mock restaurant detail data
+  const mockRestaurantPhotos = ["I", "II", "III", "IV", "V", "VI"];
+  const mockRestaurantReviews = [
+    { group: "The Velvet Fork", member: "Marisol", rating: 4.8, text: "An extraordinary dining experience. The attention to detail in every dish was remarkable.", date: "Feb 2026", hasPhoto: true },
+    { group: "Tuesday Table", member: "Derek", rating: 4.6, text: "Perfectly charming. The sommelier remembered us from last time. Unsettling. Wonderful.", date: "Jan 2026", hasPhoto: true },
+    { group: "The Midnight Fork", member: "Priya", rating: 5.0, text: "Flawless execution. We gave it a perfect score and immediately questioned our life choices.", date: "Mar 2026", hasPhoto: false },
+    { group: "Six at the Table", member: "You", rating: 4.7, text: "The omakase was extraordinary. The presentation alone was worth the visit.", date: "Feb 2026", hasPhoto: true },
+  ];
 
   const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
     if (query.length < 2) { setter([]); return; }
