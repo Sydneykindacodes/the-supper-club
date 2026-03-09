@@ -495,6 +495,18 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
+  // Cancel dinner — keeps availability but resets reservation
+  const cancelDinner = useCallback(async () => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({ status: "cancelled" as const })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
   // Complete dinner (post-dinner) and trigger host rotation
   const completeDinner = useCallback(async () => {
     if (!activeReservation?.id || !activeGroupId) return false;
