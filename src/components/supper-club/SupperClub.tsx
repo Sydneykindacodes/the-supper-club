@@ -503,15 +503,38 @@ export default function SupperClub() {
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
                   <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                    <strong>Pro tip:</strong> Book for {ag.nextDinner} at 7:30 PM · Party of {MEMBERS.length}
+                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {MEMBERS.length}.
                   </div>
                 </div>
-                <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                  showToast("Reservation confirmed. The secret is safe.");
-                  updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
-                }}>
-                  I've Booked It
-                </button>
+                {!bookingDateConfirm ? (
+                  <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                    setBookingDateConfirm(true);
+                  }}>
+                    I've Booked It
+                  </button>
+                ) : (
+                  <div style={{ background:"rgba(122,158,126,0.06)", border:"1px solid rgba(122,158,126,0.3)", borderRadius:"14px", padding:"20px", marginBottom:"12px" }}>
+                    <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"10px", fontWeight:"500", textAlign:"center" }}>Confirm Booking Details</div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", textAlign:"center", lineHeight:"1.6" }}>
+                      Please confirm you booked the reservation for the date the group selected.
+                    </div>
+                    <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                      <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
+                      <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {MEMBERS.length}</div>
+                    </div>
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                      showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
+                      updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
+                      setBookingDateConfirm(false);
+                    }}>
+                      Yes, Booked for {ag.nextDinner}
+                    </button>
+                    <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => setBookingDateConfirm(false)}>
+                      Go Back
+                    </button>
+                  </div>
+                )}
                 <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
                   const wittyMsg = WITTY_SKIP_MESSAGES[Math.floor(Math.random() * WITTY_SKIP_MESSAGES.length)];
                   showToast(wittyMsg);
