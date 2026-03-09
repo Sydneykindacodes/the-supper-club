@@ -197,6 +197,17 @@ export const WITTY_AWAITING_HOST = [
   "The gods of dining have spoken. Their decree arrives with the morning light.",
 ];
 
+export const WITTY_SOLO_MESSAGES = [
+  "Your crew hasn't shown up yet — even the best restaurants need more than one critic.",
+  "A table for one is poetic, but this club requires at least two. Share your invite code.",
+  "Solo dining has its charm, but the Supper Club demands company. Recruit a fellow gourmand.",
+  "You're the founding member. Now find your co-conspirator. Every great duo starts somewhere.",
+  "The candles are lit, the table is set… but the other chairs are conspicuously empty.",
+  "One does not simply supper club alone. The universe requires a quorum of two.",
+  "A critic without an audience is just someone eating. Invite a friend.",
+  "The reservation is for two. Minimum. We don't make the rules. Actually, we do.",
+];
+
 export const MEAL_TYPES = ["Breakfast","Brunch","Lunch","Dinner"];
 export const PRICE_LABELS: Record<number, string> = { 1:"$", 2:"$$", 3:"$$$", 4:"$$$$" };
 

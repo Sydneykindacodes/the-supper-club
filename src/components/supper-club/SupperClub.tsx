@@ -3,7 +3,7 @@ import {
   INDIVIDUAL_BADGES, GROUP_BADGES,
   WITTY_NO_DATE, MEAL_TYPES, WITTY_HOST_WAITING,
   SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES, WITTY_INITIATION_MESSAGES,
-  WITTY_SKIP_MESSAGES, WITTY_AWAITING_HOST,
+  WITTY_SKIP_MESSAGES, WITTY_AWAITING_HOST, WITTY_SOLO_MESSAGES,
   MAX_GROUP_MEMBERS,
   Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
@@ -193,6 +193,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [postDinnerStep, setPostDinnerStep] = useState<"review" | "availability" | "completing" | null>(null);
   const [wittyAwaitingIdx] = useState(Math.floor(Math.random() * WITTY_AWAITING_HOST.length));
+  const [wittysoloIdx] = useState(Math.floor(Math.random() * WITTY_SOLO_MESSAGES.length));
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
@@ -501,6 +502,53 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // No-group placeholder helper
   const hasGroup = groups.length > 0 && activeGroup.id !== (EMPTY_GROUP.id as any);
+  const isSoloGroup = hasGroup && currentMembers.length < 2;
+
+  const SoloPlaceholder = ({ feature }: { feature: string }) => (
+    <div style={S.app}><div style={S.phone}>
+      {toast && <div style={S.toast}>{toast}</div>}
+      <div style={S.screen}>
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+        <div style={{ padding:"16px 24px 12px" }}>
+          <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{feature}</div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 28px", textAlign:"center" }}>
+          <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"linear-gradient(135deg, rgba(201,149,106,0.1), rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"28px", color:"#c9956a", marginBottom:"24px" }}>
+            ◇
+          </div>
+          <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400" }}>
+            Waiting for your crew
+          </div>
+          <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8", marginBottom:"28px", maxWidth:"280px" }}>
+            {WITTY_SOLO_MESSAGES[wittysoloIdx]}
+          </div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:"rgba(201,149,106,0.06)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.15)", width:"100%", maxWidth:"300px", marginBottom:"16px" }}>
+            <div>
+              <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"4px" }}>Invite Code</div>
+              <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{activeGroup.code}</div>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(activeGroup.code); showToast("Invite code copied!"); }}
+              style={{ background:"rgba(201,149,106,0.15)", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"8px", padding:"6px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", fontFamily:"Georgia,serif" }}
+            >Copy</button>
+          </div>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/?invite=${activeGroup.code}`;
+              navigator.clipboard.writeText(link);
+              showToast("Invite link copied!");
+            }}
+            style={{ ...S.primaryBtn, maxWidth:"300px", marginBottom:"8px" }}
+          >Share Invite Link</button>
+          <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px" }}>
+            You need at least 2 members to unlock {feature.toLowerCase()}.
+          </div>
+        </div>
+      </div>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+    </div></div>
+  );
+
   const NoGroupPlaceholder = ({ feature }: { feature: string }) => (
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
@@ -719,6 +767,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   if (screen === "club_home") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Home" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Home" />;
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
@@ -1369,6 +1418,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── GROUP SETTINGS ──
   if (screen === "group_settings") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Settings" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Settings" />;
     const isCreator = dbData.isHost; // Host can manage settings
     
     if (!isCreator) return (
@@ -1604,6 +1654,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── HOST SELECT DATE ──
   if (screen === "host_select_date") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Host Selection" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Host Selection" />;
     const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
     const notSubmittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
@@ -1770,6 +1821,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── HOST SELECT RESTAURANT ──
   if (screen === "host_select_restaurant") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Selection" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Restaurant Selection" />;
     const dinnerDate = dbData.activeReservation?.dinner_date;
     const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "TBD";
     
@@ -1950,6 +2002,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── PAST DINNERS ──
   if (screen === "past_dinners") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Past Dinners" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Past Dinners" />;
     // Get reviews from DB for this group's visited restaurants
     const groupReviews = dbData.communityReviews.filter(r => r.group_id === activeGroupId);
 
@@ -2675,6 +2728,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── AVAILABILITY ──
   if (screen === "availability") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Availability" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Scheduling" />;
     const datesAlreadySubmitted = selectedDates.length > 0;
     
     return (
@@ -2868,6 +2922,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── REVEAL TAB ──
   if (screen === "reveal") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Reveal" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Reveal" />;
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const hostIsYou = dbData.isHost;
     const hasScheduled = ag.dinnerStatus === "scheduled" && ag.nextDinner;
