@@ -2578,8 +2578,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"20px", color:"#f5e6d3", letterSpacing:"6px", fontWeight:"700" }}>{activeGroup.code}</div>
               <button onClick={() => { 
                 const link = `${window.location.origin}/?invite=${activeGroup.code}`;
-                navigator.clipboard.writeText(link); 
-                showToast("Invite link copied!"); 
+                copyToClipboard(link, "Invite link copied!"); 
               }} style={{ marginTop:"10px", background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", borderRadius:"8px", padding:"8px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif", width:"100%" }}>
                 Copy Shareable Link
               </button>
