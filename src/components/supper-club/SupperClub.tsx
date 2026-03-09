@@ -1901,7 +1901,7 @@ export default function SupperClub() {
                 setGroupAdmin("You");
                 setScreen("club_home"); 
                 setActiveTab("home");
-                showToast("🎉 You're officially the host. Keep the secret safe.");
+                showToast("You're officially the host. Keep the secret safe.");
               }}
             >
               Accept the Responsibility
