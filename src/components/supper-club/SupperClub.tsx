@@ -242,6 +242,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
   const [selectedRestId, setSelectedRestId] = useState<string | null>(null);
+  const [showHostRevealAnimation, setShowHostRevealAnimation] = useState(false);
+  const [hasSeenHostReveal, setHasSeenHostReveal] = useState(false);
 
   // Use DB-backed restaurants when available, else local pool
   const [groupPools, setGroupPools] = useState<Record<string | number, Restaurant[]>>({});
