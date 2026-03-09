@@ -2168,6 +2168,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const isGooglePlace = 'googlePlaceId' in r;
       const reviews = allCommunityReviews.filter(rev => rev.restaurant === r.name);
       const avgRating = reviews.length > 0 ? (reviews.reduce((s, rev) => s + rev.rating, 0) / reviews.length).toFixed(1) : null;
+      const isAlreadyInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
       
       return (
         <div style={S.app}><div style={S.phone}>
