@@ -72,7 +72,7 @@ export interface GroupSettings {
 
 export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant" | "post_dinner" | "awaiting_next_host";
 
-export function useSupperClubData(user: User, activeGroupId: string | null) {
+export function useSupperClubData(user: User, activeGroupId: string | null, isTemporary: boolean = false) {
   const [members, setMembers] = useState<DBMember[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [visitedRestaurants, setVisitedRestaurants] = useState<Restaurant[]>([]);
