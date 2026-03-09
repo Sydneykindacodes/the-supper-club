@@ -1987,7 +1987,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           {ag.dinnerStatus === "pending_confirm" && (() => {
             const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-            const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
+            const confirmedCount = Object.values(dbData.dateConfirmations).filter(Boolean).length;
             const allConfirmed = confirmedCount === nonHostMembers.length;
             const isHost = dbData.isHost;
             
