@@ -802,7 +802,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <button
             onClick={() => setScreen("group_settings")}
             style={{ ...S.ghostBtn, maxWidth:"300px", marginBottom:"8px" }}
-          >⚙ Group Settings</button>
+          >◇ Group Settings</button>
           <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px" }}>
             You need at least 2 members to unlock {feature.toLowerCase()}.
           </div>
