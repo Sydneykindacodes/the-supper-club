@@ -501,6 +501,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
   }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
 
+  // Helper to send a notification to the host only
+  const sendHostNotification = useCallback(async (type: string) => {
+    if (!activeGroupId) return;
+    const hostMember = dbData.members.find(m => m.is_host);
+    if (!hostMember) return;
+    try {
+      await supabase.from("notifications").insert({
+        member_id: hostMember.id,
+        reservation_id: dbData.activeReservation?.id || null,
+        type,
+        channel: "push",
+        delivered: false,
+      });
+    } catch (e) {
+      console.error('Failed to send host notification:', e);
+    }
+  }, [activeGroupId, dbData.members, dbData.activeReservation?.id]);
+
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
 
@@ -1355,7 +1373,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 ))}
               </div>
               {!isHost && !confirmationVotes["You"] && (
-                <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setConfirmationVotes(v => ({...v, You:true})); showToast("Confirmed. Reservation will be placed shortly."); }}>
+                <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => { 
+                  const newVotes = {...confirmationVotes, You: true};
+                  setConfirmationVotes(newVotes);
+                  showToast("Confirmed. Reservation will be placed shortly.");
+                  // Check if all non-host members have now voted
+                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  if (allNowVoted) {
+                    await sendHostNotification("all_votes_in");
+                  }
+                }}>
                   Confirm — I'll Be There
                 </button>
               )}
@@ -3117,6 +3144,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     if (selectedDates.length > 0) { 
                       const saved = await dbData.saveAvailability(selectedDates);
                       if (saved) {
+                        // Check if all members have now submitted availability
+                        const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                        const submittedCount = nonHostMembers.filter(m => 
+                          m.name === "You" ? true : (memberAvailability[m.name]?.length || 0) > 0
+                        ).length;
+                        if (submittedCount >= nonHostMembers.length) {
+                          await sendHostNotification("all_availability_in");
+                        }
                         showToast("Availability saved. Waiting on host to pick a date.");
                         setScreen("club_home");
                         setActiveTab("home");
