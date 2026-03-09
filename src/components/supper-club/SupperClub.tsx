@@ -1567,7 +1567,137 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── GROUP POOL ──
+  // ── HOST SELECT RESTAURANT ──
+  if (screen === "host_select_restaurant") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Selection" />;
+    const dinnerDate = dbData.activeReservation?.dinner_date;
+    const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "TBD";
+    const [selectedRestId, setSelectedRestId] = useState<string | null>(null);
+    
+    // Get raw restaurant IDs from DB for selection
+    const getRestaurantDbId = (name: string) => {
+      // This is a workaround - we need the actual DB UUID
+      // For now, we'll search in the restaurants table
+      return name;
+    };
+    
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Pick the Restaurant</div>
+          </div>
+          
+          <div style={{ padding:"16px 16px 0" }}>
+            <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"12px", padding:"14px", marginBottom:"20px", textAlign:"center" }}>
+              <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Dinner Date</div>
+              <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{formattedDate}</div>
+              <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
+            </div>
+            
+            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+              The group will only see "Destination Unknown" until you reveal it. Choose wisely — or chaotically. Your call.
+            </div>
+            
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+              From Your Pool · {poolRestaurants.length}
+            </div>
+            
+            {poolRestaurants.length === 0 ? (
+              <div style={{ ...S.card, textAlign:"center", padding:"28px" }}>
+                <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
+                  Your restaurant pool is empty. Add some restaurants first!
+                </div>
+                <button style={S.primaryBtn} onClick={() => { setActiveTab("explore"); setScreen("explore"); }}>
+                  Explore & Add Restaurants
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:"flex", flexDirection:"column", gap:"10px", marginBottom:"20px", maxHeight:"320px", overflowY:"auto" }}>
+                  {poolRestaurants.map(r => {
+                    const isSelected = selectedRestId === r.name;
+                    return (
+                      <div 
+                        key={r.name} 
+                        onClick={() => setSelectedRestId(r.name)}
+                        style={{ 
+                          ...S.card, 
+                          margin: 0, 
+                          cursor: "pointer",
+                          border: isSelected ? "2px solid #c9956a" : "1px solid rgba(201,149,106,0.12)",
+                          background: isSelected ? "rgba(201,149,106,0.12)" : "rgba(201,149,106,0.02)",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                          <div>
+                            <div style={{ fontSize:"15px", color:"#f5e6d3", fontWeight:"500", marginBottom:"4px" }}>{r.name}</div>
+                            <div style={{ fontSize:"12px", color:"#7a5a40" }}>{r.cuisine} · {r.city}</div>
+                          </div>
+                          <PriceTag price={r.price} />
+                        </div>
+                        {(r.googleRating || r.scRating) && (
+                          <div style={{ display:"flex", gap:"12px", marginTop:"8px" }}>
+                            {r.googleRating && <div style={{ fontSize:"11px", color:"#5a3a25" }}>Google: {r.googleRating.toFixed(1)}★</div>}
+                            {r.scRating && <div style={{ fontSize:"11px", color:"#7a9e7e" }}>SC: {r.scRating.toFixed(1)}★</div>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {selectedRestId && (
+                  <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"12px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                    <div style={{ fontSize:"12px", color:"#c9956a", marginBottom:"4px" }}>Selected</div>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{selectedRestId}</div>
+                  </div>
+                )}
+                
+                <button 
+                  style={{ ...S.primaryBtn, opacity: selectedRestId ? 1 : 0.5, marginBottom:"8px" }} 
+                  onClick={async () => {
+                    if (!selectedRestId) { showToast("Select a restaurant first."); return; }
+                    // Find the restaurant DB record
+                    const { data: restData } = await supabase
+                      .from("restaurants")
+                      .select("id")
+                      .eq("group_id", activeGroup.id)
+                      .eq("name", selectedRestId)
+                      .single();
+                    if (!restData) { showToast("Restaurant not found. Try again."); return; }
+                    
+                    const success = await dbData.selectRestaurantForReservation(restData.id);
+                    if (success) {
+                      showToast("Restaurant selected! Time to book.");
+                      setScreen("club_home");
+                      setActiveTab("home");
+                    } else {
+                      showToast("Failed to select. Try again.");
+                    }
+                  }}
+                >
+                  Confirm Selection
+                </button>
+              </>
+            )}
+            
+            <button style={{ ...S.ghostBtn }} onClick={() => setScreen("club_home")}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div></div>
+    );
+  }
+
+
   if (screen === "group_pool") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Pool" />;
     return (
