@@ -499,10 +499,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const onNavigate = (tab: string, scr: string) => { setActiveTab(tab); setScreen(scr); };
 
-  // Helper to send push notifications to all group members
+  // Helper to send push notifications to all group members + in-app for self
   const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
     if (!activeGroupId) return;
     try {
+      // Send to other members
       await supabase.functions.invoke('send-group-notification', {
         body: {
           group_id: activeGroupId,
@@ -511,6 +512,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           exclude_member_id: excludeSelf ? dbData.currentMember?.id : undefined,
         },
       });
+      // Also insert an in-app notification for self so it shows in the running tab
+      if (excludeSelf && dbData.currentMember?.id) {
+        await supabase.from("notifications").insert({
+          member_id: dbData.currentMember.id,
+          reservation_id: dbData.activeReservation?.id || null,
+          type,
+          channel: "in_app",
+          delivered: true, // already seen by the person who triggered it
+        });
+      }
     } catch (e) {
       console.error('Failed to send notification:', e);
     }
