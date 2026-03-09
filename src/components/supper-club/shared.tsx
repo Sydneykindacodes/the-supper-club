@@ -5,7 +5,7 @@ import { S, chip } from "./styles";
 // ── Minimal SVG social icons ──
 const SocialIcon = ({ type }: { type: string }) => {
   const s: CSSProperties = { width: 22, height: 22, display: "block" };
-  const c = "rgba(201,149,106,0.85)";
+  const c = "rgba(212,205,196,0.85)";
   switch (type) {
     case "Instagram":
       return (
@@ -47,7 +47,7 @@ const SocialIcon = ({ type }: { type: string }) => {
 // ── ShareRow ──
 export const ShareRow = ({ showToast }: { showToast: (msg: string) => void }) => (
   <div style={{ marginBottom: "16px" }}>
-    <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "12px", textAlign: "center" }}>
+    <div style={{ fontSize: "11px", color: "#d4cdc4", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "12px", textAlign: "center" }}>
       Share Your Review
     </div>
     <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
@@ -58,12 +58,12 @@ export const ShareRow = ({ showToast }: { showToast: (msg: string) => void }) =>
           style={{
             display: "flex", flexDirection: "column", alignItems: "center", gap: "6px",
             cursor: "pointer", padding: "12px 10px", borderRadius: "14px",
-            background: "rgba(255,255,255,0.02)", border: "1px solid rgba(201,149,106,0.08)",
+            background: "rgba(255,255,255,0.02)", border: "1px solid rgba(212,205,196,0.08)",
             minWidth: "52px", transition: "all 0.2s",
           }}
         >
           <SocialIcon type={name} />
-          <span style={{ fontSize: "8px", color: "#5a3a25", letterSpacing: "1px", textTransform: "uppercase" }}>{name}</span>
+          <span style={{ fontSize: "8px", color: "#565250", letterSpacing: "1px", textTransform: "uppercase" }}>{name}</span>
         </div>
       ))}
     </div>
@@ -76,28 +76,28 @@ export const StarRating = ({ value, onChange, small }: { value: number; onChange
     {[1,2,3,4,5].map(n => (
       <div key={n} onClick={() => onChange?.(n)} style={{
         width:small?"16px":"26px", height:small?"16px":"26px", borderRadius:"50%",
-        border:value>=n?"none":"1.5px solid #5a3a25",
-        background:value>=n?"#c9956a":"transparent",
+        border:value>=n?"none":"1.5px solid #565250",
+        background:value>=n?"#d4cdc4":"transparent",
         cursor:onChange?"pointer":"default", flexShrink:0, transition:"all 0.15s",
       }}/>
     ))}
-    {!small && value>0 && <span style={{ fontSize:"12px", color:"#9a7a60", fontStyle:"italic" }}>{["","Poor","Fair","Good","Great","Exceptional"][value]}</span>}
+    {!small && value>0 && <span style={{ fontSize:"12px", color:"#8c8278", fontStyle:"italic" }}>{["","Poor","Fair","Good","Great","Exceptional"][value]}</span>}
   </div>
 );
 
 // ── Toggle ──
 export const Toggle = ({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) => (
-  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
-    <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{label}</span>
-    <div onClick={onToggle} style={{ width:"44px", height:"24px", borderRadius:"12px", background:on?"linear-gradient(135deg,#c9956a,#9a6040)":"rgba(255,255,255,0.08)", border:on?"none":"1px solid rgba(201,149,106,0.2)", position:"relative", cursor:"pointer", transition:"all 0.2s" }}>
-      <div style={{ position:"absolute", top:"3px", left:on?"22px":"3px", width:"18px", height:"18px", borderRadius:"50%", background:on?"#1a0f0a":"#5a3a25", transition:"left 0.2s" }}/>
+  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 0", borderBottom:"1px solid rgba(212,205,196,0.07)" }}>
+    <span style={{ fontSize:"14px", color:"#e5ded5" }}>{label}</span>
+    <div onClick={onToggle} style={{ width:"44px", height:"24px", borderRadius:"12px", background:on?"linear-gradient(135deg,#d4cdc4,#a49a8e)":"rgba(255,255,255,0.08)", border:on?"none":"1px solid rgba(212,205,196,0.2)", position:"relative", cursor:"pointer", transition:"all 0.2s" }}>
+      <div style={{ position:"absolute", top:"3px", left:on?"22px":"3px", width:"18px", height:"18px", borderRadius:"50%", background:on?"#2a2a2a":"#565250", transition:"left 0.2s" }}/>
     </div>
   </div>
 );
 
 // ── PriceTag ──
 export const PriceTag = ({ price }: { price: number }) => (
-  <span style={{ fontSize:"12px", color:"#c9956a", letterSpacing:"1px" }}>
+  <span style={{ fontSize:"12px", color:"#d4cdc4", letterSpacing:"1px" }}>
     {PRICE_LABELS[price] || "—"}
   </span>
 );
@@ -112,12 +112,12 @@ export const RatingBadge = ({ restaurant, large }: { restaurant: Restaurant; lar
       <span style={{ fontSize: large ? "18px" : "14px", fontWeight:"700", color: info.color }}>{info.rating}</span>
       <span
         onClick={() => setShowTip(p => !p)}
-        style={{ fontSize:"9px", fontWeight:"700", letterSpacing:"0.5px", color:"#1a0f0a", background: info.source==="SC" ? "#c9956a" : "#7a9e7e", borderRadius:"4px", padding:"2px 5px", cursor:"pointer", userSelect:"none" }}
+        style={{ fontSize:"9px", fontWeight:"700", letterSpacing:"0.5px", color:"#2a2a2a", background: info.source==="SC" ? "#d4cdc4" : "#7a9e7e", borderRadius:"4px", padding:"2px 5px", cursor:"pointer", userSelect:"none" }}
       >{info.source}</span>
       {showTip && (
-        <div onClick={() => setShowTip(false)} style={{ position:"absolute", bottom:"calc(100% + 8px)", right:0, background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 12px", fontSize:"11px", color:"#f5e6d3", whiteSpace:"nowrap", zIndex:50, lineHeight:"1.5", boxShadow:"0 4px 20px rgba(0,0,0,0.6)" }}>
+        <div onClick={() => setShowTip(false)} style={{ position:"absolute", bottom:"calc(100% + 8px)", right:0, background:"#2e2e2e", border:"1px solid rgba(212,205,196,0.3)", borderRadius:"10px", padding:"10px 12px", fontSize:"11px", color:"#e5ded5", whiteSpace:"nowrap", zIndex:50, lineHeight:"1.5", boxShadow:"0 4px 20px rgba(0,0,0,0.6)" }}>
           {info.tip}
-          <div style={{ fontSize:"10px", color:"#7a5a40", marginTop:"4px" }}>Tap to dismiss</div>
+          <div style={{ fontSize:"10px", color:"#8c8278", marginTop:"4px" }}>Tap to dismiss</div>
         </div>
       )}
     </div>
@@ -151,11 +151,11 @@ export const GlobalGroupSwitcher = ({
             <div key={g.id} onClick={() => setActiveGroup(g)}
               style={{
                 flexShrink: 0, padding: "8px 14px", borderRadius: "16px", cursor: "pointer",
-                background: active ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
-                border: active ? "1px solid rgba(201,149,106,0.4)" : "1px solid rgba(201,149,106,0.08)",
+                background: active ? "linear-gradient(135deg,rgba(212,205,196,0.15),rgba(212,205,196,0.06))" : "rgba(255,255,255,0.02)",
+                border: active ? "1px solid rgba(212,205,196,0.35)" : "1px solid rgba(212,205,196,0.08)",
                 transition: "all 0.2s",
               }}>
-              <div style={{ fontSize: "11px", fontWeight: active ? "600" : "400", color: active ? "#f5e6d3" : "#5a3a25", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{g.name}</div>
+              <div style={{ fontSize: "11px", fontWeight: active ? "600" : "400", color: active ? "#e5ded5" : "#565250", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{g.name}</div>
             </div>
           );
         })}
@@ -164,12 +164,12 @@ export const GlobalGroupSwitcher = ({
             <div onClick={() => setShowMenu(p => !p)}
               style={{
                 flexShrink: 0, padding: "8px 12px", borderRadius: "16px", cursor: "pointer",
-                background: showMenu ? "rgba(201,149,106,0.1)" : "transparent",
-                border: "1px dashed rgba(201,149,106,0.2)", transition: "all 0.2s",
+                background: showMenu ? "rgba(212,205,196,0.1)" : "transparent",
+                border: "1px dashed rgba(212,205,196,0.2)", transition: "all 0.2s",
                 display: "flex", alignItems: "center", gap: "5px",
               }}>
-              <span style={{ fontSize: "12px", color: "#c9956a", lineHeight: 1 }}>+</span>
-              <span style={{ fontSize: "10px", color: "#7a5a40", whiteSpace: "nowrap" }}>New</span>
+              <span style={{ fontSize: "12px", color: "#d4cdc4", lineHeight: 1 }}>+</span>
+              <span style={{ fontSize: "10px", color: "#8c8278", whiteSpace: "nowrap" }}>New</span>
             </div>
           </div>
         )}
@@ -180,7 +180,7 @@ export const GlobalGroupSwitcher = ({
           <div onClick={() => setShowMenu(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} />
           <div style={{
             position: "absolute", top: "calc(100% + 4px)", right: "16px", zIndex: 100,
-            background: "#2d1208", border: "1px solid rgba(201,149,106,0.3)",
+            background: "#2e2e2e", border: "1px solid rgba(212,205,196,0.3)",
             borderRadius: "12px", padding: "6px", minWidth: "160px",
             boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
           }}>
@@ -189,20 +189,20 @@ export const GlobalGroupSwitcher = ({
                 padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,205,196,0.1)")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-              <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Create a Club</div>
-              <div style={{ fontSize: "10px", color: "#7a5a40" }}>Start a new dining circle</div>
+              <div style={{ fontSize: "13px", color: "#e5ded5", marginBottom: "2px" }}>Create a Club</div>
+              <div style={{ fontSize: "10px", color: "#8c8278" }}>Start a new dining circle</div>
             </div>
             <div onClick={() => { setShowMenu(false); onJoinClub(); }}
               style={{
                 padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(212,205,196,0.1)")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-              <div style={{ fontSize: "13px", color: "#f5e6d3", marginBottom: "2px" }}>Join with Code</div>
-              <div style={{ fontSize: "10px", color: "#7a5a40" }}>Enter an invite code</div>
+              <div style={{ fontSize: "13px", color: "#e5ded5", marginBottom: "2px" }}>Join with Code</div>
+              <div style={{ fontSize: "10px", color: "#8c8278" }}>Enter an invite code</div>
             </div>
           </div>
         </>
@@ -221,8 +221,8 @@ export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigat
       { id:"badges",      label:"Badges",  glyph:"◈",  screen:"badges" },
     ].map(item => (
       <div key={item.id} style={S.navItem} onClick={() => onNavigate(item.id, item.screen)}>
-        <span style={{ fontSize:"20px", color:activeTab===item.id?"#c9956a":"#3d2010" }}>{item.glyph}</span>
-        <span style={{ fontSize:"9px", letterSpacing:"1.5px", textTransform:"uppercase", color:activeTab===item.id?"#c9956a":"#4a2e18" }}>{item.label}</span>
+        <span style={{ fontSize:"20px", color:activeTab===item.id?"#d4cdc4":"#383838" }}>{item.glyph}</span>
+        <span style={{ fontSize:"9px", letterSpacing:"1.5px", textTransform:"uppercase", color:activeTab===item.id?"#d4cdc4":"#3d3d3d" }}>{item.label}</span>
       </div>
     ))}
   </div>
@@ -268,13 +268,13 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
           <div key={key} onClick={() => toggleDate(key, fd.isPast)} style={{
             borderRadius:"10px", padding:"8px 4px", textAlign:"center",
             cursor:fd.isPast?"not-allowed":"pointer",
-            background:sel?"linear-gradient(135deg,#c9956a,#9a6040)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
-            border:sel?"none":`1px solid rgba(201,149,106,${fd.isPast?"0.04":"0.1"})`,
+            background:sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
+            border:sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
             opacity:fd.isPast?0.3:1, transition:"all 0.15s",
           }}>
-            <div style={{ fontSize:"9px", color:sel?"#1a0f0a":"#7a5a40", marginBottom:"2px" }}>{fd.day}</div>
-            <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#1a0f0a":"#f5e6d3" }}>{fd.date}</div>
-            <div style={{ fontSize:"8px", color:sel?"#1a0f0a":"#4a2e18" }}>{fd.month}</div>
+            <div style={{ fontSize:"9px", color:sel?"#2a2a2a":"#8c8278", marginBottom:"2px" }}>{fd.day}</div>
+            <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a":"#e5ded5" }}>{fd.date}</div>
+            <div style={{ fontSize:"8px", color:sel?"#2a2a2a":"#3d3d3d" }}>{fd.month}</div>
           </div>
         );
       })}
