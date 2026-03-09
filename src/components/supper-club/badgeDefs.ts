@@ -18,6 +18,10 @@ export const BADGE_ICONS: Record<string, string> = {
   best_dish:       svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'),
   three_best_dish: svg('<path d="M6 9a6 6 0 0 1 12 0c0 4-6 9-6 9S6 13 6 9Z"/><circle cx="12" cy="9" r="2"/>'),
   early_bird:      svg('<circle cx="12" cy="8" r="3"/><path d="M12 11v4"/><path d="M9 22h6"/><path d="M8 15h8"/><path d="M5 5l2 2"/><path d="M19 5l-2 2"/>'),
+  // Temporary group badges
+  temp_group_1:    svg('<path d="M12 2l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9Z"/>'),
+  temp_group_5:    svg('<path d="M12 2v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M6.3 17.7l2.8-2.8M14.9 9.1l2.8-2.8"/><circle cx="12" cy="12" r="3"/>'),
+  temp_group_10:   svg('<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9Z"/><path d="M12 7v5l3 3"/><path d="M8 3l-1-2M16 3l1-2"/>'),
 
   // Group
   group_first_dinner: svg('<path d="M8 2v4"/><path d="M16 2v4"/><path d="M12 11v6"/><path d="M9 20h6"/><path d="M8 6h8l1 5H7Z"/>'),
