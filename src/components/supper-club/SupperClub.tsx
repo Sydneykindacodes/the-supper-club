@@ -2994,37 +2994,82 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={S.headerTitle}>Reveal</div>
         </div>
         <div style={S.screen}>
-          {hasScheduled ? (
-            <>
-              {/* Dinner is booked — show reveal countdown or info */}
-              <div style={{ ...S.revealBox, margin:"20px 16px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Next Dinner</div>
-                <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
-                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
-                <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
-                {hostIsYou ? (
-                  <>
-                    <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
-                    <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize:"40px", color:"#c9956a", marginBottom:"16px" }}>?</div>
-                    <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px" }}>Destination Unknown</div>
-                    <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic" }}>Only the host knows where you're going.</div>
-                    <div style={{ marginTop:"20px", padding:"12px 16px", background:"rgba(201,149,106,0.07)", borderRadius:"12px", fontSize:"12px", color:"#c9956a" }}>
-                      Restaurant revealed at 8 AM on dinner day
-                    </div>
-                  </>
-                )}
-              </div>
+          {hasScheduled ? (() => {
+            const selectedRest = dbData.selectedRestaurantData;
+            const isRevealed = dbData.activeReservation?.status === "revealed";
+            const restaurantKnown = !!selectedRest;
 
-              {/* Group members status */}
+            return (
+            <>
+              {/* Non-host: restaurant revealed, not yet seen animation */}
+              {!hostIsYou && isRevealed && restaurantKnown && !hasSeenReveal && (
+                <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Next Dinner</div>
+                  <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
+                  <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
+                  <div style={{
+                    width:"80px", height:"80px", borderRadius:"50%", margin:"0 auto 20px",
+                    background:"radial-gradient(circle, rgba(201,149,106,0.15) 0%, transparent 70%)",
+                    border:"2px solid rgba(201,149,106,0.3)",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:"28px", color:"#c9956a",
+                    animation:"sealPulseInline 2s ease-in-out infinite",
+                  }}>◈</div>
+                  <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px" }}>The secret is ready.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"24px" }}>The host has chosen your destination.</div>
+                  <button style={{ ...S.primaryBtn, background:"linear-gradient(135deg, #c9956a, #9a6040)", maxWidth:"240px", margin:"0 auto" }} onClick={() => setShowRevealAnimation(true)}>
+                    Unveil the Destination
+                  </button>
+                  <style>{`@keyframes sealPulseInline { 0%,100%{box-shadow:0 0 20px rgba(201,149,106,0.1);transform:scale(1)} 50%{box-shadow:0 0 40px rgba(201,149,106,0.25);transform:scale(1.05)} }`}</style>
+                </div>
+              )}
+
+              {/* Non-host: not yet revealed */}
+              {!hostIsYou && !isRevealed && (
+                <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Next Dinner</div>
+                  <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
+                  <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
+                  <div style={{ fontSize:"40px", color:"#c9956a", marginBottom:"16px" }}>?</div>
+                  <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px" }}>Destination Unknown</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic" }}>Only the host knows where you're going.</div>
+                  <div style={{ marginTop:"20px", padding:"12px 16px", background:"rgba(201,149,106,0.07)", borderRadius:"12px", fontSize:"12px", color:"#c9956a" }}>
+                    Restaurant revealed at 8 AM on dinner day
+                  </div>
+                </div>
+              )}
+
+              {/* Non-host: already seen reveal */}
+              {!hostIsYou && hasSeenReveal && restaurantKnown && (
+                <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Your Destination</div>
+                  <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{selectedRest!.name}</div>
+                  <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>{selectedRest!.cuisine} · {selectedRest!.city}</div>
+                  <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 16px" }}/>
+                  <div style={{ fontSize:"13px", color:"#7a5a40" }}>{ag.nextDinner} · 7:30 PM</div>
+                </div>
+              )}
+
+              {/* Host view */}
+              {hostIsYou && (
+                <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Next Dinner</div>
+                  <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
+                  <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
+                  <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
+                  <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
+                </div>
+              )}
+
+              {/* Group members */}
               <div style={{ ...S.card }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>The Table</div>
                 {currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                    <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#1a0f0a", fontWeight:"700" }}>{m.avatar}</div>
+                    <div style={{ width:"32px", height:"32px", borderRadius:"50%", background: m.avatar_url ? `url(${m.avatar_url}) center/cover no-repeat` : m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#1a0f0a", fontWeight:"700", overflow:"hidden" }}>{!m.avatar_url && m.avatar}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</div>
                       <div style={{ fontSize:"11px", color:"#5a3a25" }}>Confirmed</div>
@@ -3034,7 +3079,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 ))}
               </div>
             </>
-          ) : hasConfirmed ? (
+            );
+          })() : hasConfirmed ? (
             <div style={{ ...S.revealBox, margin:"20px 16px" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Pending Confirmation</div>
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.pendingDate}</div>
