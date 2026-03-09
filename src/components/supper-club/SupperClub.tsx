@@ -3135,6 +3135,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     if (selectedDates.length > 0) { 
                       const saved = await dbData.saveAvailability(selectedDates);
                       if (saved) {
+                        // Check if all members have now submitted availability
+                        const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                        const submittedCount = nonHostMembers.filter(m => 
+                          m.name === "You" ? true : (memberAvailability[m.name]?.length || 0) > 0
+                        ).length;
+                        if (submittedCount >= nonHostMembers.length) {
+                          await sendHostNotification("all_availability_in");
+                        }
                         showToast("Availability saved. Waiting on host to pick a date.");
                         setScreen("club_home");
                         setActiveTab("home");
