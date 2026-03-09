@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { S, chip } from "./styles";
 import type { User } from "@supabase/supabase-js";
-import type { DBReview } from "@/hooks/useSupperClubData";
+import type { DBReview, DBBadge } from "@/hooks/useSupperClubData";
+import IndividualBadges from "./IndividualBadges";
 
 const AVATAR_COLORS = [
   "#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c",
@@ -12,12 +13,13 @@ const AVATAR_COLORS = [
 interface ProfileScreenProps {
   user: User;
   userReviews: DBReview[];
+  userBadges: DBBadge[];
   onClose: () => void;
   showToast: (msg: string) => void;
   signOut: () => Promise<void>;
 }
 
-export default function ProfileScreen({ user, userReviews, onClose, showToast, signOut }: ProfileScreenProps) {
+export default function ProfileScreen({ user, userReviews, userBadges, onClose, showToast, signOut }: ProfileScreenProps) {
   const currentName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "";
   const [displayName, setDisplayName] = useState(currentName);
   const [avatarColor, setAvatarColor] = useState(user.user_metadata?.avatar_color || "#c9956a");
@@ -148,6 +150,9 @@ export default function ProfileScreen({ user, userReviews, onClose, showToast, s
               </div>
 
               <button style={S.ghostBtn} onClick={() => setEditing(true)}>Edit Profile</button>
+
+              {/* Individual Badges */}
+              <IndividualBadges badges={userBadges} isOwnProfile={true} />
 
               {/* Reviews Section */}
               <div style={{ marginTop:"24px" }}>

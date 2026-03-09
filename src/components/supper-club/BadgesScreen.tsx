@@ -1,33 +1,7 @@
-import { S, tabPill } from "./styles";
+import { S } from "./styles";
 import { NavBar } from "./shared";
 import type { DBBadge } from "@/hooks/useSupperClubData";
-import { useState } from "react";
-
-// Badge definitions with keys matching DB badge_key
-const BADGE_DEFS = {
-  individual: [
-    { key: "first_supper", symbol: "I", name: "First Supper", desc: "Attended your first club dinner" },
-    { key: "first_review", symbol: "II", name: "Critic's Eye", desc: "Submitted your first review" },
-    { key: "five_reviews", symbol: "III", name: "Seasoned Critic", desc: "Submitted 5 detailed reviews" },
-    { key: "ten_restaurants", symbol: "IV", name: "Connoisseur", desc: "Dined at 10 different restaurants" },
-    { key: "five_streak", symbol: "V", name: "On a Roll", desc: "Attended 5 dinners in a row" },
-    { key: "first_photo", symbol: "VI", name: "Food Photographer", desc: "Submitted your first food photo" },
-    { key: "ten_photos", symbol: "VII", name: "Gallery Curator", desc: "Submitted 10 food photos" },
-    { key: "first_host", symbol: "VIII", name: "Host Debut", desc: "Hosted your first dinner" },
-    { key: "three_hosts", symbol: "IX", name: "Seasoned Host", desc: "Hosted 3 dinners" },
-    { key: "best_dish", symbol: "X", name: "Best Dish", desc: "Voted best dish of the evening" },
-    { key: "three_best_dish", symbol: "XI", name: "Top Palate", desc: "Won best dish 3 times" },
-    { key: "early_bird", symbol: "XII", name: "Early Bird", desc: "First to submit availability" },
-  ],
-  group: [
-    { key: "group_first_dinner", symbol: "I", name: "Inaugural Supper", desc: "Completed your group's first dinner" },
-    { key: "group_five_dinners", symbol: "II", name: "Regulars", desc: "Completed 5 group dinners" },
-    { key: "group_ten_dinners", symbol: "III", name: "Institution", desc: "Completed 10 group dinners" },
-    { key: "group_five_cuisines", symbol: "IV", name: "World Tour", desc: "Visited 5 different cuisines as a group" },
-    { key: "group_full_attendance", symbol: "V", name: "Full House", desc: "Full attendance at a dinner" },
-    { key: "group_all_reviewed", symbol: "VI", name: "Critics Circle", desc: "Every member reviewed the same dinner" },
-  ],
-};
+import { GROUP_BADGE_DEFS } from "./badgeDefs";
 
 interface BadgesScreenProps {
   userBadges: DBBadge[];
@@ -38,10 +12,8 @@ interface BadgesScreenProps {
 }
 
 export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onNavigate, groupName }: BadgesScreenProps) {
-  const [tab, setTab] = useState<"individual" | "group">("individual");
-
   const earnedKeys = new Set(userBadges.map(b => b.badge_key));
-  const defs = tab === "individual" ? BADGE_DEFS.individual : BADGE_DEFS.group;
+  const defs = GROUP_BADGE_DEFS;
   const earned = defs.filter(d => earnedKeys.has(d.key)).length;
 
   return (
@@ -51,18 +23,16 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
           <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "4px" }}>
             {groupName || "The Supper Club Social"}
           </div>
-          <div style={{ fontSize: "30px", color: "#f5e6d3", fontWeight: "400" }}>Badges</div>
-        </div>
-
-        <div style={{ display: "flex", gap: "4px", margin: "16px 16px 0", padding: "4px", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid rgba(201,149,106,0.08)" }}>
-          <div style={{ ...tabPill(tab === "individual"), flex: 1 }} onClick={() => setTab("individual")}>Individual</div>
-          <div style={{ ...tabPill(tab === "group"), flex: 1 }} onClick={() => setTab("group")}>Group</div>
+          <div style={{ fontSize: "30px", color: "#f5e6d3", fontWeight: "400" }}>Group Badges</div>
         </div>
 
         <div style={{ padding: "16px 16px 0" }}>
           <div style={{ marginBottom: "16px" }}>
             <div style={{ fontSize: "13px", color: "#7a5a40", fontStyle: "italic" }}>
-              {earned} badge{earned !== 1 ? "s" : ""} earned
+              {earned} of {defs.length} group badge{earned !== 1 ? "s" : ""} earned
+            </div>
+            <div style={{ fontSize: "11px", color: "#5a3a25", marginTop: "4px" }}>
+              Achievements unlocked together as a club. Individual badges are on your profile.
             </div>
           </div>
 
