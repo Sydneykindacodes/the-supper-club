@@ -718,6 +718,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const hostIsYou = dbData.isHost;
             const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
             
+            // Auto-fetch booking links for host
+            const fetchLinks = async () => {
+              if (hostIsYou && !bookingLinks) {
+                const links = await dbData.generateBookingLinks(mockRestaurant.name, mockRestaurant.city, mockRestaurant.googlePlaceId);
+                if (links) setBookingLinks(links);
+              }
+            };
+            if (hostIsYou && !bookingLinks) fetchLinks();
+            
             return hostIsYou ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
@@ -734,17 +743,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
-                  <a href={`https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.google || `https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking</span>
                   </a>
-                  <a href={`https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.opentable || `https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#c9956a" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>OpenTable</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability</span>
                   </a>
-                  <a href={`https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
+                  <a href={bookingLinks?.resy || `https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
                     <span style={{ fontSize:"12px", color:"#9b7ec8" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Resy</span>
                     <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots</span>
