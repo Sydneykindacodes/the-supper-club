@@ -102,13 +102,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
 
   // Per-group pool: map groupId -> Restaurant[]
-  const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
-    [INITIAL_GROUPS[0].id]: RESTAURANT_POOL,
-    [INITIAL_GROUPS[1].id]: [],
-  });
-  const poolRestaurants = groupPools[activeGroup.id] || [];
+  const [groupPools, setGroupPools] = useState<Record<string | number, Restaurant[]>>({});
+  const ag = activeGroup || { id: 0, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date" as const, nextDinner: null, pendingDate: null };
+  const poolRestaurants = groupPools[ag.id] || [];
   const setPoolRestaurants = (fn: (p: Restaurant[]) => Restaurant[]) => {
-    setGroupPools(prev => ({ ...prev, [activeGroup.id]: fn(prev[activeGroup.id] || []) }));
+    setGroupPools(prev => ({ ...prev, [ag.id]: fn(prev[ag.id] || []) }));
   };
   const addToGroupPool = (restaurant: Restaurant, groupIds: number[]) => {
     setGroupPools(prev => {
