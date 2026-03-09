@@ -2619,7 +2619,152 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── HOST SELECT DATE ──
+  // ── RELINQUISH HOST ──
+  if (screen === "relinquish_host") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Host Transfer" />;
+    const otherMembers = currentMembers.filter(m => m.name !== "You");
+
+    // Build a summary of what's been done and what's left
+    const buildHandoffSummary = () => {
+      const done: string[] = [];
+      const todo: string[] = [];
+      const status = dbData.dinnerStatus;
+
+      if (status === "no_date") {
+        todo.push("Collect availability from members");
+        todo.push("Pick a dinner date");
+        todo.push("Select a restaurant");
+        todo.push("Confirm the booking");
+      } else if (status === "awaiting_host") {
+        done.push("Members have submitted their available dates");
+        todo.push("Pick a dinner date from overlapping availability");
+        todo.push("Select a restaurant");
+        todo.push("Confirm the booking");
+      } else if (status === "pending_restaurant") {
+        done.push("Dinner date has been set");
+        todo.push("Select a restaurant from the pool");
+        todo.push("Confirm the booking");
+      } else if (status === "pending_confirm") {
+        done.push("Dinner date has been set");
+        done.push("Restaurant has been selected");
+        todo.push("Confirm the booking details");
+      } else if (status === "scheduled") {
+        done.push("Dinner date is set");
+        done.push("Restaurant is booked");
+        done.push("Dinner is confirmed");
+        todo.push("Host duties for the evening (you're all set!)");
+      } else if (status === "post_dinner") {
+        done.push("Dinner has taken place");
+        todo.push("Complete post-dinner tasks (reviews, next host selection)");
+      }
+      return { done, todo };
+    };
+
+    const summary = buildHandoffSummary();
+
+    return (
+    <div style={S.app}><div style={S.phone}>
+      <div style={S.screen}>
+        <div style={{ padding:"54px 20px 24px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"24px" }}>
+            <span onClick={() => setScreen("club_home")} style={{ fontSize:"18px", color:"#c9956a", cursor:"pointer" }}>‹</span>
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>Pass the Torch</div>
+          </div>
+
+          <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
+            Hand off your host duties
+          </div>
+          <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"24px", fontStyle:"italic", lineHeight:"1.6" }}>
+            Select a member to take over as host. They'll see exactly where things stand.
+          </div>
+
+          {/* Current status summary */}
+          <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"12px", padding:"14px", marginBottom:"24px" }}>
+            <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Handoff Summary</div>
+            {summary.done.length > 0 && (
+              <>
+                <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"6px" }}>✓ Completed</div>
+                {summary.done.map((item, i) => (
+                  <div key={i} style={{ fontSize:"12px", color:"#7a9e7e", padding:"4px 0 4px 16px", lineHeight:"1.5" }}>• {item}</div>
+                ))}
+                <div style={{ height:"10px" }} />
+              </>
+            )}
+            {summary.todo.length > 0 && (
+              <>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"6px" }}>◯ Still To Do</div>
+                {summary.todo.map((item, i) => (
+                  <div key={i} style={{ fontSize:"12px", color:"#c9956a", padding:"4px 0 4px 16px", lineHeight:"1.5" }}>• {item}</div>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* Member selection */}
+          <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Select New Host</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+            {otherMembers.map(m => (
+              <div key={m.name}
+                onClick={async () => {
+                  if (!confirm(`Transfer host duties to ${m.name}? They'll be notified and shown what needs to be done.`)) return;
+                  const memberRecord = dbData.members.find(mm => mm.user_id === m.user_id || mm.name === m.name);
+                  if (!memberRecord) { showToast("Member not found."); return; }
+                  const success = await dbData.makeHost(memberRecord.id);
+                  if (success) {
+                    // Send notification to the new host
+                    const { data: newHostMember } = await supabase
+                      .from("members")
+                      .select("id")
+                      .eq("id", memberRecord.id)
+                      .single();
+                    if (newHostMember) {
+                      await supabase.from("notifications").insert({
+                        member_id: newHostMember.id,
+                        type: "host_transferred",
+                        channel: "push",
+                        delivered: false,
+                        reservation_id: dbData.activeReservation?.id || null,
+                      });
+                    }
+                    showToast(`${m.name} is now the host!`);
+                    setTimeout(() => setScreen("club_home"), 800);
+                  } else {
+                    showToast("Failed to transfer. Try again.");
+                  }
+                }}
+                style={{
+                  display:"flex", alignItems:"center", gap:"12px",
+                  padding:"14px 16px", borderRadius:"12px",
+                  background:"rgba(201,149,106,0.04)", border:"1px solid rgba(201,149,106,0.12)",
+                  cursor:"pointer", transition:"all 0.15s",
+                }}
+              >
+                <div style={{
+                  width:"40px", height:"40px", borderRadius:"50%",
+                  background: m.avatar_url ? `url(${m.avatar_url}) center/cover no-repeat` : m.color,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:"15px", color:"#fff", fontWeight:"700",
+                  border:"2px solid rgba(201,149,106,0.25)", overflow:"hidden",
+                }}>
+                  {!m.avatar_url && m.avatar}
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"500" }}>{m.name}</div>
+                  <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>Tap to transfer host duties</div>
+                </div>
+                <span style={{ fontSize:"14px", color:"#c9956a" }}>→</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ height:"24px" }} />
+          <button style={S.ghostBtn} onClick={() => setScreen("club_home")}>Cancel</button>
+        </div>
+      </div>
+    </div></div>
+    );
+  }
+
   if (screen === "host_select_date") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Host Selection" />;
     if (isSoloGroup) return <SoloPlaceholder feature="Host Selection" />;
