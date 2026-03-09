@@ -24,6 +24,8 @@ export interface ActiveReservation {
   revealed_at: string | null;
   reveal_at: string | null;
   booking_url: string | null;
+  next_host_id: string | null;
+  next_host_notified_at: string | null;
 }
 
 export interface DBReview {
