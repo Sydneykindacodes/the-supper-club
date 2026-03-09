@@ -3865,13 +3865,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
                 The host has picked a date. Head to the home screen to confirm your attendance — or submit your availability below for future dinners.
               </div>
-              {!confirmationVotes["You"] && !dbData.isHost && (
+              {!dbData.dateConfirmations["You"] && !dbData.isHost && (
                 <button style={{ ...S.primaryBtn, marginTop:"14px", marginBottom:0, fontSize:"12px" }} onClick={async () => {
-                  const newVotes = {...confirmationVotes, You: true};
-                  setConfirmationVotes(newVotes);
+                  await dbData.confirmDate();
                   showToast("Confirmed. You're in!");
                   const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  const updatedConfirmations = { ...dbData.dateConfirmations, You: true };
+                  const allNowVoted = nonHostMembers.every(m => updatedConfirmations[m.name]);
                   if (allNowVoted) {
                     await sendHostNotification("all_votes_in");
                   }
@@ -3879,7 +3879,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   Confirm — I'll Be There
                 </button>
               )}
-              {(confirmationVotes["You"] || dbData.isHost) && (
+              {(dbData.dateConfirmations["You"] || dbData.isHost) && (
                 <div style={{ marginTop:"10px", fontSize:"12px", color:"#7a9e7e", fontStyle:"italic" }}>✓ You're confirmed for this date</div>
               )}
             </div>
