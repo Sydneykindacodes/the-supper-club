@@ -940,7 +940,34 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             );
           })()}
 
-          {ag.dinnerStatus === "no_date" && (
+          {ag.dinnerStatus === "pending_restaurant" && (() => {
+            const isHost = dbData.isHost;
+            const dinnerDate = dbData.activeReservation?.dinner_date;
+            const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "TBD";
+            return (
+              <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
+                  <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>
+                    {isHost ? "Choose the Venue" : "Host is Choosing"}
+                  </div>
+                </div>
+                <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{formattedDate}</div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.7" }}>
+                  {isHost 
+                    ? "Date is locked in. Now pick the restaurant — the group won't know where until you reveal it."
+                    : "The date is set. The host is choosing the perfect restaurant. Patience is a virtue."}
+                </div>
+                {isHost && (
+                  <button style={S.primaryBtn} onClick={() => setScreen("host_select_restaurant")}>
+                    Pick the Restaurant
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+
+
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.12)", textAlign:"center", padding:"28px 20px" }}>
               <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"8px" }}>◫</div>
               <div style={{ fontSize:"14px", color:"#7a5a40", marginBottom:"6px", lineHeight:"1.6", fontStyle:"italic" }}>
