@@ -436,11 +436,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
+  // Reset cancellation tracking when switching groups
+  useEffect(() => {
+    setPrevDinnerStatus(null);
+    setShowCancellationNotice(false);
+  }, [activeGroupId]);
+
   // Detect dinner cancellation — show notice to non-host members
-  // Skip on initial load (prevDinnerStatus undefined) or when status was already "no_date"
+  // Skip on initial load (prevDinnerStatus null) or when status was already "no_date"
   useEffect(() => {
     const current = dbData.dinnerStatus;
-    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && prevDinnerStatus !== undefined && current === "no_date" && !dbData.isHost) {
+    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && current === "no_date" && !dbData.isHost) {
       setShowCancellationNotice(true);
     }
     if (current) setPrevDinnerStatus(current);
