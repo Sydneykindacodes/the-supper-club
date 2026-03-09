@@ -1910,6 +1910,83 @@ export default function SupperClub() {
     );
   }
 
+  // ── REVEAL TAB ──
+  if (screen === "reveal") {
+    const ag = activeGroup;
+    const isHost = groupAdmin === "You";
+    const hasScheduled = ag.dinnerStatus === "scheduled" && ag.nextDinner;
+    const hasConfirmed = ag.dinnerStatus === "pending_confirm" && ag.pendingDate;
+
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.header}>
+          <div style={S.headerEye}>{ag.name}</div>
+          <div style={S.headerTitle}>Reveal</div>
+        </div>
+        <div style={S.screen}>
+          {hasScheduled ? (
+            <>
+              {/* Dinner is booked — show reveal countdown or info */}
+              <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Next Dinner</div>
+                <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.nextDinner}</div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>7:30 PM</div>
+                <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 20px" }}/>
+                {isHost ? (
+                  <>
+                    <div style={{ fontSize:"14px", color:"#c9956a", marginBottom:"8px", fontStyle:"italic" }}>You know the secret destination.</div>
+                    <div style={{ fontSize:"12px", color:"#5a3a25" }}>The group will find out at 8 AM on dinner day.</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize:"40px", color:"#c9956a", marginBottom:"16px" }}>?</div>
+                    <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px" }}>Destination Unknown</div>
+                    <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic" }}>Only the host knows where you're going.</div>
+                    <div style={{ marginTop:"20px", padding:"12px 16px", background:"rgba(201,149,106,0.07)", borderRadius:"12px", fontSize:"12px", color:"#c9956a" }}>
+                      Restaurant revealed at 8 AM on dinner day
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Group members status */}
+              <div style={{ ...S.card }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>The Table</div>
+                {MEMBERS.map(m => (
+                  <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
+                    <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#1a0f0a", fontWeight:"700" }}>{m.avatar}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</div>
+                      <div style={{ fontSize:"11px", color:"#5a3a25" }}>Confirmed</div>
+                    </div>
+                    <span style={{ fontSize:"11px", color:"#7a9e7e" }}>Ready</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : hasConfirmed ? (
+            <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Pending Confirmation</div>
+              <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"8px" }}>{ag.pendingDate}</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>Waiting for the host to finalize the booking.</div>
+            </div>
+          ) : (
+            <div style={{ ...S.revealBox, margin:"20px 16px" }}>
+              <div style={{ fontSize:"40px", color:"#4a2e18", marginBottom:"16px" }}>◎</div>
+              <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"8px" }}>No Reveal Yet</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>Once the group picks a date and the host books a restaurant, the reveal countdown begins.</div>
+              <button style={{ ...S.primaryBtn, marginTop:"20px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>
+                Set Availability
+              </button>
+            </div>
+          )}
+        </div>
+        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+      </div></div>
+    );
+  }
+
   // ── NEW HOST SELECTED (Secret Reveal) ──
   if (screen === "new_host_reveal") {
     const secretMsg = SECRET_HOST_MESSAGES[Math.floor(Math.random() * SECRET_HOST_MESSAGES.length)];
