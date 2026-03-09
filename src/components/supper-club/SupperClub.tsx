@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
-  WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS,
-  Group, Restaurant,
+  WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
+  MAX_GROUP_MEMBERS,
+  Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -34,12 +35,21 @@ export default function SupperClub() {
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
+  const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
+
+  // Member availability tracking (mock data for demo)
+  const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({
+    "Marisol": ["2026-03-18", "2026-03-19", "2026-03-25", "2026-04-01"],
+    "Derek": ["2026-03-18", "2026-03-20", "2026-03-25", "2026-03-27"],
+    "Priya": [], // hasn't submitted yet
+  });
+  const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
 
   // Per-group pool: map groupId -> Restaurant[]
   const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
@@ -384,17 +394,105 @@ export default function SupperClub() {
                 Your group is out here living life without a dinner on the books. Bold strategy.
               </div>
               <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"18px", lineHeight:"1.5" }}>
-                Once everyone submits their available dates, the app will find the overlap and propose a night out.
+                Once everyone submits their available dates, the host will pick the perfect night.
               </div>
               <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
               <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => showToast("Nudge sent. They'll get the hint.")}>Nudge the Group</button>
             </div>
           )}
 
+          {ag.dinnerStatus === "awaiting_host" && (() => {
+            const isHost = groupAdmin === "You";
+            const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+            const allSubmitted = submittedMembers.length === MEMBERS.length;
+            
+            // Calculate overlapping dates
+            const allDates: string[] = [];
+            MEMBERS.forEach(m => {
+              const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+              dates.forEach(d => allDates.push(d));
+            });
+            const dateCount: Record<string, number> = {};
+            allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+            const overlappingDates = Object.entries(dateCount)
+              .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 0)
+              .map(([date]) => date)
+              .sort();
+
+            return (
+              <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.25)", background:"rgba(201,149,106,0.04)" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>
+                  {isHost ? "Your Move, Host" : "Awaiting Host"}
+                </div>
+                {isHost ? (
+                  <>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
+                      {allSubmitted ? "Everyone's in. Time to decide." : "Some dates are in — you can pick anytime."}
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                      {WITTY_HOST_WAITING[wittyHostIdx]}
+                    </div>
+                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px", marginBottom:"16px" }}>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>Submissions</div>
+                      {MEMBERS.map(m => {
+                        const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                        const hasSubmitted = dates.length > 0;
+                        return (
+                          <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                            </div>
+                            <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
+                              {hasSubmitted ? `${dates.length} dates` : "Waiting"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {overlappingDates.length > 0 && (
+                      <div style={{ fontSize:"12px", color:"#7a9e7e", marginBottom:"12px", textAlign:"center" }}>
+                        {overlappingDates.length} date{overlappingDates.length > 1 ? "s" : ""} work for everyone who's submitted
+                      </div>
+                    )}
+                    <button style={S.primaryBtn} onClick={() => setScreen("host_select_date")}>
+                      Pick the Night
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>The host is deciding</div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                      Everyone's dates are in. Now we wait for the host to work their magic.
+                    </div>
+                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px" }}>
+                      {MEMBERS.map(m => {
+                        const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                        const hasSubmitted = dates.length > 0;
+                        return (
+                          <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                              {m.name === groupAdmin && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
+                            </div>
+                            <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                              {hasSubmitted ? "✓" : "..."}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
+
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}</div>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
                 {groupAdmin === "You" && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
               </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
@@ -505,8 +603,13 @@ export default function SupperClub() {
             </>)}
           </div>
 
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members</div>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
           <div style={S.card}>
+            {MEMBERS.length >= MAX_GROUP_MEMBERS && (
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"12px", lineHeight:"1.5" }}>
+                This group is at capacity. No more members can join.
+              </div>
+            )}
             {MEMBERS.map(m => {
               const isAdmin = m.name === groupAdmin;
               const isYou = m.name === "You";
@@ -560,6 +663,169 @@ export default function SupperClub() {
       </div>
     </div></div>
   );
+
+  // ── HOST SELECT DATE ──
+  if (screen === "host_select_date") {
+    const submittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+    const notSubmittedMembers = MEMBERS.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
+    
+    // Gather all dates from submitted members
+    const allDatesFromSubmitted: string[] = [];
+    submittedMembers.forEach(m => {
+      const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+      dates.forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
+    });
+    
+    // Count how many members are available on each date
+    const dateAvailability: Record<string, string[]> = {};
+    submittedMembers.forEach(m => {
+      const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+      dates.forEach(d => {
+        if (!dateAvailability[d]) dateAvailability[d] = [];
+        dateAvailability[d].push(m.name);
+      });
+    });
+    
+    // Sort dates: full overlap first, then by number of available members, then by date
+    const sortedDates = allDatesFromSubmitted.sort((a, b) => {
+      const aCount = dateAvailability[a]?.length || 0;
+      const bCount = dateAvailability[b]?.length || 0;
+      if (aCount !== bCount) return bCount - aCount;
+      return new Date(a).getTime() - new Date(b).getTime();
+    });
+    
+    const formatDateDisplay = (dateStr: string) => {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    };
+    
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Pick the Night</div>
+          </div>
+          
+          <div style={{ padding:"16px 16px 0" }}>
+            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+              As the host, you have the sacred duty of choosing the dinner date. Choose wisely. No pressure.
+            </div>
+            
+            {/* Submission Status */}
+            <div style={{ ...S.card, marginBottom:"16px" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Who's Submitted</div>
+              {MEMBERS.map(m => {
+                const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                const hasSubmitted = dates.length > 0;
+                return (
+                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.06)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                      <div style={{ width:"28px", height:"28px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
+                    </div>
+                    <span style={{ fontSize:"12px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
+                      {hasSubmitted ? `${dates.length} dates` : "Not submitted"}
+                    </span>
+                  </div>
+                );
+              })}
+              {notSubmittedMembers.length > 0 && (
+                <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"10px", lineHeight:"1.5" }}>
+                  {notSubmittedMembers.map(m => m.name).join(", ")} {notSubmittedMembers.length === 1 ? "hasn't" : "haven't"} submitted yet. You can still pick a date — they'll be marked as unable to attend.
+                </div>
+              )}
+            </div>
+            
+            {/* Date Selection */}
+            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Available Dates</div>
+            
+            {sortedDates.length === 0 ? (
+              <div style={{ ...S.card, textAlign:"center", padding:"24px" }}>
+                <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic" }}>No dates submitted yet. Check back later or nudge the group.</div>
+              </div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:"10px", marginBottom:"20px" }}>
+                {sortedDates.map(date => {
+                  const available = dateAvailability[date] || [];
+                  const isFullOverlap = available.length === submittedMembers.length;
+                  const isSelected = hostSelectedDate === date;
+                  
+                  return (
+                    <div 
+                      key={date} 
+                      onClick={() => setHostSelectedDate(date)}
+                      style={{ 
+                        ...S.card, 
+                        margin: 0, 
+                        cursor: "pointer",
+                        border: isSelected ? "2px solid #c9956a" : isFullOverlap ? "1px solid rgba(122,158,126,0.4)" : "1px solid rgba(201,149,106,0.12)",
+                        background: isSelected ? "rgba(201,149,106,0.12)" : isFullOverlap ? "rgba(122,158,126,0.06)" : "rgba(201,149,106,0.02)",
+                        transition: "all 0.2s ease"
+                      }}
+                    >
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
+                        <div style={{ fontSize:"15px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(date)}</div>
+                        {isFullOverlap && <span style={{ fontSize:"10px", color:"#7a9e7e", background:"rgba(122,158,126,0.2)", padding:"3px 8px", borderRadius:"6px", fontWeight:"600" }}>FULL OVERLAP</span>}
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:"6px", flexWrap:"wrap" }}>
+                        <span style={{ fontSize:"11px", color:"#7a5a40" }}>Available:</span>
+                        {available.map(name => {
+                          const member = MEMBERS.find(m => m.name === name);
+                          return (
+                            <div key={name} style={{ width:"22px", height:"22px", borderRadius:"50%", background: member?.color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"9px", color:"#fff", fontWeight:"700" }}>
+                              {member?.avatar || name[0]}
+                            </div>
+                          );
+                        })}
+                        {notSubmittedMembers.length > 0 && (
+                          <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"4px" }}>
+                            ({notSubmittedMembers.length} pending)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {hostSelectedDate && (
+              <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"12px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                <div style={{ fontSize:"12px", color:"#c9956a", marginBottom:"4px" }}>Selected Date</div>
+                <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"500" }}>{formatDateDisplay(hostSelectedDate)}</div>
+                <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"4px" }}>
+                  {(dateAvailability[hostSelectedDate]?.length || 0)} of {MEMBERS.length} members available
+                </div>
+              </div>
+            )}
+            
+            <button 
+              style={{ ...S.primaryBtn, opacity: hostSelectedDate ? 1 : 0.5 }} 
+              onClick={() => {
+                if (!hostSelectedDate) { showToast("Select a date first."); return; }
+                const formattedDate = new Date(hostSelectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                updateGroup(activeGroup.id, { dinnerStatus: "pending_confirm", pendingDate: formattedDate });
+                showToast("Date proposed! Members will be asked to confirm.");
+                setScreen("club_home");
+                setActiveTab("home");
+              }}
+            >
+              Propose This Date
+            </button>
+            
+            <button style={{ ...S.ghostBtn, marginTop:"8px" }} onClick={() => setScreen("club_home")}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div></div>
+    );
+  }
 
   // ── GROUP POOL ──
   if (screen === "group_pool") {
@@ -1025,7 +1291,15 @@ export default function SupperClub() {
           </div>
 
           <div style={{ height:"18px" }}/>
-          <button style={S.primaryBtn} onClick={() => { if (selectedDates.length > 0) { showToast("Availability saved."); updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" }); } }}>
+          <button style={S.primaryBtn} onClick={() => { 
+            if (selectedDates.length > 0) { 
+              showToast("Availability saved. Waiting on host to pick a date."); 
+              // Check if this is the host - if so, transition to awaiting_host so they can select
+              updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+              setScreen("club_home");
+              setActiveTab("home");
+            } 
+          }}>
             Submit Availability
           </button>
         </div>
