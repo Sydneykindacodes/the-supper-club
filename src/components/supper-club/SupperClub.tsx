@@ -266,20 +266,39 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"72px" }}>
         <div style={{ alignSelf:"flex-start", marginBottom:"28px" }}>
-          <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
+          <button onClick={() => { setJoinCode(""); setJoinName(""); setScreen("club_home"); }} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
         </div>
         <div style={{ width:"100%" }}>
           <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
-          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code</div>
+          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code to join an existing club</div>
           <label style={S.label}>Invite Code</label>
-          <input style={S.input} placeholder="e.g. SUPR-4829"/>
+          <input style={S.input} placeholder="e.g. SUPR-4829" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} />
+          <label style={S.label}>Your Display Name</label>
+          <input style={S.input} placeholder="Your name" value={joinName} onChange={e => setJoinName(e.target.value)} />
           <div style={{ height:"12px" }}/>
           <button style={S.primaryBtn} onClick={() => {
-            showToast("Successfully joined club!");
+            if (!joinCode.trim()) { showToast("Please enter an invite code."); return; }
+            if (!joinName.trim()) { showToast("Please enter your name."); return; }
+            // Create a mock joined group (in production this would validate the code)
+            const newGroup: Group = { 
+              id: Date.now(), 
+              name: `Club ${joinCode}`, 
+              code: joinCode.trim(), 
+              members: 4, 
+              city: "New York, NY", 
+              dinnerStatus: "no_date", 
+              nextDinner: null, 
+              pendingDate: null 
+            };
+            setGroups(prev => [...prev, newGroup]);
+            setGroupPools(prev => ({ ...prev, [newGroup.id]: [] }));
+            setActiveGroup(newGroup);
+            showToast(`Welcome to ${newGroup.name}!`);
+            setJoinCode(""); setJoinName("");
             setScreen("club_home"); 
             setActiveTab("home"); 
           }}>Join Club</button>
-          <button style={S.ghostBtn} onClick={() => { setScreen("club_home"); }}>Cancel</button>
+          <button style={S.ghostBtn} onClick={() => { setJoinCode(""); setJoinName(""); setScreen("club_home"); }}>Cancel</button>
         </div>
       </div>
     </div></div>
