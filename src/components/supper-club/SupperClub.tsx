@@ -1573,14 +1573,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Selection" />;
     const dinnerDate = dbData.activeReservation?.dinner_date;
     const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "TBD";
-    const [selectedRestId, setSelectedRestId] = useState<string | null>(null);
     
-    // Get raw restaurant IDs from DB for selection
-    const getRestaurantDbId = (name: string) => {
-      // This is a workaround - we need the actual DB UUID
-      // For now, we'll search in the restaurants table
-      return name;
-    };
     
     return (
       <div style={S.app}><div style={S.phone}>
