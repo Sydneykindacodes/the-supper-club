@@ -3134,6 +3134,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
+  // ── MEMBER PROFILE VIEW (other users) ──
+  if (viewingMemberUserId) {
+    return (
+      <MemberProfileView
+        userId={viewingMemberUserId}
+        allReviews={dbData.communityReviews}
+        onClose={() => setViewingMemberUserId(null)}
+        isOwnProfile={viewingMemberUserId === user.id}
+      />
+    );
+  }
+
   // ── PROFILE ──
   if (showProfile) {
     return (
