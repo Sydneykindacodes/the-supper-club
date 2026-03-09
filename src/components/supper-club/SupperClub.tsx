@@ -2660,7 +2660,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {gpResults.length > 0 && (
                 (() => {
                   const allFiltered = gpResults
-                    .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                    .filter(r => exploreCuisineFilter.length === 0 || exploreCuisineFilter.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter);
                   const capped = allFiltered.slice(0, MAX_ITEMS);
                   const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
