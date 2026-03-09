@@ -206,6 +206,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showBookingLinks, setShowBookingLinks] = useState(false);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showCancellationNotice, setShowCancellationNotice] = useState(false);
+  const [prevDinnerStatus, setPrevDinnerStatus] = useState<string | null>(null);
   const [postDinnerStep, setPostDinnerStep] = useState<"review" | "availability" | "completing" | null>(null);
   const [wittyAwaitingIdx] = useState(Math.floor(Math.random() * WITTY_AWAITING_HOST.length));
   const [wittysoloIdx] = useState(Math.floor(Math.random() * WITTY_SOLO_MESSAGES.length));
