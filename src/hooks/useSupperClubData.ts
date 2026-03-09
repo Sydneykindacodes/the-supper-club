@@ -66,7 +66,7 @@ export interface GroupSettings {
   search_radius: number;
 }
 
-export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant";
+export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant" | "post_dinner" | "awaiting_next_host";
 
 export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [members, setMembers] = useState<DBMember[]>([]);
