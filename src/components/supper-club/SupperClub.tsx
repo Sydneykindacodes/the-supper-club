@@ -1597,7 +1597,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       setBookingLinks(null);
                       await dbData.completeDinner();
                       setPostDinnerStep(null);
-                      showToast("Pop-up complete. Until next time.");
+                      setShowTempFarewell(true);
                     }}>
                       Close the Chapter
                     </button>
