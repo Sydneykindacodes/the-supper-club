@@ -1971,8 +1971,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => setAvailabilityModifying(false)}>
                     Cancel
                   </button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
-                    showToast("Dates updated. The host has been notified.");
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
+                    const saved = await dbData.saveAvailability(selectedDates);
+                    if (saved) {
+                      showToast("Dates updated. The host has been notified.");
+                    } else {
+                      showToast("Failed to save. Try again.");
+                    }
                     setAvailabilityModifying(false);
                   }}>
                     Save Changes
