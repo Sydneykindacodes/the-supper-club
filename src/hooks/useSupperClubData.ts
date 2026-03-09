@@ -640,6 +640,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     pendingDate,
     proposeDate,
     confirmBooking,
+    generateBookingLinks,
     revealRestaurant,
     completeDinner,
     makeHost,
