@@ -21,7 +21,7 @@ export const S: Record<string, CSSProperties> = {
   cardSub:   { fontSize:"13px", color:"#7a5a40" },
   input:     { background:"rgba(255,255,255,0.05)", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"12px", padding:"14px 16px", fontSize:"15px", color:"#f5e6d3", width:"100%", boxSizing:"border-box" as const, fontFamily:"'Georgia',serif", outline:"none", marginBottom:"12px" },
   label:     { fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" as const, marginBottom:"7px", display:"block" },
-  toast:     { position:"absolute" as const, top:"62px", left:"50%", transform:"translateX(-50%)", background:"#c9956a", color:"#1a0f0a", padding:"10px 22px", borderRadius:"20px", fontSize:"13px", fontWeight:"700", zIndex:100, whiteSpace:"nowrap" as const, letterSpacing:"0.5px" },
+  toast:     { position:"absolute" as const, top:"62px", left:"50%", transform:"translateX(-50%)", background:"rgba(30,18,10,0.92)", color:"#c9956a", padding:"9px 20px", borderRadius:"20px", fontSize:"12px", fontWeight:"500", zIndex:100, whiteSpace:"nowrap" as const, letterSpacing:"0.3px", border:"1px solid rgba(201,149,106,0.2)", backdropFilter:"blur(8px)", boxShadow:"0 4px 16px rgba(0,0,0,0.3)" },
   bottomNav: { position:"absolute" as const, bottom:0, left:0, right:0, background:"rgba(20,10,5,0.97)", borderTop:"1px solid rgba(201,149,106,0.12)", display:"flex", padding:"12px 0 28px" },
   navItem:   { flex:1, display:"flex", flexDirection:"column" as const, alignItems:"center", gap:"5px", cursor:"pointer" },
   revealBox: { margin:"20px 16px", background:"linear-gradient(140deg,#2d1208,#1a0f0a)", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"24px", padding:"36px 24px", textAlign:"center" as const },
