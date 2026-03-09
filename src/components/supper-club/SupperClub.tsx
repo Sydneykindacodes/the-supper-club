@@ -2728,6 +2728,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── AVAILABILITY ──
   if (screen === "availability") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Availability" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Scheduling" />;
     const datesAlreadySubmitted = selectedDates.length > 0;
     
     return (
