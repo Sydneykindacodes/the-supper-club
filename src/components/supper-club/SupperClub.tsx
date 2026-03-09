@@ -317,6 +317,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [rCity, setRCity] = useState("");
   const [rPrice, setRPrice] = useState(3);
 
+  // Seed pool state (for initial restaurant picks after create/join)
+  const [seedPoolMin, setSeedPoolMin] = useState(3);
+  const [seedPoolMax, setSeedPoolMax] = useState(3);
+  const [seedPoolPicks, setSeedPoolPicks] = useState<GooglePlace[]>([]);
+  const [seedPoolSearch, setSeedPoolSearch] = useState("");
+  const [seedPoolResults, setSeedPoolResults] = useState<GooglePlace[]>([]);
+  const [seedPoolLoading, setSeedPoolLoading] = useState(false);
+  const [seedPoolSaving, setSeedPoolSaving] = useState(false);
+
   const [freeReviewRestaurant, setFreeReviewRestaurant] = useState("");
   const [freeReviewRating, setFreeReviewRating] = useState(0);
   const [freeReviewText, setFreeReviewText] = useState("");
