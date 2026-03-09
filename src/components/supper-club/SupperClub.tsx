@@ -1537,10 +1537,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <div style={{ marginTop:"6px", borderRadius:"6px", overflow:"hidden", maxHeight:"80px" }}>
                             <img src={rev.photo_url} alt="Review" style={{ width:"100%", height:"auto", objectFit:"cover" }} />
                           </div>
-                        )}
+                         )}
                       </div>
                     ))}
                   </div>
+
+                  {/* Write Review Button */}
+                  <button 
+                    style={{ ...S.ghostBtn, marginBottom: 0, fontSize: "11px", padding: "10px", marginTop: "8px" }}
+                    onClick={() => setShowReviewForm({ restaurant: d.name, cuisine: d.cuisine, city: d.city })}
+                  >
+                    Write a Review
+                  </button>
                 </div>
                 );
               })
