@@ -234,6 +234,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [resTimeStart, setResTimeStart] = useState("6:00 PM");
   const [resTimeEnd, setResTimeEnd] = useState("9:00 PM");
 
+  // Sync group settings from DB
+  useEffect(() => {
+    if (dbData.groupSettings) {
+      setAutoSubmit(dbData.groupSettings.auto_submit);
+      setNoRepeats(dbData.groupSettings.no_repeats);
+      setRepeatMonths(dbData.groupSettings.repeat_months);
+      setCutoffDays(dbData.groupSettings.cutoff_days);
+      setAllowedMealTypes(dbData.groupSettings.allowed_meal_types);
+      setResTimeStart(dbData.groupSettings.res_time_start);
+      setResTimeEnd(dbData.groupSettings.res_time_end);
+      setSearchRadius(dbData.groupSettings.search_radius);
+    }
+  }, [dbData.groupSettings]);
+
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [photoSubmitted, setPhotoSubmitted] = useState(false);
