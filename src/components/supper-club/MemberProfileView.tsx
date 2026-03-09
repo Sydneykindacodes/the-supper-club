@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { S } from "./styles";
 import type { DBReview } from "@/hooks/useSupperClubData";
+import IndividualBadges from "./IndividualBadges";
 
 interface MemberProfileViewProps {
   userId: string;
@@ -17,15 +18,23 @@ export default function MemberProfileView({ userId, allReviews, onClose, isOwnPr
   const [bio, setBio] = useState("");
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(true);
+  const [badges, setBadges] = useState<{ badge_key: string; earned_at: string }[]>([]);
 
   useEffect(() => {
-    supabase.from("profiles").select("display_name, avatar_color, avatar_url, bio, city").eq("id", userId).maybeSingle().then(({ data }) => {
-      if (data) {
-        setDisplayName(data.display_name || "Member");
-        setAvatarColor(data.avatar_color || "#c9956a");
-        setAvatarUrl(data.avatar_url || null);
-        setBio(data.bio || "");
-        setCity(data.city || "");
+    // Load profile and individual badges in parallel
+    const loadProfile = supabase.from("profiles").select("display_name, avatar_color, avatar_url, bio, city").eq("id", userId).maybeSingle();
+    const loadBadges = supabase.from("user_badges").select("badge_key, earned_at").eq("user_id", userId).eq("badge_type", "individual");
+
+    Promise.all([loadProfile, loadBadges]).then(([profileRes, badgesRes]) => {
+      if (profileRes.data) {
+        setDisplayName(profileRes.data.display_name || "Member");
+        setAvatarColor(profileRes.data.avatar_color || "#c9956a");
+        setAvatarUrl(profileRes.data.avatar_url || null);
+        setBio(profileRes.data.bio || "");
+        setCity(profileRes.data.city || "");
+      }
+      if (badgesRes.data) {
+        setBadges(badgesRes.data);
       }
       setLoading(false);
     });
@@ -33,7 +42,7 @@ export default function MemberProfileView({ userId, allReviews, onClose, isOwnPr
 
   const userReviews = allReviews.filter(r => r.user_id === userId);
   const avgRating = userReviews.length > 0 ? (userReviews.reduce((s, r) => s + r.rating, 0) / userReviews.length).toFixed(1) : "—";
-  const uniqueRestaurants = [...new Set(userReviews.map(r => r.restaurant_name))].length;
+  const uniqueRestaurants = new Set(userReviews.map(r => r.restaurant_name)).size;
 
   if (loading) {
     return (
@@ -107,8 +116,11 @@ export default function MemberProfileView({ userId, allReviews, onClose, isOwnPr
             </div>
           </div>
 
+          {/* Individual Badges */}
+          <IndividualBadges badges={badges} isOwnProfile={isOwnProfile} displayName={displayName} />
+
           {/* Reviews */}
-          <div style={{ marginTop: "8px" }}>
+          <div style={{ marginTop: "24px" }}>
             <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "2px", textTransform: "uppercase", marginBottom: "12px" }}>
               {isOwnProfile ? "Your Reviews" : `${displayName}'s Reviews`}
             </div>
