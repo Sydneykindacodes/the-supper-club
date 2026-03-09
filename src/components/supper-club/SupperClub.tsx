@@ -1728,8 +1728,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </>);
               })()}
 
-              {/* Add to Pool Button */}
-              <button style={{ ...S.primaryBtn, marginTop:"16px", marginBottom:"24px" }} onClick={() => {
+              {/* Action Buttons */}
+              <button style={{ ...S.ghostBtn, marginTop:"16px", marginBottom:"8px" }} onClick={() => {
+                setShowReviewForm({ restaurant: r.name, cuisine: 'cuisine' in r ? r.cuisine : undefined, city: r.city });
+              }}>
+                Write a Review
+              </button>
+              <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
                 const restaurant: Restaurant = {
                   id: Date.now(), 
                   name: r.name, 
