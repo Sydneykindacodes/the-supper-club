@@ -1336,7 +1336,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               ) : (
                 currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
-                    <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
+                    <div onClick={() => m.user_id ? (m.user_id === user.id ? setShowProfile(true) : setViewingMemberUserId(m.user_id)) : null} style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)", cursor: m.user_id ? "pointer" : "default" }}>{m.avatar}</div>
                     <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
                   </div>
                 ))
