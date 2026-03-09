@@ -215,7 +215,7 @@ export const PRICE_LABELS: Record<number, string> = { 1:"$", 2:"$$", 3:"$$$", 4:
 
 export const getRatingInfo = (r: Restaurant) => {
   if ((r.scReviewCount ?? 0) >= 10 && r.scRating != null) {
-    return { rating: r.scRating, source: "SC" as const, color: "#c9956a", tip: "Supper Club rating — based on member reviews" };
+    return { rating: r.scRating, source: "SC" as const, color: "#d4cdc4", tip: "Supper Club rating — based on member reviews" };
   }
   if (r.googleRating != null) {
     return { rating: r.googleRating, source: "G" as const, color: "#7a9e7e", tip: `Google rating · ${r.scReviewCount || 0} Supper Club review${r.scReviewCount !== 1 ? "s" : ""} so far (10 needed to switch)` };
