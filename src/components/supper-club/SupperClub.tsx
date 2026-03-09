@@ -2834,7 +2834,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
 
                 {(() => {
-                  const query = exploreCuisineFilter === "all" ? "" : exploreCuisineFilter.toLowerCase().trim();
+                  const query = communitySearchQuery.toLowerCase().trim();
                   let filtered = [...allCommunityReviews];
                   if (query) {
                     filtered = filtered.filter(r =>
