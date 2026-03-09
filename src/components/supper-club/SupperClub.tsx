@@ -1076,6 +1076,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           <div style={{ height:"16px" }}/>
           <button style={S.primaryBtn} onClick={() => { showToast("Settings saved."); setTimeout(() => setScreen("club_home"), 800); }}>Save Settings</button>
+          <div style={{ height:"12px" }}/>
+          <button style={{ ...S.ghostBtn, color:"#c45c5c", borderColor:"rgba(197,92,92,0.3)" }} onClick={signOut}>Sign Out</button>
         </div>
       </div>
     </div></div>
