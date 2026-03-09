@@ -2134,6 +2134,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     // Only use real DB community reviews — no fake/static data
     const allCommunityReviews = dbData.communityReviews.map(r => ({
       id: r.id,
+      user_id: r.user_id,
       group: r.group_name || "Supper Club Member",
       reviewer: r.member_name || "Anonymous",
       reviewerColor: r.member_avatar_color || "#c9956a",
