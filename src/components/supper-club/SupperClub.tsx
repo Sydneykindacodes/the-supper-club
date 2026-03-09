@@ -41,6 +41,7 @@ export default function SupperClub() {
   const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
   // Track if user is awaiting initiation (joined after host booked)
   const [awaitingInitiation, setAwaitingInitiation] = useState(false);
+  const [availabilityModifying, setAvailabilityModifying] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
