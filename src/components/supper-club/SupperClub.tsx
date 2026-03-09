@@ -2157,7 +2157,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.6", marginBottom:"28px" }}>
                 You can update your availability for the next round once a new date is proposed.
               </div>
-              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => setShowCancellationNotice(false)}>
+              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => { setShowCancellationNotice(false); if (activeGroupId) sessionStorage.setItem(`sc_cancel_dismissed_${activeGroupId}`, "1"); }}>
                 Got It
               </button>
             </div>
