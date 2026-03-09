@@ -3,6 +3,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+async function geocodeCity(city: string, apiKey: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch('https://maps.googleapis.com/maps/api/geocode/json?' + new URLSearchParams({ address: city, key: apiKey }));
+    const data = await res.json();
+    if (data.results?.[0]?.geometry?.location) {
+      return data.results[0].geometry.location;
+    }
+  } catch (e) {
+    console.error('Geocode error:', e);
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -26,6 +39,18 @@ Deno.serve(async (req) => {
       maxResultCount: 20,
     };
 
+    // Geocode the city and add locationBias to restrict results within radius
+    const cityCoords = await geocodeCity(city, apiKey);
+    if (cityCoords) {
+      const radiusMeters = (radius || 10) * 1609.34; // miles to meters
+      searchBody.locationBias = {
+        circle: {
+          center: { latitude: cityCoords.lat, longitude: cityCoords.lng },
+          radius: radiusMeters,
+        },
+      };
+    }
+
     if (pageToken) {
       searchBody.pageToken = pageToken;
     }
@@ -35,7 +60,7 @@ Deno.serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos,nextPageToken',
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos,places.location,nextPageToken',
       },
       body: JSON.stringify(searchBody),
     });
@@ -63,6 +88,7 @@ Deno.serve(async (req) => {
       const displayName = place.displayName as { text: string } | undefined;
       const primaryTypeDisplay = place.primaryTypeDisplayName as { text: string } | undefined;
       const photos = (place.photos as any[] || []).slice(0, 3).map((p: any) => p.name);
+      const location = place.location as { latitude: number; longitude: number } | undefined;
       return {
         id: `gp-${i}-${(place.id as string || '').slice(0, 8)}`,
         name: displayName?.text || 'Unknown',
@@ -74,10 +100,12 @@ Deno.serve(async (req) => {
         googleReviewCount: (place.userRatingCount as number) || 0,
         googlePlaceId: place.id,
         photoRefs: photos,
+        lat: location?.latitude || null,
+        lng: location?.longitude || null,
       };
     });
 
-    return new Response(JSON.stringify({ restaurants, nextPageToken: placesData.nextPageToken || null }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ restaurants, nextPageToken: placesData.nextPageToken || null, cityCenter: cityCoords }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error('Search error:', err);
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
