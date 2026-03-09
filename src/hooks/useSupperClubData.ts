@@ -851,6 +851,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     groupSettings,
     saveGroupSettings,
     selectRestaurantForReservation,
+    selectRandomRestaurant,
     selectedRestaurantData,
     isSoloGroup,
     hasUserReviewedCurrentDinner,
