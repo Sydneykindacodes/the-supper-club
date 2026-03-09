@@ -35,10 +35,11 @@ export default function SupperClub() {
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
-  const [inviteRevealed, setInviteRevealed] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
+  const [joinCode, setJoinCode] = useState("");
+  const [joinName, setJoinName] = useState("");
 
   // Per-group pool: map groupId -> Restaurant[]
   const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
@@ -264,20 +265,39 @@ export default function SupperClub() {
     <div style={S.app}><div style={S.phone}>
       <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"72px" }}>
         <div style={{ alignSelf:"flex-start", marginBottom:"28px" }}>
-          <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
+          <button onClick={() => { setJoinCode(""); setJoinName(""); setScreen("club_home"); }} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"22px", cursor:"pointer" }}>←</button>
         </div>
         <div style={{ width:"100%" }}>
           <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
-          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code</div>
+          <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code to join an existing club</div>
           <label style={S.label}>Invite Code</label>
-          <input style={S.input} placeholder="e.g. SUPR-4829"/>
+          <input style={S.input} placeholder="e.g. SUPR-4829" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} />
+          <label style={S.label}>Your Display Name</label>
+          <input style={S.input} placeholder="Your name" value={joinName} onChange={e => setJoinName(e.target.value)} />
           <div style={{ height:"12px" }}/>
           <button style={S.primaryBtn} onClick={() => {
-            showToast("Successfully joined club!");
+            if (!joinCode.trim()) { showToast("Please enter an invite code."); return; }
+            if (!joinName.trim()) { showToast("Please enter your name."); return; }
+            // Create a mock joined group (in production this would validate the code)
+            const newGroup: Group = { 
+              id: Date.now(), 
+              name: `Club ${joinCode}`, 
+              code: joinCode.trim(), 
+              members: 4, 
+              city: "New York, NY", 
+              dinnerStatus: "no_date", 
+              nextDinner: null, 
+              pendingDate: null 
+            };
+            setGroups(prev => [...prev, newGroup]);
+            setGroupPools(prev => ({ ...prev, [newGroup.id]: [] }));
+            setActiveGroup(newGroup);
+            showToast(`Welcome to ${newGroup.name}!`);
+            setJoinCode(""); setJoinName("");
             setScreen("club_home"); 
             setActiveTab("home"); 
           }}>Join Club</button>
-          <button style={S.ghostBtn} onClick={() => { setScreen("club_home"); }}>Cancel</button>
+          <button style={S.ghostBtn} onClick={() => { setJoinCode(""); setJoinName(""); setScreen("club_home"); }}>Cancel</button>
         </div>
       </div>
     </div></div>
@@ -306,22 +326,20 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 16px", marginBottom:"4px", cursor:"pointer" }}
-            onClick={() => {
-              if (!inviteRevealed) { setInviteRevealed(true); }
-              else { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }
-            }}>
-            {!inviteRevealed ? (
-              <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <span style={{ fontSize:"12px", color:"#c9956a", letterSpacing:"1.5px" }}>Tap to Invite</span>
-                <span style={{ fontSize:"10px", color:"#5a3a25" }}>›</span>
-              </div>
-            ) : (
-              <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
-                <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic" }}>tap to copy</span>
-              </div>
-            )}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 16px", marginBottom:"4px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+              <span style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase" }}>Invite Code</span>
+              <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
+            </div>
+            <button 
+              onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+              style={{ 
+                background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
+                borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+              }}>
+              Copy
+            </button>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (
@@ -565,16 +583,30 @@ export default function SupperClub() {
               </div>
             ) : (
               poolRestaurants.map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <div>
-                    <div style={S.cardTitle}>{r.name}</div>
-                    <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
-                    <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>added by {r.suggested_by}</div>
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                    <div style={{ flex:1 }}>
+                      <div style={S.cardTitle}>{r.name}</div>
+                      <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
+                      <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>added by {r.suggested_by}</div>
+                    </div>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                      <PriceTag price={r.price}/>
+                      <RatingBadge restaurant={r}/>
+                    </div>
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
-                    <PriceTag price={r.price}/>
-                    <RatingBadge restaurant={r}/>
-                  </div>
+                  <button 
+                    onClick={() => { 
+                      setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
+                      showToast(`${r.name} removed from pool.`); 
+                    }}
+                    style={{ 
+                      marginTop:"12px", width:"100%", padding:"10px", borderRadius:"8px",
+                      background:"transparent", border:"1px solid rgba(197,92,92,0.2)", 
+                      color:"#c45c5c", fontSize:"11px", cursor:"pointer", fontFamily:"Georgia,serif"
+                    }}>
+                    Remove from Pool
+                  </button>
                 </div>
               ))
             )}
