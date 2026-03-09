@@ -316,17 +316,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     switch (activeReservation.status) {
       case "pending_selection": return "awaiting_host";
       case "pending_host_booking":
-        // If no restaurant selected yet, host needs to pick one
         if (!activeReservation.restaurant_id) return "pending_restaurant";
-        // For solo groups, skip confirmation and go straight to scheduled
         if (isSoloGroup) return "scheduled";
         return "pending_confirm";
       case "card_required_skipped":
         if (isSoloGroup) return "scheduled";
         return "pending_confirm";
       case "confirmed":
-      case "revealed":
+      case "revealed": {
+        // Auto-detect post-dinner: if dinner date has passed
+        const dinnerDate = new Date(activeReservation.dinner_date + "T23:59:59");
+        if (dinnerDate < new Date()) return "post_dinner";
         return "scheduled";
+      }
+      case "completed": {
+        // Check if next host reveal time has passed
+        if (activeReservation.next_host_notified_at) {
+          const revealTime = new Date(activeReservation.next_host_notified_at);
+          if (revealTime <= new Date()) return "no_date"; // Host revealed, cycle complete
+        }
+        return "awaiting_next_host";
+      }
       default: return "no_date";
     }
   })();
