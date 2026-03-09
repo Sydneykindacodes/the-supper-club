@@ -1540,7 +1540,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
   if (screen === "explore") {
-    const uniqueRestaurants = [...new Set(PUBLIC_REVIEWS.map(r => r.restaurant))];
+    // Merge static PUBLIC_REVIEWS with DB community reviews for display
+    const allCommunityReviews = [
+      ...dbData.communityReviews.map(r => ({
+        group: "Supper Club Member",
+        restaurant: r.restaurant_name,
+        rating: r.rating,
+        review: r.review_text || "",
+        city: r.city || "Unknown",
+        date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        photo_url: r.photo_url,
+      })),
+      ...PUBLIC_REVIEWS.map(r => ({ ...r, review: r.review, photo_url: null as string | null })),
+    ];
+    const uniqueRestaurants = [...new Set(allCommunityReviews.map(r => r.restaurant))];
     const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
 
     // Restaurant Detail View
