@@ -359,7 +359,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [addToGroupSelected, setAddToGroupSelected] = useState<number[]>([]);
   const [rName, setRName] = useState("");
   const [rCuisine, setRCuisine] = useState("");
-  const [rCity, setRCity] = useState("");
+  const [rCity, setRCity] = useState<string | null>(null);
   const [rPrice, setRPrice] = useState(3);
 
   // Seed pool state (for initial restaurant picks after create/join)
