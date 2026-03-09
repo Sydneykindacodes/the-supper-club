@@ -904,7 +904,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{ag.pendingDate}</div>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>Everyone must confirm before the reservation is locked.</div>
               <div style={{ marginBottom:"14px" }}>
-                {MEMBERS.map(m => (
+                {currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
