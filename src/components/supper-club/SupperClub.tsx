@@ -1996,7 +1996,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Proposed Date</div>
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{ag.pendingDate}</div>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>
-                {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed." : "Everyone must confirm before the reservation is locked."}
+                {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed."
+                  : dbData.dateConfirmations["You"] ? "You're confirmed. Waiting on the rest of the group."
+                  : "Everyone must confirm before the reservation is locked."}
               </div>
               <div style={{ marginBottom:"14px" }}>
                 {/* Show host as auto-confirmed — only reveal identity to the host themselves */}
