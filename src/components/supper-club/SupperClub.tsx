@@ -3136,6 +3136,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     return (
       <ProfileScreen
         user={user}
+        userReviews={dbData.communityReviews.filter(r => r.user_id === user.id)}
         onClose={() => setShowProfile(false)}
         showToast={showToast}
         signOut={signOut}
