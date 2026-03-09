@@ -9,6 +9,7 @@ export interface DBMember {
   avatar: string;
   color: string;
   is_host: boolean;
+  host_count: number;
   user_id: string | null;
 }
 
