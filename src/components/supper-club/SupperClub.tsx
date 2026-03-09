@@ -69,7 +69,7 @@ const LoadingScreen = () => (
 );
 
 export default function SupperClub({ user, signOut }: SupperClubProps) {
-  const MAX_GROUPS = 15;
+  const MAX_GROUPS = 10;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
   const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
