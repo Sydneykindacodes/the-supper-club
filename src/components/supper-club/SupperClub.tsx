@@ -2117,16 +2117,25 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"14px", color:"#7a5a40", marginBottom:"6px", lineHeight:"1.6", fontStyle:"italic" }}>
                 {dbData.isHost
                   ? "You're the host — sit tight while the crew submits their available dates, then you'll pick the perfect night."
-                  : "Your group is out here living life without a dinner on the books. Bold strategy."}
+                  : selectedDates.length > 0
+                    ? "Your dates are in. Now we wait for the rest of the crew to get their act together."
+                    : "Your group is out here living life without a dinner on the books. Bold strategy."}
               </div>
               <div style={{ fontSize:"12px", color:"#5a3a25", marginBottom:"18px", lineHeight:"1.5" }}>
                 {dbData.isHost
                   ? "Once members submit dates, you'll see them on the Schedule tab."
-                  : "Once everyone submits their available dates, the host will pick the perfect night."}
+                  : selectedDates.length > 0
+                    ? "The host will pick the perfect night once everyone's availability is in."
+                    : "Once everyone submits their available dates, the host will pick the perfect night."}
               </div>
-              {!dbData.isHost && (
+              {!dbData.isHost && selectedDates.length > 0 ? (
+                <div style={{ textAlign:"center" }}>
+                  <div style={{ fontSize:"12px", color:"#7a9e7e", fontStyle:"italic", marginBottom:"8px" }}>✓ Dates submitted</div>
+                  <button style={{ ...S.ghostBtn, fontSize:"11px", marginBottom:0 }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Modify Dates</button>
+                </div>
+              ) : !dbData.isHost ? (
                 <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
-              )}
+              ) : null}
               {dbData.isHost && <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>}
             </div>
           )}
