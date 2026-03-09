@@ -1188,15 +1188,30 @@ export default function SupperClub() {
           {exploreView === "search" && (
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for restaurants to add to your group pools.</div>
+              
+              <label style={S.label}>Location</label>
+              <input style={S.input} placeholder="e.g. New York, NY" value={rCity || activeGroup.city}
+                onChange={e => setRCity(e.target.value)}
+              />
+              <label style={S.label}>Search Radius</label>
+              <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
+                {[5, 10, 15, 25, 50].map(r => (
+                  <div key={r} onClick={() => setSearchRadius(r)} style={chip(searchRadius === r)}>{r} mi</div>
+                ))}
+              </div>
+
               <label style={S.label}>Search Restaurants</label>
               <div style={{ position:"relative" }}>
                 <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || "New York, NY", setGpResults, setGpLoading); }}
+                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
                 />
-                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants…</div>}
+                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
                 {gpResults.length > 0 && (
                   <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
-                    {gpResults.map(r => (
+                    {gpResults
+                      .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
+                      .map(r => (
                       <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
                         onClick={() => {
                           const restaurant = {
@@ -1212,7 +1227,7 @@ export default function SupperClub() {
                         <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
                         <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
                           {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
-                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>* {r.googleRating}</span>}
                           {r.price && <span style={{ marginLeft:"6px" }}>{PRICE_LABELS[r.price]}</span>}
                         </div>
                       </div>
@@ -1220,10 +1235,8 @@ export default function SupperClub() {
                   </div>
                 )}
               </div>
-              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>
-                Search results will show restaurants near your groups' cities
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Filters</div>
+              
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Cuisine</label>
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
@@ -1241,6 +1254,12 @@ export default function SupperClub() {
                   ))}
                 </div>
               </div>
+
+              <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
+                searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
+              }}>
+                Search
+              </button>
             </div>
           )}
 
