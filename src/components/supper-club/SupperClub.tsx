@@ -18,6 +18,7 @@ import NotificationConsent from "./NotificationConsent";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
+import MemberProfileView from "./MemberProfileView";
 
 interface SupperClubProps {
   user: User;
@@ -187,6 +188,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Review form and profile state
   const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [viewingMemberUserId, setViewingMemberUserId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
@@ -1334,7 +1336,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               ) : (
                 currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
-                    <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
+                    <div onClick={() => { if (m.user_id === user.id) setShowProfile(true); else if (m.user_id) setViewingMemberUserId(m.user_id); }} style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)", cursor: m.user_id ? "pointer" : "default" }}>{m.avatar}</div>
                     <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
                   </div>
                 ))
@@ -2132,6 +2134,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     // Only use real DB community reviews — no fake/static data
     const allCommunityReviews = dbData.communityReviews.map(r => ({
       id: r.id,
+      user_id: r.user_id,
       group: r.group_name || "Supper Club Member",
       reviewer: r.member_name || "Anonymous",
       reviewerColor: r.member_avatar_color || "#c9956a",
@@ -2262,13 +2265,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {detailReviews.map((rev, i) => (
                     <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
                       <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                        <div style={{ 
+                        <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ 
                           width:"28px", height:"28px", borderRadius:"50%", 
-                          background: "#c9956a",
+                          background: rev.reviewerColor || "#c9956a",
                           display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:"11px", color:"#fff", fontWeight:"700"
+                          fontSize:"11px", color:"#fff", fontWeight:"700", cursor:"pointer"
                         }}>
-                          {rev.group[0]}
+                          {rev.reviewer?.charAt(0)?.toUpperCase() || rev.group[0]}
                         </div>
                         <div style={{ flex:1 }}>
                           <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.group}</div>
@@ -2535,7 +2538,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     {/* Full Review Detail */}
                     <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"20px" }}>
-                      <div style={{ width:"44px", height:"44px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.3)", flexShrink:0 }}>
+                      <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ width:"44px", height:"44px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.3)", flexShrink:0, cursor:"pointer" }}>
                         {rev.reviewer.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -2668,7 +2671,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         )}
                         <div style={{ padding:"14px 16px" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                            <div style={{ width:"32px", height:"32px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700", flexShrink:0, border:"1.5px solid rgba(201,149,106,0.25)" }}>
+                            <div onClick={(e) => { e.stopPropagation(); if (rev.user_id === user.id) setShowProfile(true); else setViewingMemberUserId(rev.user_id); }} style={{ width:"32px", height:"32px", borderRadius:"50%", background: rev.reviewerColor, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700", flexShrink:0, border:"1.5px solid rgba(201,149,106,0.25)", cursor:"pointer" }}>
                               {rev.reviewer.charAt(0).toUpperCase()}
                             </div>
                             <div style={{ flex:1, minWidth:0 }}>
@@ -3127,6 +3130,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         activeTab={activeTab}
         onNavigate={onNavigate}
         groupName={activeGroup.name || undefined}
+      />
+    );
+  }
+
+  // ── MEMBER PROFILE VIEW (other users) ──
+  if (viewingMemberUserId) {
+    return (
+      <MemberProfileView
+        userId={viewingMemberUserId}
+        allReviews={dbData.communityReviews}
+        onClose={() => setViewingMemberUserId(null)}
+        isOwnProfile={viewingMemberUserId === user.id}
       />
     );
   }
