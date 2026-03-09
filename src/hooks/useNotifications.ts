@@ -63,7 +63,8 @@ export function useNotifications(user: User, memberIds: string[]) {
       case "review_reminder": return "✍️ Don't forget to write your review!";
       case "availability_reminder": return "📅 The host is nudging you — submit your availability!";
       case "date_proposed": return "📆 The host has locked in a date for dinner!";
-      case "restaurant_selected": return "🔒 The host has picked a restaurant (it's a secret)!";
+      case "restaurant_selected": return "🎲 A restaurant has been randomly selected from the pool!";
+      case "restaurant_auto_selected": return "🎲 A restaurant has been drawn — time to book the reservation!";
       case "morning_reveal_reminder": return "🌅 Tonight's the night! Check the app to see where you're going.";
       case "post_dinner_review": return "✨ How was dinner? Submit your review & availability for next time!";
       case "all_availability_in": return "📋 Everyone has submitted their availability! Time to pick a date.";
