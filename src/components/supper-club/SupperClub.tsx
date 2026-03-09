@@ -761,16 +761,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   );
 
   // Helper: create group in DB
-  const createGroupInDB = async (name: string, city: string) => {
+  const createGroupInDB = async (name: string, city: string, isTemporary: boolean = false) => {
     const code = "SUPR-" + Math.floor(1000 + Math.random() * 9000);
     const { data: groupData, error: groupErr } = await supabase
       .from("groups")
-      .insert({ name, city, code })
+      .insert({ name, city, code, is_temporary: isTemporary })
       .select()
       .single();
     if (groupErr || !groupData) { showToast("Failed to create club. Try again."); return; }
 
-    // Add current user as a member
+    // Add current user as a member — creator is always host for temp groups
     const avatarColors = ["#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c"];
     const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
     await supabase.from("members").insert({
@@ -790,6 +790,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       dinnerStatus: "no_date",
       nextDinner: null,
       pendingDate: null,
+      is_temporary: isTemporary,
     };
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
@@ -802,6 +803,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setSeedPoolResults([]);
     setScreen("seed_pool");
     showToast(`${name} created! Now add 3 restaurants to your pool.`);
+    setNewGroupTemporary(false);
   };
 
   // Helper: join group by code
