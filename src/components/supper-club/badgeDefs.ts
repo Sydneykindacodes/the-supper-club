@@ -45,6 +45,9 @@ export const INDIVIDUAL_BADGE_DEFS = [
   { key: "best_dish", name: "Best Dish", desc: "Voted best dish of the evening" },
   { key: "three_best_dish", name: "Top Palate", desc: "Won best dish 3 times" },
   { key: "early_bird", name: "Early Bird", desc: "First to submit availability" },
+  { key: "temp_group_1", name: "One-Night Stand", desc: "Survived your first pop-up supper" },
+  { key: "temp_group_5", name: "Serial Fling", desc: "Five pop-up suppers under your belt" },
+  { key: "temp_group_10", name: "Commitment Issues", desc: "Ten pop-ups and still no permanent club?" },
 ];
 
 export const GROUP_BADGE_DEFS = [
