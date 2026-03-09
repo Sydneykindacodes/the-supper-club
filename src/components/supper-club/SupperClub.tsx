@@ -1984,6 +1984,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 if (!hostSelectedDate) { showToast("Select a date first."); return; }
                 const success = await dbData.proposeDate(hostSelectedDate);
                 if (success) {
+                  await sendGroupNotification("date_proposed");
                   showToast("Date locked! Now pick the restaurant.");
                   setScreen("host_select_restaurant");
                 } else {
