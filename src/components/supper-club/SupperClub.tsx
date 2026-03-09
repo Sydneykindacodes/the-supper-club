@@ -504,13 +504,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   }, [activeGroupId]);
 
   // Detect dinner cancellation — show notice to non-host members
-  // Only triggers on a real status transition (not initial load or group switch)
+  // Only triggers when status transitions from a booked/active state to "no_date"
   // Uses sessionStorage to ensure each cancellation is only shown once per group
+  const BOOKED_STATUSES = ["scheduled", "pending_confirm", "pending_restaurant"];
   useEffect(() => {
     const current = dbData.dinnerStatus;
     if (
       prevDinnerStatus &&
-      prevDinnerStatus !== "no_date" &&
+      BOOKED_STATUSES.includes(prevDinnerStatus) &&
       current === "no_date" &&
       !dbData.isHost &&
       activeGroupId
