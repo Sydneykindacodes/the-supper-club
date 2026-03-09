@@ -1173,6 +1173,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── HOST SELECT DATE ──
   if (screen === "host_select_date") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Host Selection" />;
     const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
     const notSubmittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
