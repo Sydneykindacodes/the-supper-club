@@ -35,7 +35,6 @@ export default function SupperClub() {
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
-  const [inviteRevealed, setInviteRevealed] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
