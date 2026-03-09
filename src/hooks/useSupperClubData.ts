@@ -329,7 +329,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
 
   const nextDinner: string | null = (() => {
     if (!activeReservation || dinnerStatus === "no_date") return null;
-    if (dinnerStatus === "scheduled" || dinnerStatus === "pending_confirm") {
+    if (dinnerStatus === "scheduled" || dinnerStatus === "pending_confirm" || dinnerStatus === "pending_restaurant") {
       const d = new Date(activeReservation.dinner_date + "T00:00:00");
       return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     }
