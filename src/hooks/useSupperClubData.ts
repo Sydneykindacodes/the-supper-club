@@ -631,13 +631,12 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     googlePlaceId?: string;
     address?: string;
   }, groupId: string) => {
-    // Duplicate check
+    // Duplicate check — check both active pool and visited restaurants
     const { data: existing } = await supabase
       .from("restaurants")
       .select("id")
       .eq("group_id", groupId)
       .ilike("name", restaurant.name)
-      .eq("visited", false)
       .maybeSingle();
     if (existing) return "duplicate";
 
