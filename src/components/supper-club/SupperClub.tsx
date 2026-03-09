@@ -460,8 +460,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       userName={userName}
       onComplete={() => {
         localStorage.setItem("sc_onboarded", "1");
-        setScreen("welcome");
+        setScreen("notif_consent");
       }}
+    />
+  );
+
+  // ── NOTIFICATION CONSENT ──
+  if (screen === "notif_consent") return (
+    <NotificationConsent
+      userId={user.id}
+      onComplete={() => setScreen("welcome")}
     />
   );
 
