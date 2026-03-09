@@ -142,7 +142,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     dbData.communityReviews,
     dbData.userBadges,
     user.id,
-    dbData.isHost,
+    dbData.hostCount,
     dbData.earnBadge,
     activeGroupId
   );
