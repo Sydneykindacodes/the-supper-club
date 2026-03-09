@@ -3491,6 +3491,41 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         </div>
         <div style={{ padding:"16px 16px 0" }}>
 
+          {/* ── Date Already Proposed Banner ── */}
+          {dbData.dinnerStatus === "pending_confirm" && dbData.pendingDate && (
+            <div style={{
+              background:"linear-gradient(135deg, rgba(201,149,106,0.1), rgba(201,149,106,0.03))",
+              border:"1px solid rgba(201,149,106,0.3)",
+              borderRadius:"14px",
+              padding:"16px 18px",
+              marginBottom:"16px",
+              textAlign:"center",
+            }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Date Already Proposed</div>
+              <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>{dbData.pendingDate}</div>
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
+                The host has picked a date. Head to the home screen to confirm your attendance — or submit your availability below for future dinners.
+              </div>
+              {!confirmationVotes["You"] && !dbData.isHost && (
+                <button style={{ ...S.primaryBtn, marginTop:"14px", marginBottom:0, fontSize:"12px" }} onClick={async () => {
+                  const newVotes = {...confirmationVotes, You: true};
+                  setConfirmationVotes(newVotes);
+                  showToast("Confirmed. You're in!");
+                  const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  if (allNowVoted) {
+                    await sendHostNotification("all_votes_in");
+                  }
+                }}>
+                  Confirm — I'll Be There
+                </button>
+              )}
+              {(confirmationVotes["You"] || dbData.isHost) && (
+                <div style={{ marginTop:"10px", fontSize:"12px", color:"#7a9e7e", fontStyle:"italic" }}>✓ You're confirmed for this date</div>
+              )}
+            </div>
+          )}
+
           {/* ── Dates Already Submitted State ── */}
           {datesAlreadySubmitted && !availabilityModifying ? (
             <>
