@@ -1122,7 +1122,15 @@ export default function SupperClub() {
           </div>
 
           <div style={{ height:"18px" }}/>
-          <button style={S.primaryBtn} onClick={() => { if (selectedDates.length > 0) { showToast("Availability saved."); updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" }); } }}>
+          <button style={S.primaryBtn} onClick={() => { 
+            if (selectedDates.length > 0) { 
+              showToast("Availability saved. Waiting on host to pick a date."); 
+              // Check if this is the host - if so, transition to awaiting_host so they can select
+              updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+              setScreen("club_home");
+              setActiveTab("home");
+            } 
+          }}>
             Submit Availability
           </button>
         </div>
