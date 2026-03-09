@@ -1563,7 +1563,7 @@ export default function SupperClub() {
                 {visitedRestaurants.length} Previously Visited
               </div>
               {sortedVisited.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => setSelectedRestaurantDetail(r as any)}>
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => openRestaurantDetail(r as any)}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
                       <div style={S.cardTitle}>{r.name}</div>
