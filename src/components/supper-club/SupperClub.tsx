@@ -3679,8 +3679,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── BADGES ──
+  // ── BADGES (hidden for temporary groups) ──
   if (screen === "badges") {
+    if (isTemporaryGroup) {
+      // Redirect — temp groups don't have a badges section
+      setScreen("club_home");
+      setActiveTab("home");
+      return null;
+    }
     return (
       <BadgesScreen
         userBadges={dbData.userBadges}
