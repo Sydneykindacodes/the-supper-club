@@ -224,37 +224,48 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
   }, [activeReservation?.restaurant_id, refreshCounter]);
 
 
+  // Track date confirmations (member name → boolean)
+  const [dateConfirmations, setDateConfirmations] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     if (!activeReservation || members.length === 0) {
       setMemberAvailability({});
       setUserSelectedDates([]);
+      setDateConfirmations({});
       return;
     }
 
     supabase
       .from("member_availability")
-      .select("member_id, available_dates")
+      .select("member_id, available_dates, confirmed_at")
       .eq("reservation_id", activeReservation.id)
       .then(({ data: avails }) => {
         if (!avails || avails.length === 0) {
           setMemberAvailability({});
           setUserSelectedDates([]);
+          setDateConfirmations({});
           return;
         }
         const avMap: MemberAvailability = {};
+        const confMap: Record<string, boolean> = {};
         avails.forEach(a => {
           const member = members.find(m => m.id === a.member_id);
           if (member) {
+            const displayName = member.user_id === user.id ? "You" : member.name;
             if (member.user_id === user.id) {
               setUserSelectedDates(a.available_dates);
             } else {
               avMap[member.name] = a.available_dates;
             }
+            if ((a as any).confirmed_at) {
+              confMap[displayName] = true;
+            }
           }
         });
         setMemberAvailability(avMap);
+        setDateConfirmations(confMap);
       });
-  }, [activeReservation?.id, members, user.id]);
+  }, [activeReservation?.id, members, user.id, refreshCounter]);
 
   // Load community reviews (all reviews visible to authenticated users)
   useEffect(() => {
