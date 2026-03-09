@@ -112,6 +112,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
   }, [dbData.memberAvailability]);
 
+  const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
