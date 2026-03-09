@@ -39,6 +39,8 @@ export default function SupperClub() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
+  const [joinCode, setJoinCode] = useState("");
+  const [joinName, setJoinName] = useState("");
 
   // Per-group pool: map groupId -> Restaurant[]
   const [groupPools, setGroupPools] = useState<Record<number, Restaurant[]>>({
