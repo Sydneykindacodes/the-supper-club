@@ -1821,6 +1821,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── HOST SELECT RESTAURANT ──
   if (screen === "host_select_restaurant") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Selection" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Restaurant Selection" />;
     const dinnerDate = dbData.activeReservation?.dinner_date;
     const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "TBD";
     
