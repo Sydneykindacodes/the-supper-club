@@ -2736,15 +2736,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
               {/* Search Results */}
               {gpResults.length > 0 && (
-                <>
-                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                    Results · {gpResults.filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
-                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter).length}
-                  </div>
-                  {gpResults
+                (() => {
+                  const allFiltered = gpResults
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
-                    .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
-                    .map(r => {
+                    .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter);
+                  const capped = allFiltered.slice(0, MAX_ITEMS);
+                  const totalPages = Math.ceil(capped.length / ITEMS_PER_PAGE);
+                  const pageItems = capped.slice((searchPage - 1) * ITEMS_PER_PAGE, searchPage * ITEMS_PER_PAGE);
+                  return (
+                  <>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                    Results · {capped.length}{capped.length < allFiltered.length ? ` of ${allFiltered.length}` : ""}
+                  </div>
+                  {pageItems.map(r => {
                     const isInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
                     return (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
@@ -2779,7 +2783,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                     );
                   })}
-                </>
+                  {totalPages > 1 && (
+                    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"16px", padding:"16px 0 8px" }}>
+                      <button onClick={() => setSearchPage(p => Math.max(1, p - 1))} disabled={searchPage <= 1}
+                        style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: searchPage <= 1 ? "#3d2010" : "#c9956a", cursor: searchPage <= 1 ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: searchPage <= 1 ? 0.4 : 1 }}>
+                        ← Prev
+                      </button>
+                      <span style={{ fontSize:"12px", color:"#7a5a40" }}>{searchPage} / {totalPages}</span>
+                      <button onClick={() => setSearchPage(p => Math.min(totalPages, p + 1))} disabled={searchPage >= totalPages}
+                        style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: searchPage >= totalPages ? "#3d2010" : "#c9956a", cursor: searchPage >= totalPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: searchPage >= totalPages ? 0.4 : 1 }}>
+                        Next →
+                      </button>
+                    </div>
+                  )}
+                  </>
+                  );
+                })()
               )}
             </div>
           )}
