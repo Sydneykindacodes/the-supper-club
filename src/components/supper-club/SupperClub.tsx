@@ -970,7 +970,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                     <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"12px", marginBottom:"16px" }}>
                       <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"10px" }}>Submissions</div>
-                      {MEMBERS.map(m => {
+                      {currentMembers.map(m => {
                         const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
                         const hasSubmitted = dates.length > 0;
                         return (
