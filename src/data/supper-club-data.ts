@@ -143,6 +143,25 @@ export const WITTY_NO_DATE = [
   "The dining gods grow impatient. Someone should really pick a date.",
 ];
 
+export const SECRET_HOST_MESSAGES = [
+  "🤫 You've been chosen. The torch has been passed in absolute secrecy.",
+  "🕵️ Psst... you're the new keeper of the dinner secrets.",
+  "🔮 The Supper Club has spoken. You are the chosen one.",
+  "🎭 A new host emerges from the shadows. It's you.",
+  "✨ Congratulations, secret agent. Your mission: plan the next feast.",
+  "🗝️ The keys to the kingdom are now yours. Guard them wisely.",
+  "🌙 Under cover of night, you've been selected. Tell no one.",
+  "🎪 The curtain rises. You're the star of the next dinner show.",
+];
+
+export const HOST_PRIVILEGE_MESSAGES = [
+  "Only you know where the group is going. Savor this power.",
+  "The group trusts you with their taste buds. Don't let them down.",
+  "You hold the secret. They can only wonder and speculate.",
+  "Guard this intel like your most prized recipe.",
+  "With great hosting comes great responsibility.",
+];
+
 export const MEAL_TYPES = ["Breakfast","Brunch","Lunch","Dinner"];
 export const PRICE_LABELS: Record<number, string> = { 1:"$", 2:"$$", 3:"$$$", 4:"$$$$" };
 
