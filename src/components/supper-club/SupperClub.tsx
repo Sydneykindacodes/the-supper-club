@@ -38,6 +38,17 @@ interface GooglePlace {
   googleReviewCount: number;
   googlePlaceId: string;
   photoRefs?: string[];
+  lat?: number | null;
+  lng?: number | null;
+}
+
+// Haversine distance in miles
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
@@ -311,8 +322,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Use DB members when available, else fallback to static MEMBERS
   const currentMembers = dbData.uiMembers;
 
+  // Check if a restaurant is within the group's search radius
+  const isWithinRadius = (r: { lat?: number | null; lng?: number | null }): boolean => {
+    if (!groupCityCenter || !r.lat || !r.lng) return true; // allow if no coords available
+    const dist = haversineDistance(groupCityCenter.lat, groupCityCenter.lng, r.lat, r.lng);
+    return dist <= searchRadius;
+  };
+
   // Add restaurant to group pool(s) - DB-backed
-  const addToGroupPool = async (restaurant: Restaurant, groupIds: (number | string)[]) => {
+  const addToGroupPool = async (restaurant: Restaurant & { lat?: number | null; lng?: number | null }, groupIds: (number | string)[]) => {
+    // Distance check
+    if (!isWithinRadius(restaurant)) {
+      showToast(`${restaurant.name} is outside your group's ${searchRadius}-mile radius.`);
+      return;
+    }
     let added = 0;
     let dupes = 0;
     let full = false;
@@ -425,6 +448,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   }, [photoCache]);
 
   const [searchRadius, setSearchRadius] = useState(10);
+  const [groupCityCenter, setGroupCityCenter] = useState<{ lat: number; lng: number } | null>(null);
 
   // Google Places search state
   const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
@@ -436,10 +460,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
-  // Reset cancellation tracking when switching groups
+  // Reset cancellation tracking and city center when switching groups
   useEffect(() => {
     setPrevDinnerStatus(null);
     setShowCancellationNotice(false);
+    setGroupCityCenter(null);
+    // Eagerly geocode group city for radius checks
+    if (activeGroup.city) {
+      supabase.functions.invoke('search-restaurants', {
+        body: { query: "restaurant", city: activeGroup.city, radius: searchRadius },
+      }).then(({ data }) => {
+        if (data?.cityCenter) setGroupCityCenter(data.cityCenter);
+      }).catch(() => {});
+    }
   }, [activeGroupId]);
 
   // Detect dinner cancellation — show notice to non-host members
@@ -469,12 +502,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         setter(newResults);
       }
       setGpNextPageToken(data?.nextPageToken || null);
+      // Cache group city center from search results
+      if (data?.cityCenter && !groupCityCenter) {
+        setGroupCityCenter(data.cityCenter);
+      }
     } catch {
       if (!pageToken) setter([]);
     } finally {
       setLoading(false);
     }
-  }, [activeGroup.city, searchRadius]);
+  }, [activeGroup.city, searchRadius, groupCityCenter]);
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
@@ -1079,6 +1116,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const handleSeedAdd = (r: GooglePlace) => {
       if (atMax) { showToast(`Maximum ${seedPoolMax} picks allowed.`); return; }
       if (seedPoolPicks.some(p => p.name.toLowerCase() === r.name.toLowerCase())) { showToast("Already picked."); return; }
+      if (!isWithinRadius(r)) { showToast(`${r.name} is outside your group's ${searchRadius}-mile radius.`); return; }
       setSeedPoolPicks(prev => [...prev, r]);
     };
 
