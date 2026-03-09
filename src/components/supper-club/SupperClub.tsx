@@ -416,6 +416,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
+
+  // Fetch availability from OTHER groups to show cross-group indicators
+  const [otherGroupDates, setOtherGroupDates] = useState<string[]>([]);
+  useEffect(() => {
+    if (!activeGroupId || groups.length <= 1) { setOtherGroupDates([]); return; }
+    const fetchOtherAvail = async () => {
+      // Get member IDs for user in other groups
+      const { data: otherMembers } = await supabase
+        .from("members")
+        .select("id, group_id")
+        .eq("user_id", user.id)
+        .neq("group_id", activeGroupId);
+      if (!otherMembers || otherMembers.length === 0) { setOtherGroupDates([]); return; }
+      const memberIds = otherMembers.map(m => m.id);
+      const { data: avail } = await supabase
+        .from("member_availability")
+        .select("available_dates")
+        .in("member_id", memberIds);
+      if (avail) {
+        const allDates = new Set<string>();
+        avail.forEach(a => a.available_dates.forEach((d: string) => allDates.add(d)));
+        setOtherGroupDates(Array.from(allDates));
+      }
+    };
+    fetchOtherAvail();
+  }, [activeGroupId, groups.length, user.id]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
   const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
 
@@ -3131,7 +3157,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ marginTop:"4px", fontSize:"11px", color:"#7a5a40" }}>The date is announced as soon as everyone submits — no waiting for a deadline.</div>
               </div>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
-              <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast}/>
+              <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
               {selectedDates.length > 0 && (
                 <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
                   {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}

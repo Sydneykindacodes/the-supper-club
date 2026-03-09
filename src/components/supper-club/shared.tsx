@@ -277,12 +277,13 @@ export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigat
 );
 
 // ── CalendarGrid ──
-export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast }: {
+export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast, otherGroupDates = [] }: {
   selectedArr: string[];
   setArr: React.Dispatch<React.SetStateAction<string[]>>;
   weeks?: number;
   cutoffDays: number;
   showToast: (msg: string) => void;
+  otherGroupDates?: string[];
 }) => {
   const today = new Date();
   const cutoffDate = new Date(today);
@@ -307,26 +308,44 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
   };
 
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", marginBottom:"20px" }}>
-      {dates.map(d => {
-        const fd = formatDate(d);
-        const key = d.toISOString().split("T")[0];
-        const sel = selectedArr.includes(key);
-        return (
-          <div key={key} onClick={() => toggleDate(key, fd.isPast)} style={{
-            borderRadius:"10px", padding:"8px 4px", textAlign:"center",
-            cursor:fd.isPast?"not-allowed":"pointer",
-            background:sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
-            border:sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
-            opacity:fd.isPast?0.3:1, transition:"all 0.15s",
-          }}>
-            <div style={{ fontSize:"9px", color:sel?"#2a2a2a":"#8c8278", marginBottom:"2px" }}>{fd.day}</div>
-            <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a":"#e5ded5" }}>{fd.date}</div>
-            <div style={{ fontSize:"8px", color:sel?"#2a2a2a":"#3d3d3d" }}>{fd.month}</div>
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:"6px", marginBottom: otherGroupDates.length > 0 ? "10px" : "20px" }}>
+        {dates.map(d => {
+          const fd = formatDate(d);
+          const key = d.toISOString().split("T")[0];
+          const sel = selectedArr.includes(key);
+          const inOtherGroup = otherGroupDates.includes(key);
+          return (
+            <div key={key} onClick={() => toggleDate(key, fd.isPast)} style={{
+              borderRadius:"10px", padding:"8px 4px", textAlign:"center",
+              cursor:fd.isPast?"not-allowed":"pointer",
+              background:sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
+              border:sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
+              opacity:fd.isPast?0.3:1, transition:"all 0.15s",
+              position:"relative",
+            }}>
+              <div style={{ fontSize:"9px", color:sel?"#2a2a2a":"#8c8278", marginBottom:"2px" }}>{fd.day}</div>
+              <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a":"#e5ded5" }}>{fd.date}</div>
+              <div style={{ fontSize:"8px", color:sel?"#2a2a2a":"#3d3d3d" }}>{fd.month}</div>
+              {inOtherGroup && !fd.isPast && (
+                <div style={{
+                  position:"absolute", top:"3px", right:"3px",
+                  width:"6px", height:"6px", borderRadius:"50%",
+                  background:"#9b7ec8",
+                  border: sel ? "1px solid #2a2a2a" : "1px solid rgba(155,126,200,0.4)",
+                }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {otherGroupDates.length > 0 && (
+        <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"16px", fontSize:"10px", color:"#8c8278" }}>
+          <div style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#9b7ec8", flexShrink:0 }} />
+          Available in another club
+        </div>
+      )}
+    </>
   );
 };
 
