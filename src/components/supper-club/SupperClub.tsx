@@ -737,7 +737,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
                   fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
                 }}>
-                Code
+                Copy
               </button>
               <button 
                 onClick={() => { 
