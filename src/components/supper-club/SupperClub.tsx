@@ -828,14 +828,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ padding:"8px 16px 4px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"14px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {MEMBERS.length}/{MAX_GROUP_MEMBERS}</div>
-                {groupAdmin === "You" && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Members · {currentMembers.length}/{MAX_GROUP_MEMBERS}</div>
+                {dbData.isHost && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 6px", fontWeight:"700", letterSpacing:"1px", textTransform:"uppercase" }}>Host</span>}
               </div>
               <div onClick={() => setScreen("group_settings")} style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Settings ›</div>
             </div>
-            <div style={{ display:"flex", gap:"14px" }}>
-              {MEMBERS.map(m => (
-                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px" }}>
+            <div style={{ display:"flex", gap:"14px", overflowX:"auto" }}>
+              {currentMembers.map(m => (
+                <div key={m.name} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", flexShrink:0 }}>
                   <div style={{ width:"48px", height:"48px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"17px", color:"#fff", fontWeight:"700", border:"2px solid rgba(201,149,106,0.25)" }}>{m.avatar}</div>
                   <div style={{ fontSize:"11px", color:"#7a5a40" }}>{m.name}</div>
                 </div>
