@@ -176,7 +176,32 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       });
   }, [activeGroupId, refreshCounter]);
 
-  // Load availability for active reservation
+  // Load selected restaurant data when reservation has a restaurant_id
+  useEffect(() => {
+    if (!activeReservation?.restaurant_id) { setSelectedRestaurantData(null); return; }
+    supabase
+      .from("restaurants")
+      .select("id, name, cuisine, city, address, google_place_id, price")
+      .eq("id", activeReservation.restaurant_id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setSelectedRestaurantData({
+            id: data.id,
+            name: data.name,
+            cuisine: data.cuisine || "Restaurant",
+            city: data.city,
+            address: data.address,
+            google_place_id: data.google_place_id,
+            price: data.price || 2,
+          });
+        } else {
+          setSelectedRestaurantData(null);
+        }
+      });
+  }, [activeReservation?.restaurant_id, refreshCounter]);
+
+
   useEffect(() => {
     if (!activeReservation || members.length === 0) {
       setMemberAvailability({});
