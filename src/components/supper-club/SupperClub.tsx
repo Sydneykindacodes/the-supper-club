@@ -2145,6 +2145,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={async () => {
               if (dbData.dinnerStatus === "scheduled" || dbData.dinnerStatus === "post_dinner") {
                 await dbData.completeDinner();
+                checkLowPoolNotification(poolRestaurants.length - 1);
                 showToast("Dinner completed. Post-dinner flow triggered.");
                 setScreen("club_home");
                 setActiveTab("home");
