@@ -140,6 +140,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             dinnerStatus: "no_date" as const,
             nextDinner: null,
             pendingDate: null,
+            is_temporary: m.groups.is_temporary || false,
           }));
         if (loadedGroups.length > 0) {
           setGroups(loadedGroups);
