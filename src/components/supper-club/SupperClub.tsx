@@ -935,12 +935,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px" }}>
             Restaurants within {searchRadius} miles of your city will appear in your pool.
           </div>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 0", borderBottom:"1px solid rgba(212,205,196,0.07)", marginBottom:"12px" }}>
+            <div>
+              <span style={{ fontSize:"14px", color:"#e5ded5" }}>Pop-Up Supper</span>
+              <div style={{ fontSize:"10px", color:"#7a5a40", fontStyle:"italic", marginTop:"2px" }}>One night only — dissolves after dinner</div>
+            </div>
+            <div onClick={() => setNewGroupTemporary(p => !p)} style={{ width:"44px", height:"24px", borderRadius:"12px", background:newGroupTemporary?"linear-gradient(135deg,#d4cdc4,#a49a8e)":"rgba(255,255,255,0.08)", border:newGroupTemporary?"none":"1px solid rgba(212,205,196,0.2)", position:"relative", cursor:"pointer", transition:"all 0.2s" }}>
+              <div style={{ position:"absolute", top:"3px", left:newGroupTemporary?"22px":"3px", width:"18px", height:"18px", borderRadius:"50%", background:newGroupTemporary?"#2a2a2a":"#565250", transition:"left 0.2s" }}/>
+            </div>
+          </div>
           <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
           <button style={S.primaryBtn} onClick={() => {
             if (!newGroupName.trim()) { showToast("Name your club first."); return; }
-            createGroupInDB(newGroupName.trim(), newGroupCity.trim() || "New York, NY");
+            createGroupInDB(newGroupName.trim(), newGroupCity.trim() || "New York, NY", newGroupTemporary);
           }}>Create & Get Invite Code</button>
-          <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setScreen("club_home"); }}>Cancel</button>
+          <button style={S.ghostBtn} onClick={() => { setNewGroupName(""); setNewGroupCity(""); setNewGroupTemporary(false); setScreen("club_home"); }}>Cancel</button>
         </div>
       </div>
     </div></div>
