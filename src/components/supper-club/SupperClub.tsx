@@ -2428,8 +2428,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   if (screen === "host_select_date") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Host Selection" />;
     if (isSoloGroup) return <SoloPlaceholder feature="Host Selection" />;
-    const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-    const notSubmittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
+    const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+    const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+    const notSubmittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
     // Gather all dates from submitted members
     const allDatesFromSubmitted: string[] = [];
