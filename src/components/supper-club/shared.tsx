@@ -131,6 +131,7 @@ export const GlobalGroupSwitcher = ({
   setActiveGroup,
   onNewClub,
   onJoinClub,
+  onGroupSelect,
   maxGroups = 15,
 }: {
   groups: { id: number; name: string }[];
@@ -138,6 +139,7 @@ export const GlobalGroupSwitcher = ({
   setActiveGroup: (g: any) => void;
   onNewClub: () => void;
   onJoinClub: () => void;
+  onGroupSelect?: (g: any) => void;
   maxGroups?: number;
 }) => {
   const [showMenu, setShowMenu] = useState(false);
