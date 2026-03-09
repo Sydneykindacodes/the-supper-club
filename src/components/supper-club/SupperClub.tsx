@@ -2063,7 +2063,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {/* Group members status */}
               <div style={{ ...S.card }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>The Table</div>
-                {MEMBERS.map(m => (
+                {currentMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#1a0f0a", fontWeight:"700" }}>{m.avatar}</div>
                     <div style={{ flex:1 }}>
