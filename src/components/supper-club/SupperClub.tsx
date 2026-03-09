@@ -2417,8 +2417,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     onClick={async () => { 
                       const success = await dbData.removeRestaurantFromPool(r.name);
                       if (success) {
+                        const newPool = poolRestaurants.filter(rest => rest.id !== r.id);
                         setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
                         showToast(`${r.name} removed from pool.`);
+                        // Check low pool
+                        checkLowPoolNotification(newPool.length);
                       } else {
                         showToast("Failed to remove restaurant.");
                       }
