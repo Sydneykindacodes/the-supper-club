@@ -103,6 +103,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [screen, setScreen] = useState<string>("loading");
+  const [greetingPhase, setGreetingPhase] = useState<"in" | "hold" | "out" | null>(() => {
+    if (sessionStorage.getItem("sc_greeted")) return null;
+    return "in";
+  });
+  const [pendingScreen, setPendingScreen] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const EMPTY_GROUP: Group = { id: 0 as any, name: "", code: "", members: 0, city: "", dinnerStatus: "no_date", nextDinner: null, pendingDate: null, is_temporary: false };
   const [activeGroup, setActiveGroup] = useState<Group>(EMPTY_GROUP);
@@ -121,6 +126,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       // Check for invite link in URL
       const params = new URLSearchParams(window.location.search);
       const inviteCode = params.get("invite");
+
+      // Helper: set screen directly or defer if greeting is active
+      const goToScreen = (s: string) => {
+        if (greetingPhase) {
+          setPendingScreen(s);
+        } else {
+          setScreen(s);
+        }
+      };
 
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
@@ -145,21 +159,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         if (loadedGroups.length > 0) {
           setGroups(loadedGroups);
           setActiveGroup(loadedGroups[0]);
-          setScreen("club_home");
+          goToScreen("club_home");
           setActiveTab("home");
           // If there's an invite code, auto-join that group too
           if (inviteCode) {
-            // Check if already in this group
             const alreadyIn = loadedGroups.some(g => g.code === inviteCode.toUpperCase().trim());
             if (alreadyIn) {
-              // Switch to that group
               const target = loadedGroups.find(g => g.code === inviteCode.toUpperCase().trim());
               if (target) setActiveGroup(target);
             } else {
-              // Set up join flow
               setJoinMode("join");
               setJoinCode(inviteCode);
-              setScreen("join_club_inapp");
+              goToScreen("join_club_inapp");
             }
             window.history.replaceState({}, "", window.location.pathname);
           }
@@ -170,7 +181,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       if (inviteCode) {
         setJoinMode("join");
         setJoinCode(inviteCode);
-        setScreen("join_create");
+        goToScreen("join_create");
         window.history.replaceState({}, "", window.location.pathname);
         return;
       }
@@ -178,15 +189,39 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const onboarded = localStorage.getItem("sc_onboarded");
       const notifConsent = localStorage.getItem("sc_notif_consent");
       if (!onboarded) {
-        setScreen("onboarding");
+        goToScreen("onboarding");
       } else if (!notifConsent) {
-        setScreen("notif_consent");
+        goToScreen("notif_consent");
       } else {
-        setScreen("welcome");
+        goToScreen("welcome");
       }
     };
     loadGroups();
   }, [user.id]);
+
+  // Greeting animation sequence: in → hold → out → done
+  useEffect(() => {
+    if (!greetingPhase) return;
+    if (greetingPhase === "in") {
+      const t = setTimeout(() => setGreetingPhase("hold"), 600);
+      return () => clearTimeout(t);
+    }
+    if (greetingPhase === "hold") {
+      const t = setTimeout(() => setGreetingPhase("out"), 1400);
+      return () => clearTimeout(t);
+    }
+    if (greetingPhase === "out") {
+      const t = setTimeout(() => {
+        setGreetingPhase(null);
+        sessionStorage.setItem("sc_greeted", "1");
+        if (pendingScreen) {
+          setScreen(pendingScreen);
+          setPendingScreen(null);
+        }
+      }, 600);
+      return () => clearTimeout(t);
+    }
+  }, [greetingPhase, pendingScreen]);
 
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
@@ -633,6 +668,47 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (visitedSort === "price") return b.price - a.price;
     return new Date(b.visitedDate || 0).getTime() - new Date(a.visitedDate || 0).getTime();
   });
+
+  // ── GREETING TRANSITION ──
+  if (greetingPhase) {
+    const firstName = userName.split(" ")[0];
+    const opacity = greetingPhase === "in" ? 0 : greetingPhase === "hold" ? 1 : 0;
+    const translateY = greetingPhase === "in" ? "12px" : greetingPhase === "hold" ? "0" : "-8px";
+    return (
+      <div style={{
+        fontFamily: "'Montserrat', sans-serif",
+        background: "#1a0f0a",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: "16px",
+      }}>
+        <div style={{
+          opacity,
+          transform: `translateY(${translateY})`,
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: "13px", color: "#7a5a40", letterSpacing: "4px", textTransform: "uppercase", marginBottom: "12px" }}>
+            Welcome back
+          </div>
+          <div style={{ fontSize: "32px", color: "#f5e6d3", fontWeight: "300", fontFamily: FONT_DISPLAY_FAMILY }}>
+            Hello, {firstName}
+          </div>
+          <div style={{
+            width: "40px", height: "1px",
+            background: "rgba(201,149,106,0.4)",
+            margin: "16px auto 0",
+            opacity: greetingPhase === "hold" ? 1 : 0,
+            transform: `scaleX(${greetingPhase === "hold" ? 1 : 0})`,
+            transition: "opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s",
+          }} />
+        </div>
+      </div>
+    );
+  }
 
   // ── LOADING ──
   if (screen === "loading") return <LoadingScreen />;
