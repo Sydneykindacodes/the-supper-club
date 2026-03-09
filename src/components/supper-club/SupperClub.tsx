@@ -282,14 +282,100 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <div style={S.orb}/>
         <div style={S.eyebrow}>Est. 2026</div>
         <div style={S.mainTitle}>The Supper Club</div>
-        <div style={S.subtitle}>Dine together. Discover together.</div>
+        <div style={{ ...S.subtitle, marginBottom:"12px" }}>Welcome, {userName}.</div>
         <div style={S.ornament}>— · —</div>
-        <button style={S.primaryBtn} onClick={() => { setJoinMode("create"); setScreen("join_create"); }}>Create a Club</button>
-        <button style={S.secondaryBtn} onClick={() => { setJoinMode("join"); setScreen("join_create"); }}>Join with Invite Code</button>
-        <div style={{ marginTop:"36px", fontSize:"11px", color:"#3d2010", letterSpacing:"1px", textAlign:"center" }}>A private dining experience for you &amp; your people</div>
+        <button style={S.primaryBtn} onClick={() => { setJoinMode("create"); setNewGroupName(""); setNewGroupCity(""); setScreen("join_create"); }}>Create a Club</button>
+        <button style={S.secondaryBtn} onClick={() => { setJoinMode("join"); setJoinCode(""); setScreen("join_create"); }}>Join with Invite Code</button>
+        <div style={{ marginTop:"36px" }}>
+          <button onClick={signOut} style={{ background:"none", border:"none", color:"#4a2e18", fontSize:"11px", letterSpacing:"1px", cursor:"pointer", fontFamily:"Georgia,serif" }}>Sign Out</button>
+        </div>
       </div>
     </div></div>
   );
+
+  // Helper: create group in DB
+  const createGroupInDB = async (name: string, city: string) => {
+    const code = "SUPR-" + Math.floor(1000 + Math.random() * 9000);
+    const { data: groupData, error: groupErr } = await supabase
+      .from("groups")
+      .insert({ name, city, code })
+      .select()
+      .single();
+    if (groupErr || !groupData) { showToast("Failed to create club. Try again."); return; }
+
+    // Add current user as a member
+    const avatarColors = ["#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c"];
+    const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+    await supabase.from("members").insert({
+      group_id: groupData.id,
+      user_id: user.id,
+      name: userName,
+      avatar_color: color,
+      is_host: true,
+    });
+
+    const newGroup: Group = {
+      id: groupData.id as any,
+      name: groupData.name,
+      code: groupData.code,
+      members: 1,
+      city: groupData.city,
+      dinnerStatus: "no_date",
+      nextDinner: null,
+      pendingDate: null,
+    };
+    setGroups(prev => [...prev, newGroup]);
+    setActiveGroup(newGroup);
+    setGroupAdmin(userName);
+    setScreen("club_home");
+    setActiveTab("home");
+    showToast(`${name} created! Share code ${code} to invite friends.`);
+  };
+
+  // Helper: join group by code
+  const joinGroupByCode = async (code: string) => {
+    const { data: groupData, error: findErr } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("code", code.toUpperCase().trim())
+      .maybeSingle();
+    if (findErr || !groupData) { showToast("Club not found. Check the invite code."); return; }
+
+    // Check if already a member
+    const { data: existing } = await supabase
+      .from("members")
+      .select("id")
+      .eq("group_id", groupData.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (existing) { showToast("You're already in this club!"); return; }
+
+    const avatarColors = ["#c9956a", "#7a9e7e", "#9b7ec8", "#c45c5c", "#4a8bc2", "#c4a35c"];
+    const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+    await supabase.from("members").insert({
+      group_id: groupData.id,
+      user_id: user.id,
+      name: userName,
+      avatar_color: color,
+      is_host: false,
+    });
+
+    const newGroup: Group = {
+      id: groupData.id as any,
+      name: groupData.name,
+      code: groupData.code,
+      members: 0,
+      city: groupData.city,
+      dinnerStatus: "no_date",
+      nextDinner: null,
+      pendingDate: null,
+    };
+    setGroups(prev => [...prev, newGroup]);
+    setActiveGroup(newGroup);
+    setScreen("club_home");
+    setActiveTab("home");
+    showToast(`Welcome to ${groupData.name}!`);
+  };
 
   // ── JOIN/CREATE ──
   if (screen === "join_create") return (
@@ -303,11 +389,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Create Your Club</div>
             <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Name your circle of diners</div>
             <label style={S.label}>Club Name</label>
-            <input style={S.input} defaultValue="The Golden Table"/>
-            <label style={S.label}>Your Name</label>
-            <input style={S.input} defaultValue="Marisol"/>
+            <input style={S.input} placeholder="e.g. The Golden Table" value={newGroupName} onChange={e => setNewGroupName(e.target.value)}/>
             <label style={S.label}>City</label>
-            <input style={S.input} defaultValue="New York, NY"/>
+            <input style={S.input} placeholder="e.g. New York, NY" value={newGroupCity} onChange={e => setNewGroupCity(e.target.value)}/>
             <label style={S.label}>Search Radius</label>
             <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
               {[5, 10, 15, 25, 50].map(r => (
@@ -318,16 +402,21 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               Restaurants within {searchRadius} miles of your city will appear in your pool.
             </div>
             <div style={{ height:"12px" }}/>
-            <button style={S.primaryBtn} onClick={() => { setScreen("club_home"); setActiveTab("home"); }}>Create &amp; Get Invite Code</button>
+            <button style={S.primaryBtn} onClick={() => {
+              if (!newGroupName.trim()) { showToast("Give your club a name."); return; }
+              if (!newGroupCity.trim()) { showToast("Enter your city."); return; }
+              createGroupInDB(newGroupName.trim(), newGroupCity.trim());
+            }}>Create &amp; Get Invite Code</button>
           </>) : (<>
             <div style={{ ...S.mainTitle, fontSize:"34px", textAlign:"left", marginBottom:"6px" }}>Join a Club</div>
             <div style={{ ...S.subtitle, textAlign:"left", marginBottom:"28px" }}>Enter your invite code</div>
             <label style={S.label}>Invite Code</label>
-            <input style={S.input} placeholder="e.g. SUPR-4829"/>
-            <label style={S.label}>Your Name</label>
-            <input style={S.input} placeholder="Your name"/>
+            <input style={S.input} placeholder="e.g. SUPR-4829" value={joinCode} onChange={e => setJoinCode(e.target.value)}/>
             <div style={{ height:"12px" }}/>
-            <button style={S.primaryBtn} onClick={() => { setScreen("club_home"); setActiveTab("home"); }}>Join Club</button>
+            <button style={S.primaryBtn} onClick={() => {
+              if (!joinCode.trim()) { showToast("Enter an invite code."); return; }
+              joinGroupByCode(joinCode.trim());
+            }}>Join Club</button>
           </>)}
         </div>
       </div>
