@@ -1019,7 +1019,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             )}
             {currentMembers.map(m => {
-              const isMemberHost = m.name === groupAdmin;
+              const isMemberHost = m.name === dbData.hostName;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
