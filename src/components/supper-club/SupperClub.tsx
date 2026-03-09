@@ -3909,9 +3909,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
                     Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
                   </div>
-                  <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
                   <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
-                    The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
+                    Tap a date, then pick which meal types you're free for that day.
                   </div>
                   <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
                     Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
