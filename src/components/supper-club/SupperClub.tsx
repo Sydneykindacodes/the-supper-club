@@ -669,6 +669,47 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     return new Date(b.visitedDate || 0).getTime() - new Date(a.visitedDate || 0).getTime();
   });
 
+  // ── GREETING TRANSITION ──
+  if (greetingPhase) {
+    const firstName = userName.split(" ")[0];
+    const opacity = greetingPhase === "in" ? 0 : greetingPhase === "hold" ? 1 : 0;
+    const translateY = greetingPhase === "in" ? "12px" : greetingPhase === "hold" ? "0" : "-8px";
+    return (
+      <div style={{
+        fontFamily: "'Montserrat', sans-serif",
+        background: "#1a0f0a",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: "16px",
+      }}>
+        <div style={{
+          opacity,
+          transform: `translateY(${translateY})`,
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: "13px", color: "#7a5a40", letterSpacing: "4px", textTransform: "uppercase", marginBottom: "12px" }}>
+            Welcome back
+          </div>
+          <div style={{ fontSize: "32px", color: "#f5e6d3", fontWeight: "300", fontFamily: FONT_DISPLAY_FAMILY }}>
+            Hello, {firstName}
+          </div>
+          <div style={{
+            width: "40px", height: "1px",
+            background: "rgba(201,149,106,0.4)",
+            margin: "16px auto 0",
+            opacity: greetingPhase === "hold" ? 1 : 0,
+            transform: `scaleX(${greetingPhase === "hold" ? 1 : 0})`,
+            transition: "opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s",
+          }} />
+        </div>
+      </div>
+    );
+  }
+
   // ── LOADING ──
   if (screen === "loading") return <LoadingScreen />;
 
