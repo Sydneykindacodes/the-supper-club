@@ -1645,44 +1645,48 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
 
               {/* Reviews Section */}
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                Member Reviews · {mockRestaurantReviews.length}
-              </div>
-              {mockRestaurantReviews.map((rev, i) => {
-                const member = currentMembers.find(m => m.name === rev.member);
-                return (
-                  <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
-                      <div style={{ 
-                        width:"28px", height:"28px", borderRadius:"50%", 
-                        background: member?.color || "#c9956a",
-                        display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:"11px", color:"#fff", fontWeight:"700"
-                      }}>
-                        {member?.avatar || rev.member[0]}
-                      </div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.member}</div>
-                        <div style={{ fontSize:"11px", color:"#5a3a25" }}>{rev.group} · {rev.date}</div>
-                      </div>
-                      <div style={{ fontSize:"15px", color:"#c9956a", fontWeight:"700" }}>{rev.rating}</div>
-                    </div>
-                    <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.6", fontStyle:"italic" }}>
-                      "{rev.text}"
-                    </div>
-                    {rev.hasPhoto && (
-                      <div style={{ 
-                        marginTop:"10px", height:"48px", width:"48px", borderRadius:"8px",
-                        background:"linear-gradient(135deg, rgba(201,149,106,0.12), rgba(201,149,106,0.04))",
-                        display:"flex", alignItems:"center", justifyContent:"center",
-                        fontSize:"16px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.1)"
-                      }}>
-                        ◈
-                      </div>
-                    )}
+              {(() => {
+                const detailReviews = allCommunityReviews.filter(rev => rev.restaurant === r.name);
+                return (<>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                    Member Reviews · {detailReviews.length}
                   </div>
-                );
-              })}
+                  {detailReviews.length === 0 && (
+                    <div style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
+                      <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic" }}>No reviews yet. Be the first to dine here and share your thoughts.</div>
+                    </div>
+                  )}
+                  {detailReviews.map((rev, i) => (
+                    <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
+                        <div style={{ 
+                          width:"28px", height:"28px", borderRadius:"50%", 
+                          background: "#c9956a",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:"11px", color:"#fff", fontWeight:"700"
+                        }}>
+                          {rev.group[0]}
+                        </div>
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:"600" }}>{rev.group}</div>
+                          <div style={{ fontSize:"11px", color:"#5a3a25" }}>{rev.date}</div>
+                        </div>
+                        <div style={{ fontSize:"15px", color:"#c9956a", fontWeight:"700" }}>{rev.rating}</div>
+                      </div>
+                      {rev.review && (
+                        <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.6", fontStyle:"italic" }}>
+                          "{rev.review}"
+                        </div>
+                      )}
+                      {rev.photo_url && (
+                        <div style={{ marginTop:"10px", borderRadius:"10px", overflow:"hidden", maxHeight:"120px" }}>
+                          <img src={rev.photo_url} alt="Review" style={{ width:"100%", height:"auto", objectFit:"cover", borderRadius:"10px" }} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>);
+              })()}
 
               {/* Add to Pool Button */}
               <button style={{ ...S.primaryBtn, marginTop:"16px", marginBottom:"24px" }} onClick={() => {
