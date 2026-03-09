@@ -1088,13 +1088,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               You'll lose access to this group's pool, history, and badges. This can't be undone.
             </div>
             <button style={{ width:"100%", padding:"12px", borderRadius:"10px", fontSize:"12px", letterSpacing:"0.5px", background:"rgba(197,92,92,0.12)", border:"1px solid rgba(197,92,92,0.3)", color:"#c45c5c", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"600" }}
-              onClick={() => {
+              onClick={async () => {
                 const remaining = groups.filter(g => g.id !== activeGroup.id);
                 if (remaining.length === 0) { showToast("You can't leave your only club."); return; }
-                setGroups(remaining);
-                setActiveGroup(remaining[0]);
-                showToast(`You left ${activeGroup.name}.`);
-                setTimeout(() => setScreen("club_home"), 800);
+                const success = await dbData.leaveGroup();
+                if (success) {
+                  setGroups(remaining);
+                  setActiveGroup(remaining[0]);
+                  showToast(`You left ${activeGroup.name}.`);
+                  setTimeout(() => setScreen("club_home"), 800);
+                } else {
+                  showToast("Failed to leave. Try again.");
+                }
               }}>
               Leave {activeGroup.name}
             </button>
