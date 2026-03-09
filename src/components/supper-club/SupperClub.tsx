@@ -162,6 +162,52 @@ export default function SupperClub() {
   const [bestDishMember, setBestDishMember] = useState<string | null>(null);
 
   const [revealUnlocked, setRevealUnlocked] = useState(false);
+  const [bookingDateConfirm, setBookingDateConfirm] = useState(false);
+  const [restaurantDescription, setRestaurantDescription] = useState<string | null>(null);
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+
+  // Post-dinner reset: 2 hours after reservation time, reset for next cycle
+  const [dinnerCompletedAt, setDinnerCompletedAt] = useState<string | null>(null);
+
+  const resetForNextDinner = useCallback(() => {
+    setSelectedDates([]);
+    setPostDinnerDates([]);
+    setAvailabilityModifying(false);
+    setHostSelectedDate(null);
+    setConfirmationVotes({ Marisol: false, Derek: false, Priya: false, You: false });
+    setReviewRating(0);
+    setReviewText("");
+    setPhotoSubmitted(false);
+    setReturnChoice(null);
+    setBestDishMember(null);
+    setRevealUnlocked(false);
+    setBookingDateConfirm(false);
+    setAwaitingInitiation(false);
+    setMemberAvailability({ Marisol: [], Derek: [], Priya: [] });
+  }, []);
+
+  const fetchRestaurantDescription = useCallback(async (name: string, cuisine: string, city: string, reviews: any[]) => {
+    setDescriptionLoading(true);
+    setRestaurantDescription(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('describe-restaurant', {
+        body: { restaurantName: name, cuisine, city, reviews },
+      });
+      if (error) throw error;
+      setRestaurantDescription(data?.description || null);
+    } catch {
+      setRestaurantDescription("A distinguished establishment worthy of your attention.");
+    } finally {
+      setDescriptionLoading(false);
+    }
+  }, []);
+
+  const openRestaurantDetail = useCallback((r: Restaurant | GooglePlace) => {
+    setSelectedRestaurantDetail(r);
+    const cuisine = 'cuisine' in r ? r.cuisine : 'Restaurant';
+    const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name).map(rev => ({ text: rev.review, rating: rev.rating }));
+    fetchRestaurantDescription(r.name, cuisine, r.city, reviews);
+  }, [fetchRestaurantDescription]);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
@@ -464,15 +510,38 @@ export default function SupperClub() {
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
                   <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
-                    <strong>Pro tip:</strong> Book for {ag.nextDinner} at 7:30 PM · Party of {MEMBERS.length}
+                    <strong>Reminder:</strong> Your group agreed on <strong>{ag.nextDinner}</strong>. Please book the reservation for that date. Party of {MEMBERS.length}.
                   </div>
                 </div>
-                <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                  showToast("Reservation confirmed. The secret is safe.");
-                  updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
-                }}>
-                  I've Booked It
-                </button>
+                {!bookingDateConfirm ? (
+                  <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                    setBookingDateConfirm(true);
+                  }}>
+                    I've Booked It
+                  </button>
+                ) : (
+                  <div style={{ background:"rgba(122,158,126,0.06)", border:"1px solid rgba(122,158,126,0.3)", borderRadius:"14px", padding:"20px", marginBottom:"12px" }}>
+                    <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"10px", fontWeight:"500", textAlign:"center" }}>Confirm Booking Details</div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", textAlign:"center", lineHeight:"1.6" }}>
+                      Please confirm you booked the reservation for the date the group selected.
+                    </div>
+                    <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
+                      <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
+                      <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {MEMBERS.length}</div>
+                    </div>
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
+                      showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
+                      updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
+                      setBookingDateConfirm(false);
+                    }}>
+                      Yes, Booked for {ag.nextDinner}
+                    </button>
+                    <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => setBookingDateConfirm(false)}>
+                      Go Back
+                    </button>
+                  </div>
+                )}
                 <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
                   const wittyMsg = WITTY_SKIP_MESSAGES[Math.floor(Math.random() * WITTY_SKIP_MESSAGES.length)];
                   showToast(wittyMsg);
@@ -495,6 +564,36 @@ export default function SupperClub() {
               </div>
             );
           })()}
+
+          {/* Post-Dinner Reset Card */}
+          {dinnerCompletedAt && (
+            <div style={{ ...S.card, border:"1px solid rgba(122,158,126,0.3)", background:"linear-gradient(135deg, rgba(122,158,126,0.06), rgba(26,15,10,0.95))", textAlign:"center", padding:"28px 20px" }}>
+              <div style={{ fontSize:"20px", color:"#7a9e7e", marginBottom:"12px" }}>◈</div>
+              <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Dinner Complete</div>
+              <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                Another evening for the books.
+              </div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
+                Time to start planning the next one. Your availability has been reset.
+              </div>
+              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => {
+                resetForNextDinner();
+                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                setDinnerCompletedAt(null);
+                setScreen("availability");
+                setActiveTab("schedule");
+              }}>
+                Set Availability for Next Dinner
+              </button>
+              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+                resetForNextDinner();
+                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                setDinnerCompletedAt(null);
+              }}>
+                I'll Do It Later
+              </button>
+            </div>
+          )}
 
           {ag.dinnerStatus === "pending_confirm" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"rgba(201,149,106,0.04)" }}>
@@ -811,6 +910,18 @@ export default function SupperClub() {
               showToast(awaitingInitiation ? "Initiation cleared — you're in!" : "Now viewing as new member awaiting initiation");
             }}>
               Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
+            </button>
+            <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={() => {
+              if (activeGroup.dinnerStatus === "scheduled") {
+                setDinnerCompletedAt(new Date().toISOString());
+                showToast("Dinner marked complete. Reset available on home screen.");
+                setScreen("club_home");
+                setActiveTab("home");
+              } else {
+                showToast("No scheduled dinner to complete.");
+              }
+            }}>
+              Demo: Complete Dinner (2hr Reset)
             </button>
           </div>
 
@@ -1193,7 +1304,7 @@ export default function SupperClub() {
           <div style={S.screen}>
             <div style={S.header}>
               <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
-                <button onClick={() => setSelectedRestaurantDetail(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+                <button onClick={() => { setSelectedRestaurantDetail(null); setRestaurantDescription(null); }} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
                 <div style={S.headerEye}>Restaurant Details</div>
               </div>
               <div style={S.headerTitle}>{r.name}</div>
@@ -1231,18 +1342,37 @@ export default function SupperClub() {
                 </div>
               </div>
 
+              {/* AI Description */}
+              <div style={{ ...S.card, marginBottom:"16px", background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", border:"1px solid rgba(201,149,106,0.18)" }}>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>About This Restaurant</div>
+                {descriptionLoading ? (
+                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>Composing a description...</div>
+                ) : restaurantDescription ? (
+                  <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.8", fontStyle:"italic" }}>{restaurantDescription}</div>
+                ) : (
+                  <div style={{ fontSize:"13px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.7" }}>A distinguished establishment worthy of your attention.</div>
+                )}
+              </div>
+
               {/* Photos Section */}
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                 Photos · {mockRestaurantPhotos.length}
               </div>
-              <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+              <div style={{ 
+                display:"flex", gap:"10px", overflowX:"auto", paddingBottom:"16px", marginBottom:"16px",
+                scrollSnapType:"x mandatory", WebkitOverflowScrolling:"touch" as any,
+                scrollbarWidth:"none" as any, msOverflowStyle:"none" as any,
+              }}>
                 {mockRestaurantPhotos.map((symbol, i) => (
                   <div key={i} style={{ 
-                    minWidth:"90px", height:"90px", borderRadius:"12px", 
-                    background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
+                    minWidth:"110px", height:"110px", borderRadius:"16px", 
+                    background:`linear-gradient(${135 + i * 15}deg, rgba(201,149,106,${0.12 + i * 0.02}), rgba(201,149,106,0.03))`,
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:"28px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
-                    flexShrink:0
+                    fontSize:"32px", color:"#c9956a", 
+                    border:"1px solid rgba(201,149,106,0.15)",
+                    flexShrink:0, scrollSnapAlign:"start",
+                    boxShadow:"0 4px 20px rgba(0,0,0,0.3)",
+                    transition:"transform 0.2s ease",
                   }}>
                     {symbol}
                   </div>
@@ -1426,7 +1556,7 @@ export default function SupperClub() {
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
                     .map(r => (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}
-                      onClick={() => setSelectedRestaurantDetail(r)}>
+                      onClick={() => openRestaurantDetail(r)}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                         <div style={{ flex:1 }}>
                           <div style={S.cardTitle}>{r.name}</div>
@@ -1475,7 +1605,7 @@ export default function SupperClub() {
                 {visitedRestaurants.length} Previously Visited
               </div>
               {sortedVisited.filter(r => visitedFilter === "all" || String(r.price) === visitedFilter).map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => setSelectedRestaurantDetail(r as any)}>
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }} onClick={() => openRestaurantDetail(r as any)}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
                       <div style={S.cardTitle}>{r.name}</div>
