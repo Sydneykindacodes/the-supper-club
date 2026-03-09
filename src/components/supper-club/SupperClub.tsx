@@ -320,10 +320,6 @@ export default function SupperClub() {
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
     
-    // Dynamic greeting based on time of day
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? "Good morning." : hour < 17 ? "Good afternoon." : "Good evening.";
-    
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
@@ -331,10 +327,7 @@ export default function SupperClub() {
           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px" }}>
-            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{greeting}</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", marginTop:"4px", fontStyle:"italic" }}>
-              {noDate ? WITTY_NO_DATE[wittyIdx] : pending ? "Your group has a proposed date. Waiting on confirmations." : "Your next supper is coming. Try not to look up the restaurant."}
-            </div>
+            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
           </div>
 
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 16px", marginBottom:"4px" }}>
