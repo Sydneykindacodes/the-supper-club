@@ -3859,18 +3859,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       Your dates for your upcoming meal have been selected.
                     </div>
                     <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6", marginBottom:"16px" }}>
-                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} submitted · {selectedMealTypes.join(", ")}
+                      {getUniqueDates(selectedDates).length} date{getUniqueDates(selectedDates).length > 1 ? "s" : ""} submitted
                     </div>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
-                      {[...selectedDates].sort().map(d => {
-                        const date = new Date(d);
+                    <div style={{ display:"flex", flexDirection:"column", gap:"8px", alignItems:"center", marginBottom:"20px" }}>
+                      {[...getUniqueDates(selectedDates)].sort().map(d => {
+                        const date = new Date(d + "T12:00:00");
+                        const meals = getMealsForDate(selectedDates, d);
                         return (
                           <div key={d} style={{
                             padding:"8px 14px", borderRadius:"10px",
                             background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)",
-                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500"
+                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500", textAlign:"center"
                           }}>
                             {date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                            <div style={{ fontSize:"10px", color:"#7a9e7e", marginTop:"3px" }}>{meals.join(", ")}</div>
                           </div>
                         );
                       })}
