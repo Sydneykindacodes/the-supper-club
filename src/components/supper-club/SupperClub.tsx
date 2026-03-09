@@ -845,6 +845,31 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     </div></div>
   );
 
+  // ── MEMBER PROFILE VIEW (other users) ──
+  if (viewingMemberUserId) {
+    return (
+      <MemberProfileView
+        userId={viewingMemberUserId}
+        allReviews={dbData.communityReviews}
+        onClose={() => setViewingMemberUserId(null)}
+        isOwnProfile={viewingMemberUserId === user.id}
+      />
+    );
+  }
+
+  // ── PROFILE ──
+  if (showProfile) {
+    return (
+      <ProfileScreen
+        user={user}
+        userReviews={dbData.communityReviews.filter(r => r.user_id === user.id)}
+        userBadges={dbData.userBadges}
+        onClose={() => setShowProfile(false)}
+        showToast={showToast}
+        signOut={signOut}
+      />
+    );
+  }
 
   if (screen === "club_home") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Home" />;
@@ -3365,32 +3390,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setShowHostRevealAnimation(false);
           setHasSeenHostReveal(true);
         }}
-      />
-    );
-  }
-
-  // ── MEMBER PROFILE VIEW (other users) ──
-  if (viewingMemberUserId) {
-    return (
-      <MemberProfileView
-        userId={viewingMemberUserId}
-        allReviews={dbData.communityReviews}
-        onClose={() => setViewingMemberUserId(null)}
-        isOwnProfile={viewingMemberUserId === user.id}
-      />
-    );
-  }
-
-  // ── PROFILE ──
-  if (showProfile) {
-    return (
-      <ProfileScreen
-        user={user}
-        userReviews={dbData.communityReviews.filter(r => r.user_id === user.id)}
-        userBadges={dbData.userBadges}
-        onClose={() => setShowProfile(false)}
-        showToast={showToast}
-        signOut={signOut}
       />
     );
   }
