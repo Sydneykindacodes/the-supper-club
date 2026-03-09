@@ -609,6 +609,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   // Get current user's member record
   const currentMember = members.find(m => m.user_id === user.id);
   const isHost = currentMember?.is_host || false;
+  const hostCount = currentMember?.host_count || 0;
   const hostMember = members.find(m => m.is_host);
   const hostName = hostMember ? (hostMember.user_id === user.id ? "You" : hostMember.name) : "Unknown";
 
