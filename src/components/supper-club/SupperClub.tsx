@@ -1388,16 +1388,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     )}
 
                     {/* Load More */}
-                    {seedNextPageToken && seedSearchPage >= totalSeedPages && (
+                    {gpNextPageToken && seedSearchPage >= totalSeedPages && (
                       <div style={{ display:"flex", justifyContent:"center", padding:"12px 0" }}>
                         <button
-                          disabled={seedLoadingMore}
+                          disabled={gpLoadingMore}
                           onClick={() => {
-                            setSeedLoadingMore(true);
-                            searchGooglePlaces(seedLastSearchTerm, seedLastSearchCity, setSeedPoolResults, (b: boolean) => setSeedLoadingMore(b), seedNextPageToken);
+                            setGpLoadingMore(true);
+                            searchGooglePlaces(gpLastSearchTerm, gpLastSearchCity, setSeedPoolResults, (b: boolean) => setGpLoadingMore(b), gpNextPageToken);
                           }}
-                          style={{ ...S.primaryBtn, opacity: seedLoadingMore ? 0.6 : 1, fontSize:"13px", padding:"10px 24px" }}>
-                          {seedLoadingMore ? "Loading..." : "Load More Results"}
+                          style={{ ...S.primaryBtn, opacity: gpLoadingMore ? 0.6 : 1, fontSize:"13px", padding:"10px 24px" }}>
+                          {gpLoadingMore ? "Loading..." : "Load More Results"}
                         </button>
                       </div>
                     )}
