@@ -281,7 +281,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
-  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({ Marisol:true, Derek:true, Priya:false, You:false });
+  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
 
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [noRepeats, setNoRepeats] = useState(true);
