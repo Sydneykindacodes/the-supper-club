@@ -908,8 +908,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <button
             onClick={() => {
               const link = `${window.location.origin}/?invite=${activeGroup.code}`;
-              navigator.clipboard.writeText(link);
-              showToast("Invite link copied!");
+              copyToClipboard(link, "Invite link copied!");
             }}
             style={{ ...S.primaryBtn, maxWidth:"300px", marginBottom:"8px" }}
           >Share Invite Link</button>
