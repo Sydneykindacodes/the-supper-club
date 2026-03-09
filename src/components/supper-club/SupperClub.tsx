@@ -901,7 +901,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{activeGroup.code}</div>
             </div>
             <button
-              onClick={() => { navigator.clipboard.writeText(activeGroup.code); showToast("Invite code copied!"); }}
+              onClick={() => copyToClipboard(activeGroup.code, "Invite code copied!")}
               style={{ background:"rgba(201,149,106,0.15)", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"8px", padding:"6px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", fontFamily:"Georgia,serif" }}
             >Copy</button>
           </div>
