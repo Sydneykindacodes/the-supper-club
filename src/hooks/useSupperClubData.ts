@@ -509,6 +509,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, activeReservation?.dinner_date, members.length, refresh]);
 
+  // Randomly select a restaurant from the pool for the active reservation
+  const selectRandomRestaurant = useCallback(async () => {
+    if (!activeReservation?.id || !activeGroupId) return false;
+    if (restaurants.length === 0) return false;
+    
+    // Pick a random restaurant from the unvisited pool
+    const randomIndex = Math.floor(Math.random() * restaurants.length);
+    const chosen = restaurants[randomIndex];
+    
+    // Find the DB restaurant ID
+    const { data: restData } = await supabase
+      .from("restaurants")
+      .select("id")
+      .eq("group_id", activeGroupId)
+      .eq("name", chosen.name)
+      .single();
+    
+    if (!restData) return false;
+    return selectRestaurantForReservation(restData.id);
+  }, [activeReservation?.id, activeGroupId, restaurants, selectRestaurantForReservation]);
+
 
 
   const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
@@ -830,6 +851,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     groupSettings,
     saveGroupSettings,
     selectRestaurantForReservation,
+    selectRandomRestaurant,
     selectedRestaurantData,
     isSoloGroup,
     hasUserReviewedCurrentDinner,
