@@ -191,6 +191,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [postDinnerStep, setPostDinnerStep] = useState<"review" | "availability" | "completing" | null>(null);
+  const [wittyAwaitingIdx] = useState(Math.floor(Math.random() * WITTY_AWAITING_HOST.length));
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
