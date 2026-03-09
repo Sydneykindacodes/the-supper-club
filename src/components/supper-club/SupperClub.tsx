@@ -1371,7 +1371,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                               <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
-                              {m.name === dbData.hostName && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
+                              {dbData.isHost && m.name === dbData.hostName && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
                             </div>
                             <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
                               {hasSubmitted ? "✓" : "..."}
