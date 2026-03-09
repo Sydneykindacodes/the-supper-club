@@ -2064,8 +2064,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 )
               ) : (
                 <>
-                  {isHost && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
-                  {!isHost && confirmationVotes["You"] && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+                  {isHost && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !dbData.dateConfirmations[m.name]).map(m => m.name).join(", ")}.</div>}
+                  {!isHost && dbData.dateConfirmations["You"] && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !dbData.dateConfirmations[m.name]).map(m => m.name).join(", ")}.</div>}
                 </>
               )}
             </div>
