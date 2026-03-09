@@ -3775,17 +3775,28 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {(() => {
                 const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
                 const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-                const allDates: string[] = [];
+                const allEntries: string[] = [];
                 nonHostMembers.forEach(m => {
                   const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-                  dates.forEach(d => allDates.push(d));
+                  // Extract unique dates (ignoring meal type for overlap)
+                  getUniqueDates(dates).forEach(d => allEntries.push(d));
                 });
                 const dateCount: Record<string, number> = {};
-                allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+                allEntries.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
                 const overlappingDates = Object.entries(dateCount)
                   .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 1)
                   .map(([date]) => date)
                   .sort();
+
+                // For overlapping dates, find common meal types
+                const getCommonMeals = (date: string) => {
+                  const memberMeals = submittedMembers.map(m => {
+                    const entries = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                    return getMealsForDate(entries, date);
+                  });
+                  if (memberMeals.length === 0) return [];
+                  return memberMeals[0].filter(meal => memberMeals.every(mm => mm.includes(meal)));
+                };
                 
                 if (overlappingDates.length === 0 && submittedMembers.length > 0) return (
                   <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", textAlign:"center", marginTop:"16px", marginBottom:"16px" }}>
@@ -3797,22 +3808,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 return (
                   <div style={{ marginTop:"16px", marginBottom:"16px" }}>
                     <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Overlapping Dates</div>
-                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px" }}>
-                      {overlappingDates.map(d => (
-                        <div key={d} style={{
-                          padding:"8px 14px", borderRadius:"10px",
-                          background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.3)",
-                          fontSize:"12px", color:"#f5e6d3", fontWeight:"500", cursor:"pointer"
-                        }}
-                        onClick={() => {
-                          dbData.proposeDate(d).then(async ok => {
-                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
-                            else showToast("Failed. Try again.");
-                          });
-                        }}>
-                          {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                        </div>
-                      ))}
+                    <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                      {overlappingDates.map(d => {
+                        const commonMeals = getCommonMeals(d);
+                        return (
+                          <div key={d} style={{
+                            padding:"10px 14px", borderRadius:"10px",
+                            background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.3)",
+                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500", cursor:"pointer",
+                            display:"flex", justifyContent:"space-between", alignItems:"center"
+                          }}
+                          onClick={() => {
+                            dbData.proposeDate(d).then(async ok => {
+                              if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
+                              else showToast("Failed. Try again.");
+                            });
+                          }}>
+                            <div>
+                              {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                              {commonMeals.length > 0 && (
+                                <div style={{ fontSize:"10px", color:"#7a9e7e", marginTop:"2px" }}>{commonMeals.join(", ")}</div>
+                              )}
+                            </div>
+                            <span style={{ fontSize:"10px", color:"#c9956a" }}>Propose →</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"6px" }}>Tap a date to propose it to the group.</div>
                   </div>
