@@ -750,7 +750,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           {ag.dinnerStatus === "scheduled" && (() => {
             const hostIsYou = dbData.isHost;
-            const mockRestaurant = { name: "Osteria Morini", cuisine: "Northern Italian", city: activeGroup.city || "New York", googlePlaceId: "ChIJN1t_tDeuEmsRUsoyG83frY4" };
+            const selectedRest = dbData.selectedRestaurantData;
+            const mockRestaurant = selectedRest 
+              ? { name: selectedRest.name, cuisine: selectedRest.cuisine, city: selectedRest.city, googlePlaceId: selectedRest.google_place_id || undefined }
+              : { name: "Restaurant TBD", cuisine: "TBD", city: activeGroup.city || "Unknown", googlePlaceId: undefined };
             
             // Auto-fetch booking links for host
             const fetchLinks = async () => {
