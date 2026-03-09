@@ -41,6 +41,58 @@ export type Database = {
         }
         Relationships: []
       }
+      host_rotation_history: {
+        Row: {
+          created_at: string | null
+          cycle_number: number
+          group_id: string
+          hosted_at: string | null
+          id: string
+          member_id: string
+          reservation_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cycle_number?: number
+          group_id: string
+          hosted_at?: string | null
+          id?: string
+          member_id: string
+          reservation_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cycle_number?: number
+          group_id?: string
+          hosted_at?: string | null
+          id?: string
+          member_id?: string
+          reservation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "host_rotation_history_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "host_rotation_history_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "host_rotation_history_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_availability: {
         Row: {
           available_dates: string[]
@@ -87,8 +139,10 @@ export type Database = {
           email: string | null
           email_enabled: boolean | null
           group_id: string
+          host_count: number | null
           id: string
           is_host: boolean | null
+          last_hosted_at: string | null
           name: string
           phone: string | null
           push_enabled: boolean | null
@@ -100,8 +154,10 @@ export type Database = {
           email?: string | null
           email_enabled?: boolean | null
           group_id: string
+          host_count?: number | null
           id?: string
           is_host?: boolean | null
+          last_hosted_at?: string | null
           name: string
           phone?: string | null
           push_enabled?: boolean | null
@@ -113,8 +169,10 @@ export type Database = {
           email?: string | null
           email_enabled?: boolean | null
           group_id?: string
+          host_count?: number | null
           id?: string
           is_host?: boolean | null
+          last_hosted_at?: string | null
           name?: string
           phone?: string | null
           push_enabled?: boolean | null
@@ -223,6 +281,7 @@ export type Database = {
       reservations: {
         Row: {
           attempt_count: number | null
+          booking_url: string | null
           confirmed_at: string | null
           created_at: string
           dinner_date: string
@@ -230,6 +289,8 @@ export type Database = {
           group_id: string
           host_notified_at: string | null
           id: string
+          next_host_id: string | null
+          next_host_notified_at: string | null
           party_size: number
           restaurant_id: string | null
           reveal_at: string | null
@@ -240,6 +301,7 @@ export type Database = {
         }
         Insert: {
           attempt_count?: number | null
+          booking_url?: string | null
           confirmed_at?: string | null
           created_at?: string
           dinner_date: string
@@ -247,6 +309,8 @@ export type Database = {
           group_id: string
           host_notified_at?: string | null
           id?: string
+          next_host_id?: string | null
+          next_host_notified_at?: string | null
           party_size: number
           restaurant_id?: string | null
           reveal_at?: string | null
@@ -257,6 +321,7 @@ export type Database = {
         }
         Update: {
           attempt_count?: number | null
+          booking_url?: string | null
           confirmed_at?: string | null
           created_at?: string
           dinner_date?: string
@@ -264,6 +329,8 @@ export type Database = {
           group_id?: string
           host_notified_at?: string | null
           id?: string
+          next_host_id?: string | null
+          next_host_notified_at?: string | null
           party_size?: number
           restaurant_id?: string | null
           reveal_at?: string | null
@@ -278,6 +345,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_next_host_id_fkey"
+            columns: ["next_host_id"]
+            isOneToOne: false
+            referencedRelation: "members"
             referencedColumns: ["id"]
           },
           {
