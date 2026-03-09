@@ -261,8 +261,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       .select("*, members(name, avatar_color), groups(name)")
       .order("created_at", { ascending: false })
       .limit(100)
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data) {
+          // Batch-load avatar_urls from profiles
+          const userIds = [...new Set(data.map((r: any) => r.user_id).filter(Boolean))];
+          let profileMap: Record<string, string | null> = {};
+          if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from("profiles")
+              .select("id, avatar_url")
+              .in("id", userIds);
+            if (profiles) {
+              profiles.forEach(p => { profileMap[p.id] = p.avatar_url; });
+            }
+          }
           setCommunityReviews(data.map((r: any) => ({
             id: r.id,
             user_id: r.user_id,
@@ -280,6 +292,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             created_at: r.created_at,
             member_name: r.members?.name || null,
             member_avatar_color: r.members?.avatar_color || null,
+            member_avatar_url: profileMap[r.user_id] || null,
             group_name: r.groups?.name || null,
           })));
         }
