@@ -2149,6 +2149,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── REVEAL TAB ──
   if (screen === "reveal") {
+    if (!hasGroup) return <NoGroupPlaceholder feature="Reveal" />;
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const hostIsYou = dbData.isHost;
     const hasScheduled = ag.dinnerStatus === "scheduled" && ag.nextDinner;
