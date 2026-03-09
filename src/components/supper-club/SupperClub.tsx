@@ -1107,7 +1107,28 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           <label style={S.label}>Club Name</label>
           <input style={S.input} placeholder="e.g. Wine Wednesday Crew" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
           <label style={S.label}>City</label>
-          <input style={S.input} placeholder="e.g. New York, NY" value={newGroupCity} onChange={e => setNewGroupCity(e.target.value)} />
+          <div style={{ position:"relative" }}>
+            <input style={S.input} placeholder="e.g. New York, NY" value={newGroupCity}
+              onChange={e => handleNewGroupCityChange(e.target.value)}
+              onFocus={() => { if (newGroupCitySuggestions.length > 0) setShowNewGroupCitySuggestions(true); }}
+            />
+            {showNewGroupCitySuggestions && newGroupCitySuggestions.length > 0 && (
+              <>
+                <div onClick={() => setShowNewGroupCitySuggestions(false)} style={{ position:"fixed", top:0, left:0, right:0, bottom:0, zIndex:98 }} />
+                <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:99, background:"#2d1208", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"0 0 12px 12px", boxShadow:"0 8px 32px rgba(0,0,0,0.6)", maxHeight:"220px", overflowY:"auto" }}>
+                  {newGroupCitySuggestions.map((s, i) => (
+                    <div key={i} onClick={() => { setNewGroupCity(s.description); setShowNewGroupCitySuggestions(false); setNewGroupCitySuggestions([]); }}
+                      style={{ padding:"12px 14px", cursor:"pointer", borderBottom: i < newGroupCitySuggestions.length - 1 ? "1px solid rgba(201,149,106,0.08)" : "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(201,149,106,0.1)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <div style={{ fontSize:"13px", color:"#f5e6d3" }}>{s.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <label style={S.label}>Search Radius</label>
           <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
             {[5, 10, 15, 25, 50].map(r => (
