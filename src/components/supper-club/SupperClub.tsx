@@ -677,9 +677,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
                       <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
                     </div>
-                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                      showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
-                      updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
+                    <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
+                      const success = await dbData.confirmBooking();
+                      if (success) {
+                        showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
+                      } else {
+                        showToast("Failed to confirm. Try again.");
+                      }
                       setBookingDateConfirm(false);
                     }}>
                       Yes, Booked for {ag.nextDinner}
