@@ -1854,9 +1854,10 @@ export default function SupperClub() {
                 display:"flex", 
                 alignItems:"center", 
                 justifyContent:"center",
-                fontSize:"32px"
+                fontSize:"24px",
+                color:"#c9956a"
               }}>
-                🤫
+                ◆
               </div>
             </div>
             
