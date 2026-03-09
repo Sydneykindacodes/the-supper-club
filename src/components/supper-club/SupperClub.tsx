@@ -388,7 +388,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       if (error) throw error;
       const newResults = data?.restaurants || [];
       if (pageToken) {
-        setter((prev: GooglePlace[]) => [...prev, ...newResults]);
+        setGpResults(prev => [...prev, ...newResults]);
       } else {
         setter(newResults);
       }
