@@ -2650,7 +2650,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
                 const cuisineQuery = exploreCuisineFilter.length > 0 ? exploreCuisineFilter.join(" or ") : "";
                 const searchTerm = [rName, cuisineQuery].filter(Boolean).join(" ") || "restaurant";
-                searchGooglePlaces(searchTerm, rCity || activeGroup.city, setGpResults, setGpLoading);
+                const searchCity = rCity || activeGroup.city;
+                setGpLastSearchTerm(searchTerm);
+                setGpLastSearchCity(searchCity);
+                setGpNextPageToken(null);
+                searchGooglePlaces(searchTerm, searchCity, setGpResults, setGpLoading);
                 setSearchPage(1);
               }}>
                 Search
