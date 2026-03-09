@@ -3533,108 +3533,176 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
 
-          {/* ── Dates Already Submitted State ── */}
-          {datesAlreadySubmitted && !availabilityModifying ? (
+          {/* ── HOST DASHBOARD (host doesn't submit dates, they pick the final date) ── */}
+          {dbData.isHost ? (
             <>
-              <div style={{ 
-                background:"linear-gradient(135deg, rgba(122,158,126,0.08), rgba(26,15,10,0.95))", 
-                border:"1px solid rgba(122,158,126,0.3)", 
-                borderRadius:"16px", 
-                padding:"28px 20px", 
+              <div style={{
+                background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))",
+                border:"1px solid rgba(201,149,106,0.25)",
+                borderRadius:"16px",
+                padding:"24px 20px",
                 textAlign:"center",
                 marginBottom:"20px"
               }}>
-                <div style={{ fontSize:"20px", marginBottom:"12px", color:"#7a9e7e" }}>◈</div>
-                <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
-                  Your dates for your upcoming meal have been selected.
+                <div style={{ fontSize:"18px", marginBottom:"10px", color:"#c9956a" }}>◇</div>
+                <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                  You're the host — you pick the date.
                 </div>
-                <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6", marginBottom:"16px" }}>
-                  {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} submitted · {selectedMealTypes.join(", ")}
+                <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
+                  Review your crew's availability below, then choose the best evening for everyone.
                 </div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
-                  {[...selectedDates].sort().map(d => {
-                    const date = new Date(d);
-                    return (
-                      <div key={d} style={{
-                        padding:"8px 14px", borderRadius:"10px",
-                        background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)",
-                        fontSize:"12px", color:"#f5e6d3", fontWeight:"500"
-                      }}>
-                        {date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                      </div>
-                    );
-                  })}
-                </div>
-                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"12px" }} onClick={() => setAvailabilityModifying(true)}>
-                  Modify Dates
-                </button>
               </div>
 
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-              {currentMembers.map(m => {
-                const isYou = m.name === "You";
-                const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
-                return (
-                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                      <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                      <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Member Availability</div>
+              {(() => {
+                const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                return nonHostMembers.map(m => {
+                  const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                  const hasSubmitted = dates.length > 0;
+                  return (
+                    <div key={m.name} style={{ marginBottom:"10px" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                          <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                          <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+                        </div>
+                        <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                          {hasSubmitted ? `${dates.length} date${dates.length > 1 ? "s" : ""}` : "Waiting"}
+                        </span>
+                      </div>
+                      {hasSubmitted && (
+                        <div style={{ display:"flex", flexWrap:"wrap", gap:"6px", padding:"8px 0 4px 42px" }}>
+                          {[...dates].sort().map(d => (
+                            <div key={d} style={{
+                              padding:"4px 10px", borderRadius:"8px",
+                              background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
+                              fontSize:"11px", color:"#7a9e7e"
+                            }}>
+                              {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                      {isYou ? `${selectedDates.length} dates` : hasSubmitted ? "Submitted" : "Waiting"}
-                    </span>
+                  );
+                });
+              })()}
+
+              {/* ── Overlapping dates summary ── */}
+              {(() => {
+                const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
+                const allDates: string[] = [];
+                nonHostMembers.forEach(m => {
+                  const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                  dates.forEach(d => allDates.push(d));
+                });
+                const dateCount: Record<string, number> = {};
+                allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+                const overlappingDates = Object.entries(dateCount)
+                  .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 1)
+                  .map(([date]) => date)
+                  .sort();
+                
+                if (overlappingDates.length === 0 && submittedMembers.length > 0) return (
+                  <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", textAlign:"center", marginTop:"16px", marginBottom:"16px" }}>
+                    No overlapping dates yet. You can still override and pick any date.
                   </div>
                 );
-              })}
+                if (overlappingDates.length === 0) return null;
+                
+                return (
+                  <div style={{ marginTop:"16px", marginBottom:"16px" }}>
+                    <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Overlapping Dates</div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px" }}>
+                      {overlappingDates.map(d => (
+                        <div key={d} style={{
+                          padding:"8px 14px", borderRadius:"10px",
+                          background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.3)",
+                          fontSize:"12px", color:"#f5e6d3", fontWeight:"500", cursor:"pointer"
+                        }}
+                        onClick={() => {
+                          dbData.proposeDate(d).then(async ok => {
+                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
+                            else showToast("Failed. Try again.");
+                          });
+                        }}>
+                          {new Date(d).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"6px" }}>Tap a date to propose it to the group.</div>
+                  </div>
+                );
+              })()}
+
+              <div style={{ marginTop:"16px" }}>
+                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>
+              </div>
+
+              {/* Host Override — pick any date */}
+              <div style={{ marginTop:"20px" }}>
+                <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
+                  <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Pick Any Date</div>
+                  <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+                    Don't want to wait? Choose a date from the calendar and lock it in.
+                  </div>
+                  <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
+                  {selectedDates.length > 0 && (
+                    <button style={{ ...S.primaryBtn, marginTop:"12px", marginBottom:0, fontSize:"12px" }}
+                      onClick={() => {
+                        dbData.proposeDate(selectedDates[0]).then(async ok => {
+                          if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
+                          else showToast("Failed. Try again.");
+                        });
+                      }}>
+                      Propose {new Date(selectedDates[0]).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                    </button>
+                  )}
+                </div>
+              </div>
             </>
           ) : (
             <>
-              {availabilityModifying && (
-                <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"10px", padding:"12px 14px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", lineHeight:"1.6" }}>
-                  Modifying your dates. The host will be notified of any changes.
-                </div>
-              )}
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
-              </div>
-              <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
-              <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
-                The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
-              </div>
-              <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
-                Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
-                {autoSubmit && <span style={{ color:"#7a9e7e" }}> · Auto-submittal on.</span>}
-                <div style={{ marginTop:"4px", fontSize:"11px", color:"#7a5a40" }}>The date is announced as soon as everyone submits — no waiting for a deadline.</div>
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
-              <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
-              {selectedDates.length > 0 && (
-                <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-                  {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
-                </div>
-              )}
-
-              {availabilityModifying ? (
-                <div style={{ display:"flex", gap:"10px", marginBottom:"16px" }}>
-                  <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => setAvailabilityModifying(false)}>
-                    Cancel
-                  </button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
-                    const saved = await dbData.saveAvailability(selectedDates);
-                    if (saved) {
-                      showToast("Dates updated. The host has been notified.");
-                    } else {
-                      showToast("Failed to save. Try again.");
-                    }
-                    setAvailabilityModifying(false);
-                  }}>
-                    Save Changes
-                  </button>
-                </div>
-              ) : (
+              {/* ── NON-HOST: Dates Already Submitted State ── */}
+              {datesAlreadySubmitted && !availabilityModifying ? (
                 <>
+                  <div style={{ 
+                    background:"linear-gradient(135deg, rgba(122,158,126,0.08), rgba(26,15,10,0.95))", 
+                    border:"1px solid rgba(122,158,126,0.3)", 
+                    borderRadius:"16px", 
+                    padding:"28px 20px", 
+                    textAlign:"center",
+                    marginBottom:"20px"
+                  }}>
+                    <div style={{ fontSize:"20px", marginBottom:"12px", color:"#7a9e7e" }}>◈</div>
+                    <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                      Your dates for your upcoming meal have been selected.
+                    </div>
+                    <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6", marginBottom:"16px" }}>
+                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} submitted · {selectedMealTypes.join(", ")}
+                    </div>
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
+                      {[...selectedDates].sort().map(d => {
+                        const date = new Date(d);
+                        return (
+                          <div key={d} style={{
+                            padding:"8px 14px", borderRadius:"10px",
+                            background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)",
+                            fontSize:"12px", color:"#f5e6d3", fontWeight:"500"
+                          }}>
+                            {date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"12px" }} onClick={() => setAvailabilityModifying(true)}>
+                      Modify Dates
+                    </button>
+                  </div>
+
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-                  {currentMembers.map(m => {
+                  {currentMembers.filter(m => m.name !== dbData.hostName).map(m => {
                     const isYou = m.name === "You";
                     const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
                     return (
@@ -3644,69 +3712,99 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                         </div>
                         <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                          {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                          {isYou ? `${selectedDates.length} dates` : hasSubmitted ? "Submitted" : "Waiting"}
                         </span>
                       </div>
                     );
                   })}
-
-                  {/* ── Admin Override ── */}
-                  <div style={{ marginTop:"20px", marginBottom:"8px" }}>
-                    <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Host Override</div>
-                    <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
-                      <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
-                      <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-                        Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
-                      </div>
-                      {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).length > 0 && (
-                        <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
-                          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
-                          {currentMembers.filter(m => m.name !== "You" && !(memberAvailability[m.name]?.length > 0)).map(m => (
-                            <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
-                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
-                              <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"auto" }}>will be marked absent</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
-                        onClick={() => {
-                          if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                          dbData.proposeDate(selectedDates[0]).then(async ok => {
-                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date locked. Members not submitted marked as absent."); }
-                            else showToast("Failed. Try again.");
-                          });
-                        }}>
-                        Override & Lock Date
-                      </button>
-                      <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to the host</div>
+                </>
+              ) : (
+                <>
+                  {availabilityModifying && (
+                    <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"10px", padding:"12px 14px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", lineHeight:"1.6" }}>
+                      Modifying your dates. The host will be notified of any changes.
                     </div>
+                  )}
+                  <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                    Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
                   </div>
+                  <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
+                    The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
+                  </div>
+                  <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
+                    Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
+                    {autoSubmit && <span style={{ color:"#7a9e7e" }}> · Auto-submittal on.</span>}
+                    <div style={{ marginTop:"4px", fontSize:"11px", color:"#7a5a40" }}>The date is announced as soon as everyone submits — no waiting for a deadline.</div>
+                  </div>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
+                  <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
+                  {selectedDates.length > 0 && (
+                    <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
+                      {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
+                    </div>
+                  )}
 
-                  <div style={{ height:"18px" }}/>
-                  <button style={S.primaryBtn} onClick={async () => { 
-                    if (selectedDates.length > 0) { 
-                      const saved = await dbData.saveAvailability(selectedDates);
-                      if (saved) {
-                        // Check if all members have now submitted availability
-                        const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-                        const submittedCount = nonHostMembers.filter(m => 
-                          m.name === "You" ? true : (memberAvailability[m.name]?.length || 0) > 0
-                        ).length;
-                        if (submittedCount >= nonHostMembers.length) {
-                          await sendHostNotification("all_availability_in");
+                  {availabilityModifying ? (
+                    <div style={{ display:"flex", gap:"10px", marginBottom:"16px" }}>
+                      <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => setAvailabilityModifying(false)}>
+                        Cancel
+                      </button>
+                      <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
+                        const saved = await dbData.saveAvailability(selectedDates);
+                        if (saved) {
+                          showToast("Dates updated. The host has been notified.");
+                        } else {
+                          showToast("Failed to save. Try again.");
                         }
-                        showToast("Availability saved. Waiting on host to pick a date.");
-                        setScreen("club_home");
-                        setActiveTab("home");
-                      } else {
-                        showToast("Failed to save. Try again.");
-                      }
-                    } 
-                  }}>
-                    Submit Availability
-                  </button>
+                        setAvailabilityModifying(false);
+                      }}>
+                        Save Changes
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
+                      {currentMembers.filter(m => m.name !== dbData.hostName).map(m => {
+                        const isYou = m.name === "You";
+                        const hasSubmitted = isYou ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0;
+                        return (
+                          <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                              <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+                            </div>
+                            <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                              {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                            </span>
+                          </div>
+                        );
+                      })}
+
+                      <div style={{ height:"18px" }}/>
+                      <button style={S.primaryBtn} onClick={async () => { 
+                        if (selectedDates.length > 0) { 
+                          const saved = await dbData.saveAvailability(selectedDates);
+                          if (saved) {
+                            const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                            const submittedCount = nonHostMembers.filter(m => 
+                              m.name === "You" ? true : (memberAvailability[m.name]?.length || 0) > 0
+                            ).length;
+                            if (submittedCount >= nonHostMembers.length) {
+                              await sendHostNotification("all_availability_in");
+                            }
+                            showToast("Availability saved. Waiting on host to pick a date.");
+                            setScreen("club_home");
+                            setActiveTab("home");
+                          } else {
+                            showToast("Failed to save. Try again.");
+                          }
+                        } 
+                      }}>
+                        Submit Availability
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </>
