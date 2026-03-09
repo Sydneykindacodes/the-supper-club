@@ -426,7 +426,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setBestDishMember(null);
     setRevealUnlocked(false);
     setBookingDateConfirm(false);
-    setAwaitingInitiation(false);
+    
     setMemberAvailability({});
   }, []);
 
