@@ -436,6 +436,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   }, [photoCache]);
 
   const [searchRadius, setSearchRadius] = useState(10);
+  const [groupCityCenter, setGroupCityCenter] = useState<{ lat: number; lng: number } | null>(null);
 
   // Google Places search state
   const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
