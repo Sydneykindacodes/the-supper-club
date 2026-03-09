@@ -384,6 +384,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     return new Date(b.visitedDate || 0).getTime() - new Date(a.visitedDate || 0).getTime();
   });
 
+  // ── LOADING ──
+  if (screen === "loading") return <LoadingScreen />;
+
   // ── ONBOARDING ──
   if (screen === "onboarding") return (
     <Onboarding
