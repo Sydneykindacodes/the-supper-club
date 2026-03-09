@@ -2737,10 +2737,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ display:"flex", gap:"10px" }}>
                   <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => { setAddToGroupPicker(prev => ({ ...prev, visible: false })); setAddToGroupSelected([]); }}>Cancel</button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
                     if (addToGroupSelected.length === 0) { showToast("Select at least one group."); return; }
-                    addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
-                    showToast(`Added to ${addToGroupSelected.length} group${addToGroupSelected.length > 1 ? "s" : ""}.`);
+                    await addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
                     setAddToGroupPicker(prev => ({ ...prev, visible: false }));
                     setAddToGroupSelected([]);
                   }}>Add to {addToGroupSelected.length} Group{addToGroupSelected.length !== 1 ? "s" : ""}</button>
