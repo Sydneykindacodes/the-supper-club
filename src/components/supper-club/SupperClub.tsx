@@ -1744,7 +1744,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"12px", marginBottom:"16px", textAlign:"center" }}>
                       <div style={{ fontSize:"11px", color:"#7a9e7e", lineHeight:"1.5" }}>
-                        📅 <strong>{ag.nextDinner}</strong> · 🍽️ Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                        📅 <strong>{ag.nextDinner}</strong> · <UtensilsCrossed size={12} style={{ display:"inline", verticalAlign:"middle", marginRight:"3px" }} /> Party of {dbData.activeReservation?.party_size || currentMembers.length}
                       </div>
                       <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px", fontStyle:"italic" }}>Tell them this when you call</div>
                     </div>
