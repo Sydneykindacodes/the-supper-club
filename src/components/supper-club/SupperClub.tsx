@@ -2460,11 +2460,5 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── REVIEW FORM OVERLAY (rendered on any screen) ──
-  // Note: This is unreachable since all screens return early.
-  // The ReviewForm must be triggered from within screens. See past_dinners.
   return null;
 }
-
-// Re-export ReviewForm for use as overlay inside screen returns
-export { default as ReviewFormComponent } from "./ReviewForm";
