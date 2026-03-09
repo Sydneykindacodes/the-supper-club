@@ -9,7 +9,7 @@ export function useBadgeTriggers(
   reviews: DBReview[],
   userBadges: DBBadge[],
   userId: string,
-  isHost: boolean,
+  hostCount: number,
   earnBadge: (key: string, type?: string) => Promise<void>,
   activeGroupId: string | null
 ) {
