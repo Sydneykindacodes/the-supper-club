@@ -48,6 +48,7 @@ export interface DBReview {
   group_name?: string;
   member_name?: string;
   member_avatar_color?: string;
+  member_avatar_url?: string | null;
 }
 
 export interface DBBadge {
