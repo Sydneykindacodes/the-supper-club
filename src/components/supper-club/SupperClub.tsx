@@ -2040,25 +2040,25 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"12px", padding:"20px", textAlign:"center" }}>
                     <div style={{ fontSize:"16px", color:"#7a9e7e", marginBottom:"6px" }}>✓ Everyone's In</div>
                     <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.6" }}>
-                      All members have confirmed. Lock this date in and get ready to book.
+                      All members have confirmed. Time to book the reservation.
                     </div>
                     <button style={{ ...S.primaryBtn, marginBottom:0, background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
                       const success = await dbData.confirmBooking();
                       if (success) {
                         await sendGroupNotification("dinner_confirmed");
-                        showToast("Date finalized! The dinner is locked in.");
+                        showToast("Date locked in! Now book the reservation.");
                       } else {
                         showToast("Failed to finalize. Try again.");
                       }
                     }}>
-                      Finalize This Date
+                      Lock In & Book Reservation
                     </button>
                   </div>
                 ) : (
                   <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"12px", padding:"16px", textAlign:"center" }}>
                     <div style={{ fontSize:"14px", color:"#7a9e7e", marginBottom:"4px" }}>✓ All Confirmed</div>
                     <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
-                      Waiting on the host to finalize the date and lock in the reservation.
+                      Waiting on the host to book the reservation. Sit tight.
                     </div>
                   </div>
                 )
