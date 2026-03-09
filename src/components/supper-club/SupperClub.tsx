@@ -355,9 +355,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const openRestaurantDetail = useCallback((r: Restaurant | GooglePlace) => {
     setSelectedRestaurantDetail(r);
     const cuisine = 'cuisine' in r ? r.cuisine : 'Restaurant';
-    const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name).map(rev => ({ text: rev.review, rating: rev.rating }));
+    const reviews = dbData.communityReviews
+      .filter(rev => rev.restaurant_name === r.name)
+      .map(rev => ({ text: rev.review_text || "", rating: rev.rating }));
     fetchRestaurantDescription(r.name, cuisine, r.city, reviews);
-  }, [fetchRestaurantDescription]);
+  }, [fetchRestaurantDescription, dbData.communityReviews]);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
