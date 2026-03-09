@@ -696,6 +696,17 @@ export default function SupperClub() {
             </div>
           </div>
 
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Demo Actions</div>
+          <div style={S.card}>
+            <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"6px" }}>Test Host Selection</div>
+            <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+              Preview the secret notification a new host receives when they're randomly selected.
+            </div>
+            <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => setScreen("new_host_reveal")}>
+              🤫 Demo: New Host Reveal
+            </button>
+          </div>
+
           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Danger Zone</div>
           <div style={{ ...S.card, border:"1px solid rgba(197,92,92,0.2)", background:"rgba(197,92,92,0.03)" }}>
             <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"6px" }}>Leave This Club</div>
