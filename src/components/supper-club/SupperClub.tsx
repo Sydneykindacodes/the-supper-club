@@ -501,6 +501,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
   }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
 
+  // Helper to send a notification to the host only
+  const sendHostNotification = useCallback(async (type: string) => {
+    if (!activeGroupId) return;
+    const hostMember = dbData.members.find(m => m.is_host);
+    if (!hostMember) return;
+    try {
+      await supabase.from("notifications").insert({
+        member_id: hostMember.id,
+        reservation_id: dbData.activeReservation?.id || null,
+        type,
+        channel: "push",
+        delivered: false,
+      });
+    } catch (e) {
+      console.error('Failed to send host notification:', e);
+    }
+  }, [activeGroupId, dbData.members, dbData.activeReservation?.id]);
+
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
 
