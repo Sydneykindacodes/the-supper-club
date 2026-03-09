@@ -2292,11 +2292,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                   ))}
                 </>
-              )}
-                    </div>
-                  ))}
-                </>
-              )}
+              )
             </div>
           )}
 
