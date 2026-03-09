@@ -76,8 +76,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     };
     loadGroups();
   }, [user.id]);
-  const [activeGroup, setActiveGroup] = useState(INITIAL_GROUPS[0]);
-  const [activeTab, setActiveTab] = useState("home");
   const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
