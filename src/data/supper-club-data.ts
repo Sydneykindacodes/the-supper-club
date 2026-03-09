@@ -18,10 +18,24 @@ export interface Group {
   code: string;
   members: number;
   city: string;
-  dinnerStatus: "scheduled" | "pending_confirm" | "no_date";
+  dinnerStatus: "scheduled" | "pending_confirm" | "no_date" | "awaiting_host";
   nextDinner: string | null;
   pendingDate: string | null;
 }
+
+export interface MemberAvailability {
+  [memberName: string]: string[];
+}
+
+export const MAX_GROUP_MEMBERS = 6;
+
+export const WITTY_HOST_WAITING = [
+  "All dates are in. The host is currently... considering their options. Very carefully.",
+  "Everyone's submitted. The host appears to be consulting their personal astrologer.",
+  "Dates in. Host's decision pending. Perhaps they're building suspense. Or just busy.",
+  "The group has spoken. Now we wait for the host to grace us with a decision.",
+  "All availability submitted. The host is taking their sacred duty very seriously.",
+];
 
 export interface Restaurant {
   id: number;
