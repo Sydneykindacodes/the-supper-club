@@ -584,16 +584,30 @@ export default function SupperClub() {
               </div>
             ) : (
               poolRestaurants.map(r => (
-                <div key={r.id} style={{ ...S.card, margin:"0 0 10px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <div>
-                    <div style={S.cardTitle}>{r.name}</div>
-                    <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
-                    <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>added by {r.suggested_by}</div>
+                <div key={r.id} style={{ ...S.card, margin:"0 0 10px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                    <div style={{ flex:1 }}>
+                      <div style={S.cardTitle}>{r.name}</div>
+                      <div style={S.cardSub}>{r.cuisine} · {r.city}</div>
+                      <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"3px" }}>added by {r.suggested_by}</div>
+                    </div>
+                    <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                      <PriceTag price={r.price}/>
+                      <RatingBadge restaurant={r}/>
+                    </div>
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
-                    <PriceTag price={r.price}/>
-                    <RatingBadge restaurant={r}/>
-                  </div>
+                  <button 
+                    onClick={() => { 
+                      setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
+                      showToast(`${r.name} removed from pool.`); 
+                    }}
+                    style={{ 
+                      marginTop:"12px", width:"100%", padding:"10px", borderRadius:"8px",
+                      background:"transparent", border:"1px solid rgba(197,92,92,0.2)", 
+                      color:"#c45c5c", fontSize:"11px", cursor:"pointer", fontFamily:"Georgia,serif"
+                    }}>
+                    Remove from Pool
+                  </button>
                 </div>
               ))
             )}
