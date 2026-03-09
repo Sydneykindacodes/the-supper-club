@@ -1494,7 +1494,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 Member Reviews · {mockRestaurantReviews.length}
               </div>
               {mockRestaurantReviews.map((rev, i) => {
-                const member = MEMBERS.find(m => m.name === rev.member);
+                const member = currentMembers.find(m => m.name === rev.member);
                 return (
                   <div key={i} style={{ ...S.card, margin:"0 0 10px", padding:"14px" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"10px" }}>
