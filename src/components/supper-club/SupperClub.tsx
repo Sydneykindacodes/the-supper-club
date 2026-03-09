@@ -416,6 +416,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [postDinnerDates, setPostDinnerDates] = useState<string[]>([]);
+
+  // Fetch availability from OTHER groups to show cross-group indicators
+  const [otherGroupDates, setOtherGroupDates] = useState<string[]>([]);
+  useEffect(() => {
+    if (!activeGroupId || groups.length <= 1) { setOtherGroupDates([]); return; }
+    const fetchOtherAvail = async () => {
+      // Get member IDs for user in other groups
+      const { data: otherMembers } = await supabase
+        .from("members")
+        .select("id, group_id")
+        .eq("user_id", user.id)
+        .neq("group_id", activeGroupId);
+      if (!otherMembers || otherMembers.length === 0) { setOtherGroupDates([]); return; }
+      const memberIds = otherMembers.map(m => m.id);
+      const { data: avail } = await supabase
+        .from("member_availability")
+        .select("available_dates")
+        .in("member_id", memberIds);
+      if (avail) {
+        const allDates = new Set<string>();
+        avail.forEach(a => a.available_dates.forEach((d: string) => allDates.add(d)));
+        setOtherGroupDates(Array.from(allDates));
+      }
+    };
+    fetchOtherAvail();
+  }, [activeGroupId, groups.length, user.id]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
   const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
 
