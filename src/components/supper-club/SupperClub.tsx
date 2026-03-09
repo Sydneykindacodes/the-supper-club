@@ -202,6 +202,13 @@ export default function SupperClub() {
     }
   }, []);
 
+  const openRestaurantDetail = useCallback((r: Restaurant | GooglePlace) => {
+    setSelectedRestaurantDetail(r);
+    const cuisine = 'cuisine' in r ? r.cuisine : 'Restaurant';
+    const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name).map(rev => ({ text: rev.review, rating: rev.rating }));
+    fetchRestaurantDescription(r.name, cuisine, r.city, reviews);
+  }, [fetchRestaurantDescription]);
+
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
   const updateGroup = (id: number, patch: Partial<Group>) => {
