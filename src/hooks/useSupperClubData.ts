@@ -406,7 +406,25 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Generate booking links via edge function
+  // Select restaurant for reservation
+  const selectRestaurantForReservation = useCallback(async (restaurantId: string) => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({ restaurant_id: restaurantId })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
+  // Get the selected restaurant details from DB
+  const selectedRestaurantForDinner = restaurants.find(r => {
+    // Match by DB restaurant ID - need to look up from raw data
+    return false; // Will be resolved via selectedRestaurantData
+  });
+
+
   const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
     if (!activeReservation) return null;
     try {
