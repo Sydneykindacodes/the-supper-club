@@ -2713,9 +2713,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Cuisine</label>
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
+                  <div style={chip(exploreCuisineFilter==="all")} onClick={() => { setExploreCuisineFilter("all"); setSearchPage(1); }}>All</div>
                   {[...new Set(gpResults.map(r => r.cuisine))].slice(0,5).map(c => (
-                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
+                    <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => { setExploreCuisineFilter(c); setSearchPage(1); }}>{c}</div>
                   ))}
                 </div>
               </div>
