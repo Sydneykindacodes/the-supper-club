@@ -2125,14 +2125,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
             const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
             
-            // Calculate overlapping dates (from non-host members only)
-            const allDates: string[] = [];
+            // Calculate overlapping dates (from non-host members only, using unique dates)
+            const allDateEntries: string[] = [];
             nonHostMembers.forEach(m => {
               const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-              dates.forEach(d => allDates.push(d));
+              getUniqueDates(dates).forEach(d => allDateEntries.push(d));
             });
             const dateCount: Record<string, number> = {};
-            allDates.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
+            allDateEntries.forEach(d => { dateCount[d] = (dateCount[d] || 0) + 1; });
             const overlappingDates = Object.entries(dateCount)
               .filter(([_, count]) => count === submittedMembers.length && submittedMembers.length > 0)
               .map(([date]) => date)
