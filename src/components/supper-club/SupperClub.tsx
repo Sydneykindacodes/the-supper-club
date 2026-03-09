@@ -1252,13 +1252,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             <button 
               style={{ ...S.primaryBtn, opacity: hostSelectedDate ? 1 : 0.5 }} 
-              onClick={() => {
+              onClick={async () => {
                 if (!hostSelectedDate) { showToast("Select a date first."); return; }
-                const formattedDate = new Date(hostSelectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                updateGroup(activeGroup.id, { dinnerStatus: "pending_confirm", pendingDate: formattedDate });
-                showToast("Date proposed! Members will be asked to confirm.");
-                setScreen("club_home");
-                setActiveTab("home");
+                const success = await dbData.proposeDate(hostSelectedDate);
+                if (success) {
+                  showToast("Date proposed! Members will be asked to confirm.");
+                  setScreen("club_home");
+                  setActiveTab("home");
+                } else {
+                  showToast("Failed to propose date. Try again.");
+                }
               }}
             >
               Propose This Date
