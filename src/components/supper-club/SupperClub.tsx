@@ -898,13 +898,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
 
-          {ag.dinnerStatus === "pending_confirm" && (
+          {ag.dinnerStatus === "pending_confirm" && (() => {
+            const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+            const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
+            const allConfirmed = confirmedCount === nonHostMembers.length;
+            const isHost = dbData.isHost;
+            
+            return (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"rgba(201,149,106,0.04)" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Proposed Date</div>
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{ag.pendingDate}</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>Everyone must confirm before the reservation is locked.</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>
+                {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed." : "Everyone must confirm before the reservation is locked."}
+              </div>
               <div style={{ marginBottom:"14px" }}>
-                {currentMembers.map(m => (
+                {/* Show host as auto-confirmed */}
+                {currentMembers.filter(m => m.name === dbData.hostName).map(m => (
+                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                      <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
+                      <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>
+                    </div>
+                    <span style={{ fontSize:"12px", fontStyle:"italic", color:"#7a9e7e" }}>Auto-Confirmed</span>
+                  </div>
+                ))}
+                {nonHostMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
@@ -914,14 +933,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                 ))}
               </div>
-              {!confirmationVotes["You"] && (
+              {!isHost && !confirmationVotes["You"] && (
                 <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setConfirmationVotes(v => ({...v, You:true})); showToast("Confirmed. Reservation will be placed shortly."); }}>
                   Confirm — I'll Be There
                 </button>
               )}
-              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {currentMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {isHost && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {!isHost && confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
             </div>
-          )}
+            );
+          })()}
 
           {ag.dinnerStatus === "no_date" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.12)", textAlign:"center", padding:"28px 20px" }}>
