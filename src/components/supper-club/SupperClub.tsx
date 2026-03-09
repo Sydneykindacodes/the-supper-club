@@ -1914,7 +1914,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
 
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                  Reviews · {PUBLIC_REVIEWS.filter(r => r.restaurant === selectedPublicR).length}
+                  Reviews · {allCommunityReviews.filter(r => r.restaurant === selectedPublicR).length}
                 </div>
                 {PUBLIC_REVIEWS.filter(r => r.restaurant === selectedPublicR).map((rev, i) => (
                   <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
