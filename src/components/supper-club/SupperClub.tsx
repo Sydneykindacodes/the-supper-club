@@ -18,6 +18,7 @@ import NotificationConsent from "./NotificationConsent";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
+import MemberProfileView from "./MemberProfileView";
 
 interface SupperClubProps {
   user: User;
