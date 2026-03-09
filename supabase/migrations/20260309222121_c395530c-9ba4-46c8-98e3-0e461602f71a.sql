@@ -1,0 +1,1 @@
+ALTER TABLE public.member_availability ADD COLUMN IF NOT EXISTS confirmed_at timestamptz DEFAULT NULL;

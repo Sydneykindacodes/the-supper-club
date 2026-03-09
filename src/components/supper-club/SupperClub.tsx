@@ -591,7 +591,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     fetchOtherAvail();
   }, [activeGroupId, groups.length, user.id]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
-  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
+  // confirmationVotes now come from dbData.dateConfirmations
 
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [noRepeats, setNoRepeats] = useState(true);
@@ -634,7 +634,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setPostDinnerDates([]);
     setAvailabilityModifying(false);
     setHostSelectedDate(null);
-    setConfirmationVotes({});
+    // dateConfirmations reset handled by DB
     setReviewRating(0);
     setReviewText("");
     setPhotoSubmitted(false);
@@ -1987,7 +1987,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           {ag.dinnerStatus === "pending_confirm" && (() => {
             const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-            const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
+            const confirmedCount = Object.values(dbData.dateConfirmations).filter(Boolean).length;
             const allConfirmed = confirmedCount === nonHostMembers.length;
             const isHost = dbData.isHost;
             
@@ -2016,17 +2016,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                       <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
                     </div>
-                    <span style={{ fontSize:"12px", fontStyle:"italic", color:confirmationVotes[m.name]?"#7a9e7e":"#5a3a25" }}>{confirmationVotes[m.name]?"Confirmed":"Pending"}</span>
+                    <span style={{ fontSize:"12px", fontStyle:"italic", color:dbData.dateConfirmations[m.name]?"#7a9e7e":"#5a3a25" }}>{dbData.dateConfirmations[m.name]?"Confirmed":"Pending"}</span>
                   </div>
                 ))}
               </div>
-              {!isHost && !confirmationVotes["You"] && (
+              {!isHost && !dbData.dateConfirmations["You"] && (
                 <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => { 
-                  const newVotes = {...confirmationVotes, You: true};
-                  setConfirmationVotes(newVotes);
+                  await dbData.confirmDate();
                   showToast("Confirmed. Reservation will be placed shortly.");
                   // Check if all non-host members have now voted
-                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  const updatedConfirmations = { ...dbData.dateConfirmations, You: true };
+                  const allNowVoted = nonHostMembers.every(m => updatedConfirmations[m.name]);
                   if (allNowVoted) {
                     await sendHostNotification("all_votes_in");
                   }
@@ -2064,8 +2064,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 )
               ) : (
                 <>
-                  {isHost && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
-                  {!isHost && confirmationVotes["You"] && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+                  {isHost && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !dbData.dateConfirmations[m.name]).map(m => m.name).join(", ")}.</div>}
+                  {!isHost && dbData.dateConfirmations["You"] && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !dbData.dateConfirmations[m.name]).map(m => m.name).join(", ")}.</div>}
                 </>
               )}
             </div>
@@ -3865,13 +3865,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
                 The host has picked a date. Head to the home screen to confirm your attendance — or submit your availability below for future dinners.
               </div>
-              {!confirmationVotes["You"] && !dbData.isHost && (
+              {!dbData.dateConfirmations["You"] && !dbData.isHost && (
                 <button style={{ ...S.primaryBtn, marginTop:"14px", marginBottom:0, fontSize:"12px" }} onClick={async () => {
-                  const newVotes = {...confirmationVotes, You: true};
-                  setConfirmationVotes(newVotes);
+                  await dbData.confirmDate();
                   showToast("Confirmed. You're in!");
                   const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-                  const allNowVoted = nonHostMembers.every(m => newVotes[m.name]);
+                  const updatedConfirmations = { ...dbData.dateConfirmations, You: true };
+                  const allNowVoted = nonHostMembers.every(m => updatedConfirmations[m.name]);
                   if (allNowVoted) {
                     await sendHostNotification("all_votes_in");
                   }
@@ -3879,7 +3879,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   Confirm — I'll Be There
                 </button>
               )}
-              {(confirmationVotes["You"] || dbData.isHost) && (
+              {(dbData.dateConfirmations["You"] || dbData.isHost) && (
                 <div style={{ marginTop:"10px", fontSize:"12px", color:"#7a9e7e", fontStyle:"italic" }}>✓ You're confirmed for this date</div>
               )}
             </div>

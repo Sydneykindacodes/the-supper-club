@@ -123,6 +123,7 @@ export type Database = {
       member_availability: {
         Row: {
           available_dates: string[]
+          confirmed_at: string | null
           id: string
           member_id: string
           reservation_id: string
@@ -130,6 +131,7 @@ export type Database = {
         }
         Insert: {
           available_dates: string[]
+          confirmed_at?: string | null
           id?: string
           member_id: string
           reservation_id: string
@@ -137,6 +139,7 @@ export type Database = {
         }
         Update: {
           available_dates?: string[]
+          confirmed_at?: string | null
           id?: string
           member_id?: string
           reservation_id?: string
