@@ -2120,9 +2120,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <div style={{ flex:1, overflow:"auto", padding:"12px 16px" }}>
               {notifs.notifications.length === 0 ? (
                 <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                  <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◉</div>
+                  <svg width="28" height="22" viewBox="0 0 22 18" fill="none" style={{ margin:"0 auto 12px" }}>
+                    <rect x="1" y="1" width="20" height="16" rx="3" stroke="#4a2e18" strokeWidth="1.5" fill="none"/>
+                    <path d="M1 4l10 6 10-6" stroke="#4a2e18" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                   <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic" }}>No notifications yet.</div>
-                  <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"4px" }}>You'll be notified when important events happen.</div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"4px" }}>You'll hear from us when a date is picked, a dinner is booked, or plans change.</div>
                 </div>
               ) : (
                 notifs.notifications.map(n => (
