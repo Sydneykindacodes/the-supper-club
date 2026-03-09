@@ -5,6 +5,7 @@ interface HostRevealProps {
   isYouTheHost: boolean;
   groupName: string;
   onComplete: () => void;
+  onDecline?: () => void;
 }
 
 const CHOSEN_MESSAGES = [
@@ -29,7 +30,7 @@ const PRIVILEGE_MESSAGES = [
   "You hold the secret. The restaurant. The reservation. Everything.",
 ];
 
-export default function HostReveal({ isYouTheHost, groupName, onComplete }: HostRevealProps) {
+export default function HostReveal({ isYouTheHost, groupName, onComplete, onDecline }: HostRevealProps) {
   const [stage, setStage] = useState(0);
   const [chosenMsg] = useState(() =>
     isYouTheHost
@@ -92,6 +93,14 @@ export default function HostReveal({ isYouTheHost, groupName, onComplete }: Host
                     </div>
                     <div style={{ fontSize:"12px", color:"#8c8278", lineHeight:"1.7", marginBottom:"28px" }}>When the group schedules the next dinner, you'll choose the restaurant — and they won't know where until you reveal it.</div>
                     <button onClick={(e) => { e.stopPropagation(); onComplete(); }} style={{ ...S.primaryBtn, maxWidth:"260px", margin:"0 auto 12px" }}>Accept the Responsibility</button>
+                    {onDecline && (
+                      <button onClick={(e) => { e.stopPropagation(); onDecline(); }} style={{
+                        maxWidth:"260px", margin:"0 auto 12px", display:"block", width:"100%",
+                        padding:"12px 24px", borderRadius:"10px", fontSize:"12px", letterSpacing:"0.5px",
+                        background:"transparent", border:"1px solid rgba(212,205,196,0.15)",
+                        color:"#8c8278", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"500",
+                      }}>Pass to Someone Else</button>
+                    )}
                     <div style={{ fontSize:"11px", color:"#565250", fontStyle:"italic" }}>Keep it secret. Keep it safe.</div>
                   </>
                 ) : (

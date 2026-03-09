@@ -4368,6 +4368,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setActiveTab("home");
           showToast("You're officially the host. Keep the secret safe.");
         }}
+        onDecline={() => {
+          setScreen("relinquish_host");
+        }}
       />
     );
   }
@@ -4421,6 +4424,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setShowHostRevealAnimation(false);
           setHasSeenHostReveal(true);
         }}
+        onDecline={isNextHost ? () => {
+          setShowHostRevealAnimation(false);
+          setHasSeenHostReveal(true);
+          setScreen("relinquish_host");
+        } : undefined}
       />
     );
   }
