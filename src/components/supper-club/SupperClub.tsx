@@ -689,8 +689,6 @@ export default function SupperClub() {
       return new Date(a).getTime() - new Date(b).getTime();
     });
     
-    const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
-    
     const formatDateDisplay = (dateStr: string) => {
       const date = new Date(dateStr);
       return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
