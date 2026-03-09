@@ -14,7 +14,356 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      groups: {
+        Row: {
+          city: string
+          code: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      member_availability: {
+        Row: {
+          available_dates: string[]
+          id: string
+          member_id: string
+          reservation_id: string
+          submitted_at: string | null
+        }
+        Insert: {
+          available_dates: string[]
+          id?: string
+          member_id: string
+          reservation_id: string
+          submitted_at?: string | null
+        }
+        Update: {
+          available_dates?: string[]
+          id?: string
+          member_id?: string
+          reservation_id?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_availability_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_availability_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          avatar_color: string | null
+          created_at: string
+          email: string | null
+          email_enabled: boolean | null
+          group_id: string
+          id: string
+          is_host: boolean | null
+          name: string
+          phone: string | null
+          push_enabled: boolean | null
+          sms_enabled: boolean | null
+        }
+        Insert: {
+          avatar_color?: string | null
+          created_at?: string
+          email?: string | null
+          email_enabled?: boolean | null
+          group_id: string
+          id?: string
+          is_host?: boolean | null
+          name: string
+          phone?: string | null
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
+        }
+        Update: {
+          avatar_color?: string | null
+          created_at?: string
+          email?: string | null
+          email_enabled?: boolean | null
+          group_id?: string
+          id?: string
+          is_host?: boolean | null
+          name?: string
+          phone?: string | null
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          channel: string
+          delivered: boolean | null
+          error: string | null
+          id: string
+          member_id: string
+          reservation_id: string | null
+          sent_at: string | null
+          type: string
+        }
+        Insert: {
+          channel: string
+          delivered?: boolean | null
+          error?: string | null
+          id?: string
+          member_id: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          type: string
+        }
+        Update: {
+          channel?: string
+          delivered?: boolean | null
+          error?: string | null
+          id?: string
+          member_id?: string
+          reservation_id?: string | null
+          sent_at?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservation_attempts: {
+        Row: {
+          attempted_at: string | null
+          id: string
+          reservation_id: string
+          restaurant_id: string
+          skip_reason: string | null
+          skipped: boolean | null
+        }
+        Insert: {
+          attempted_at?: string | null
+          id?: string
+          reservation_id: string
+          restaurant_id: string
+          skip_reason?: string | null
+          skipped?: boolean | null
+        }
+        Update: {
+          attempted_at?: string | null
+          id?: string
+          reservation_id?: string
+          restaurant_id?: string
+          skip_reason?: string | null
+          skipped?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_attempts_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservation_attempts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservations: {
+        Row: {
+          attempt_count: number | null
+          confirmed_at: string | null
+          created_at: string
+          dinner_date: string
+          dinner_time: string | null
+          group_id: string
+          host_notified_at: string | null
+          id: string
+          party_size: number
+          restaurant_id: string | null
+          reveal_at: string | null
+          revealed_at: string | null
+          skip_reason: string | null
+          status: Database["public"]["Enums"]["reservation_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          dinner_date: string
+          dinner_time?: string | null
+          group_id: string
+          host_notified_at?: string | null
+          id?: string
+          party_size: number
+          restaurant_id?: string | null
+          reveal_at?: string | null
+          revealed_at?: string | null
+          skip_reason?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          dinner_date?: string
+          dinner_time?: string | null
+          group_id?: string
+          host_notified_at?: string | null
+          id?: string
+          party_size?: number
+          restaurant_id?: string | null
+          reveal_at?: string | null
+          revealed_at?: string | null
+          skip_reason?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          address: string | null
+          city: string
+          created_at: string
+          cuisine: string | null
+          google_place_id: string | null
+          google_rating: number | null
+          google_review_count: number | null
+          group_id: string
+          id: string
+          name: string
+          price: number | null
+          requires_card: boolean | null
+          sc_rating: number | null
+          sc_review_count: number | null
+          suggested_by: string | null
+          visited: boolean | null
+          visited_date: string | null
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          created_at?: string
+          cuisine?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
+          group_id: string
+          id?: string
+          name: string
+          price?: number | null
+          requires_card?: boolean | null
+          sc_rating?: number | null
+          sc_review_count?: number | null
+          suggested_by?: string | null
+          visited?: boolean | null
+          visited_date?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          created_at?: string
+          cuisine?: string | null
+          google_place_id?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
+          group_id?: string
+          id?: string
+          name?: string
+          price?: number | null
+          requires_card?: boolean | null
+          sc_rating?: number | null
+          sc_review_count?: number | null
+          suggested_by?: string | null
+          visited?: boolean | null
+          visited_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurants_suggested_by_fkey"
+            columns: ["suggested_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +372,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      reservation_status:
+        | "pending_selection"
+        | "pending_host_booking"
+        | "card_required_skipped"
+        | "confirmed"
+        | "revealed"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +506,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      reservation_status: [
+        "pending_selection",
+        "pending_host_booking",
+        "card_required_skipped",
+        "confirmed",
+        "revealed",
+        "completed",
+        "cancelled",
+      ],
+    },
   },
 } as const
