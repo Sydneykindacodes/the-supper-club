@@ -2394,5 +2394,30 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
+  // ── BADGES ──
+  if (screen === "badges") {
+    return (
+      <BadgesScreen
+        userBadges={dbData.userBadges}
+        activeGroupId={activeGroupId}
+        activeTab={activeTab}
+        onNavigate={onNavigate}
+        groupName={activeGroup.name || undefined}
+      />
+    );
+  }
+
+  // ── PROFILE ──
+  if (showProfile) {
+    return (
+      <ProfileScreen
+        user={user}
+        onClose={() => setShowProfile(false)}
+        showToast={showToast}
+        signOut={signOut}
+      />
+    );
+  }
+
   return null;
 }
