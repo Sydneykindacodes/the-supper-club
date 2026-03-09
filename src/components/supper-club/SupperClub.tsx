@@ -1548,15 +1548,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 if (!hostSelectedDate) { showToast("Select a date first."); return; }
                 const success = await dbData.proposeDate(hostSelectedDate);
                 if (success) {
-                  showToast("Date proposed! Members will be asked to confirm.");
-                  setScreen("club_home");
-                  setActiveTab("home");
+                  showToast("Date locked! Now pick the restaurant.");
+                  setScreen("host_select_restaurant");
                 } else {
                   showToast("Failed to propose date. Try again.");
                 }
               }}
             >
-              Propose This Date
+              Lock This Date & Pick Restaurant
             </button>
             
             <button style={{ ...S.ghostBtn, marginTop:"8px" }} onClick={() => setScreen("club_home")}>
