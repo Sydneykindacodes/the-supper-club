@@ -120,6 +120,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             host_count: m.host_count || 0,
             user_id: m.user_id,
             avatar_url: m.user_id ? (profileMap[m.user_id] || null) : null,
+            created_at: m.created_at,
           })));
         }
         setLoadingMembers(false);
