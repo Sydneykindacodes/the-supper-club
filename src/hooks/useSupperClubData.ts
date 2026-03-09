@@ -722,6 +722,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     confirmBooking,
     generateBookingLinks,
     revealRestaurant,
+    cancelDinner,
     completeDinner,
     makeHost,
     leaveGroup,
