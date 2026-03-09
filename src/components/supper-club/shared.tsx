@@ -302,8 +302,22 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
     return { day: days[d.getDay()], date: d.getDate(), month: months[d.getMonth()], isPast: d < cutoffDate };
   };
 
+  const CONFLICT_QUIPS = [
+    "Two-timing your supper clubs? Bold move.",
+    "Playing both sides of the dinner table, are we?",
+    "You've already pledged this evening to another crew. Double-book anyway?",
+    "Your other club called dibs on this night. Feeling rebellious?",
+    "Careful — you're flirting with a scheduling love triangle.",
+    "This date's already spoken for by another club. Risk the drama?",
+  ];
+
   const toggleDate = (key: string, isPast: boolean) => {
     if (isPast) { showToast("Cutoff has passed for this date."); return; }
+    const isAdding = !selectedArr.includes(key);
+    if (isAdding && otherGroupDates.includes(key)) {
+      const quip = CONFLICT_QUIPS[Math.floor(Math.random() * CONFLICT_QUIPS.length)];
+      if (!confirm(quip)) return;
+    }
     setArr(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
   };
 
