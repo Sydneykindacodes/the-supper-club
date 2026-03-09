@@ -2240,6 +2240,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
           </div>
 
+          {/* Relinquish host duties */}
+          {dbData.isHost && currentMembers.length > 1 && (
+            <div style={{ padding:"8px 16px 0", textAlign:"center" }}>
+              <button
+                onClick={() => setScreen("relinquish_host")}
+                style={{
+                  width:"100%", padding:"13px", borderRadius:"10px", fontSize:"11px",
+                  letterSpacing:"1px", textTransform:"uppercase",
+                  background:"rgba(201,149,106,0.06)", border:"1px solid rgba(201,149,106,0.15)",
+                  color:"#c9956a", cursor:"pointer", fontFamily:"Georgia,serif", fontWeight:"600",
+                }}
+              >
+                Relinquish Host Duties
+              </button>
+            </div>
+          )}
+
           {/* Subtle leave group option */}
           <div style={{ padding:"16px 16px 8px", textAlign:"center" }}>
             <span 
