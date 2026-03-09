@@ -1166,7 +1166,7 @@ export default function SupperClub() {
     return (
       <div style={S.app}><div style={S.phone}>
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
           <div style={{ ...S.header, paddingTop: "8px" }}>
             <div style={S.headerEye}>Collection</div>
             <div style={S.headerTitle}>Badges</div>
