@@ -1563,7 +1563,28 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
         )}
 
-        {/* Post-Dinner Review Prompt */}
+        {/* Dinner Cancellation Notice */}
+        {showCancellationNotice && (
+          <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(6,3,2,0.92)", zIndex:250, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ maxWidth:"320px", padding:"40px 28px", textAlign:"center" }}>
+              <div style={{ fontSize:"32px", marginBottom:"20px", opacity:0.7 }}>🍷</div>
+              <div style={{ fontSize:"11px", color:"#c45c5c", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Dinner Cancelled</div>
+              <div style={{ fontSize:"22px", color:"#f5e6d3", fontWeight:"400", lineHeight:"1.4", marginBottom:"16px" }}>
+                The host has pulled the plug.
+              </div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"28px" }}>
+                The dinner has been cancelled. Don't take it personally — sometimes even the best-laid plans fall apart. A new date will be proposed soon.
+              </div>
+              <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 24px" }} />
+              <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.6", marginBottom:"28px" }}>
+                You can update your availability for the next round once a new date is proposed.
+              </div>
+              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => setShowCancellationNotice(false)}>
+                Got It
+              </button>
+            </div>
+          </div>
+        )}
         {postDinnerReviewPrompt && (
           <ReviewForm
             restaurantName={dbData.selectedRestaurantData?.name || "Your Last Dinner"}
