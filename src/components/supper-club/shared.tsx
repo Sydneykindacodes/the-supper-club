@@ -210,19 +210,67 @@ export const GlobalGroupSwitcher = ({
     </div>
   );
 };
+// ── Hand-drawn nav icons ──
+const NavIcon = ({ id, active }: { id: string; active: boolean }) => {
+  const c = active ? "#d4cdc4" : "#4a4a4a";
+  const sw = "2.2";
+  const props = { width: 26, height: 26, viewBox: "0 0 24 24", fill: "none", stroke: c, strokeWidth: sw, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  switch (id) {
+    case "home": return (
+      <svg {...props}>
+        <path d="M3 10.5 C3 10.5 12 3 12 3 C12 3 21 10.5 21 10.5" />
+        <path d="M5 9.5V19C5 19.6 5.4 20 6 20H9.5V14.5H14.5V20H18C18.6 20 19 19.6 19 19V9.5" />
+      </svg>
+    );
+    case "explore": return (
+      <svg {...props}>
+        <circle cx="11" cy="11" r="7" />
+        <path d="M15.5 15.5L20 20" />
+        <path d="M8.5 9.5C9 8.5 10 7.8 11 7.8" strokeWidth="1.8" />
+      </svg>
+    );
+    case "schedule": return (
+      <svg {...props}>
+        <rect x="3" y="5" width="18" height="16" rx="2.5" />
+        <path d="M3 10H21" />
+        <path d="M8 3V6" />
+        <path d="M16 3V6" />
+        <circle cx="8.5" cy="14.5" r="1" fill={c} stroke="none" />
+        <circle cx="12" cy="14.5" r="1" fill={c} stroke="none" />
+        <circle cx="15.5" cy="14.5" r="1" fill={c} stroke="none" />
+      </svg>
+    );
+    case "reveal": return (
+      <svg {...props}>
+        <path d="M12 4C12 4 8 7 5 9.5C3.5 10.7 2 12 2 12C2 12 3.5 13.3 5 14.5C8 17 12 20 12 20C12 20 16 17 19 14.5C20.5 13.3 22 12 22 12C22 12 20.5 10.7 19 9.5C16 7 12 4 12 4Z" />
+        <circle cx="12" cy="12" r="3.5" />
+        <circle cx="12" cy="12" r="1.2" fill={c} stroke="none" />
+      </svg>
+    );
+    case "badges": return (
+      <svg {...props}>
+        <circle cx="12" cy="9.5" r="6.5" />
+        <path d="M8.5 15L7 22L12 19.5L17 22L15.5 15" />
+        <path d="M12 6.5V12.5" strokeWidth="1.8" />
+        <path d="M9.5 9.5H14.5" strokeWidth="1.8" />
+      </svg>
+    );
+    default: return null;
+  }
+};
+
 // ── NavBar ──
 export const NavBar = ({ activeTab, onNavigate }: { activeTab: string; onNavigate: (tab: string, screen: string) => void }) => (
   <div style={S.bottomNav}>
     {[
-      { id:"home",        label:"Home",    glyph:"⌂",  screen:"club_home" },
-      { id:"explore",     label:"Explore", glyph:"◉",  screen:"explore" },
-      { id:"schedule",    label:"Dates",   glyph:"◫",  screen:"availability" },
-      { id:"reveal",      label:"Reveal",  glyph:"◎",  screen:"reveal" },
-      { id:"badges",      label:"Badges",  glyph:"◈",  screen:"badges" },
+      { id:"home",        screen:"club_home" },
+      { id:"explore",     screen:"explore" },
+      { id:"schedule",    screen:"availability" },
+      { id:"reveal",      screen:"reveal" },
+      { id:"badges",      screen:"badges" },
     ].map(item => (
       <div key={item.id} style={S.navItem} onClick={() => onNavigate(item.id, item.screen)}>
-        <span style={{ fontSize:"20px", color:activeTab===item.id?"#d4cdc4":"#383838" }}>{item.glyph}</span>
-        <span style={{ fontSize:"9px", letterSpacing:"1.5px", textTransform:"uppercase", color:activeTab===item.id?"#d4cdc4":"#3d3d3d" }}>{item.label}</span>
+        <NavIcon id={item.id} active={activeTab===item.id} />
       </div>
     ))}
   </div>
