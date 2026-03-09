@@ -2610,18 +2610,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
     const notSubmittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length === 0 : (memberAvailability[m.name]?.length || 0) === 0);
     
-    // Gather all dates from submitted members
+    // Gather all unique dates from submitted members
     const allDatesFromSubmitted: string[] = [];
     submittedMembers.forEach(m => {
       const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-      dates.forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
+      getUniqueDates(dates).forEach(d => { if (!allDatesFromSubmitted.includes(d)) allDatesFromSubmitted.push(d); });
     });
     
     // Count how many members are available on each date
     const dateAvailability: Record<string, string[]> = {};
     submittedMembers.forEach(m => {
       const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-      dates.forEach(d => {
+      getUniqueDates(dates).forEach(d => {
         if (!dateAvailability[d]) dateAvailability[d] = [];
         dateAvailability[d].push(m.name);
       });
