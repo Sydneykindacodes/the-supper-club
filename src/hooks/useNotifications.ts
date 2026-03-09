@@ -17,7 +17,7 @@ export function useNotifications(user: User, memberIds: string[]) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Only show these notification types to users
-  const VISIBLE_TYPES = ["date_proposed", "dinner_confirmed", "dinner_cancelled"];
+  const VISIBLE_TYPES = ["date_proposed", "dinner_confirmed", "dinner_cancelled", "host_transferred"];
 
   const fetchNotifications = useCallback(async () => {
     if (memberIds.length === 0) return;
