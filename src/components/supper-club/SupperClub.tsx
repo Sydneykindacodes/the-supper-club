@@ -501,6 +501,54 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // No-group placeholder helper
   const hasGroup = groups.length > 0 && activeGroup.id !== (EMPTY_GROUP.id as any);
+  const isSoloGroup = hasGroup && currentMembers.length < 2;
+  const [wittysoloIdx] = useState(Math.floor(Math.random() * WITTY_SOLO_MESSAGES.length));
+
+  const SoloPlaceholder = ({ feature }: { feature: string }) => (
+    <div style={S.app}><div style={S.phone}>
+      {toast && <div style={S.toast}>{toast}</div>}
+      <div style={S.screen}>
+        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
+        <div style={{ padding:"16px 24px 12px" }}>
+          <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{feature}</div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 28px", textAlign:"center" }}>
+          <div style={{ width:"72px", height:"72px", borderRadius:"18px", background:"linear-gradient(135deg, rgba(201,149,106,0.1), rgba(201,149,106,0.03))", border:"1px solid rgba(201,149,106,0.2)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"28px", color:"#c9956a", marginBottom:"24px" }}>
+            ◇
+          </div>
+          <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400" }}>
+            Waiting for your crew
+          </div>
+          <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8", marginBottom:"28px", maxWidth:"280px" }}>
+            {WITTY_SOLO_MESSAGES[wittysoloIdx]}
+          </div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", background:"rgba(201,149,106,0.06)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.15)", width:"100%", maxWidth:"300px", marginBottom:"16px" }}>
+            <div>
+              <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"4px" }}>Invite Code</div>
+              <div style={{ fontSize:"16px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{activeGroup.code}</div>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(activeGroup.code); showToast("Invite code copied!"); }}
+              style={{ background:"rgba(201,149,106,0.15)", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"8px", padding:"6px 14px", cursor:"pointer", fontSize:"11px", color:"#c9956a", fontFamily:"Georgia,serif" }}
+            >Copy</button>
+          </div>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/?invite=${activeGroup.code}`;
+              navigator.clipboard.writeText(link);
+              showToast("Invite link copied!");
+            }}
+            style={{ ...S.primaryBtn, maxWidth:"300px", marginBottom:"8px" }}
+          >Share Invite Link</button>
+          <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px" }}>
+            You need at least 2 members to unlock {feature.toLowerCase()}.
+          </div>
+        </div>
+      </div>
+      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+    </div></div>
+  );
+
   const NoGroupPlaceholder = ({ feature }: { feature: string }) => (
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
