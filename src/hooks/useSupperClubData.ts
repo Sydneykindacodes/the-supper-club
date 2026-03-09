@@ -444,11 +444,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Get the selected restaurant details from DB
-  const selectedRestaurantForDinner = restaurants.find(r => {
-    // Match by DB restaurant ID - need to look up from raw data
-    return false; // Will be resolved via selectedRestaurantData
-  });
 
 
   const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
