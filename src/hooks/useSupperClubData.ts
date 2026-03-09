@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import type { Member, Restaurant } from "@/data/supper-club-data";
+import type { Member, Restaurant, MemberAvailability } from "@/data/supper-club-data";
 
 export interface DBMember {
   id: string;
@@ -29,6 +29,9 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [visitedRestaurants, setVisitedRestaurants] = useState<Restaurant[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [loadingRestaurants, setLoadingRestaurants] = useState(false);
+  const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
+  const [userSelectedDates, setUserSelectedDates] = useState<string[]>([]);
+  const [activeReservationId, setActiveReservationId] = useState<string | null>(null);
 
   // Load members for active group
   useEffect(() => {
@@ -90,6 +93,112 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         setLoadingRestaurants(false);
       });
   }, [activeGroupId]);
+
+  // Load availability for active group (active reservation)
+  useEffect(() => {
+    if (!activeGroupId) { setMemberAvailability({}); setUserSelectedDates([]); setActiveReservationId(null); return; }
+    
+    const loadAvailability = async () => {
+      // Find active (non-completed, non-cancelled) reservation for group
+      const { data: reservations } = await supabase
+        .from("reservations")
+        .select("id, status")
+        .eq("group_id", activeGroupId)
+        .not("status", "in", '("completed","cancelled")')
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!reservations || reservations.length === 0) {
+        setActiveReservationId(null);
+        setMemberAvailability({});
+        setUserSelectedDates([]);
+        return;
+      }
+
+      const resId = reservations[0].id;
+      setActiveReservationId(resId);
+
+      // Load all member availability for this reservation
+      const { data: avails } = await supabase
+        .from("member_availability")
+        .select("member_id, available_dates")
+        .eq("reservation_id", resId);
+
+      if (avails && avails.length > 0) {
+        const avMap: MemberAvailability = {};
+        const currentMember = members.find(m => m.user_id === user.id);
+        
+        avails.forEach(a => {
+          const member = members.find(m => m.id === a.member_id);
+          if (member) {
+            const isYou = member.user_id === user.id;
+            if (isYou) {
+              setUserSelectedDates(a.available_dates);
+            } else {
+              avMap[member.name] = a.available_dates;
+            }
+          }
+        });
+        setMemberAvailability(avMap);
+      }
+    };
+
+    if (members.length > 0) loadAvailability();
+  }, [activeGroupId, members, user.id]);
+
+  // Save availability for current user
+  const saveAvailability = useCallback(async (dates: string[]) => {
+    if (!activeGroupId) return false;
+    
+    const currentMember = members.find(m => m.user_id === user.id);
+    if (!currentMember) return false;
+
+    let reservationId = activeReservationId;
+
+    // Create reservation if none exists
+    if (!reservationId) {
+      const { data: newRes, error } = await supabase
+        .from("reservations")
+        .insert({
+          group_id: activeGroupId,
+          dinner_date: new Date(Math.max(...dates.map(d => new Date(d).getTime()))).toISOString().split("T")[0],
+          party_size: members.length,
+          status: "pending_selection",
+        })
+        .select()
+        .single();
+
+      if (error || !newRes) return false;
+      reservationId = newRes.id;
+      setActiveReservationId(reservationId);
+    }
+
+    // Upsert availability
+    const { data: existing } = await supabase
+      .from("member_availability")
+      .select("id")
+      .eq("reservation_id", reservationId)
+      .eq("member_id", currentMember.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("member_availability")
+        .update({ available_dates: dates, submitted_at: new Date().toISOString() })
+        .eq("id", existing.id);
+    } else {
+      await supabase
+        .from("member_availability")
+        .insert({
+          reservation_id: reservationId,
+          member_id: currentMember.id,
+          available_dates: dates,
+        });
+    }
+
+    setUserSelectedDates(dates);
+    return true;
+  }, [activeGroupId, activeReservationId, members, user.id]);
 
   // Add restaurant to group pool in DB
   const addRestaurantToPool = useCallback(async (restaurant: {
@@ -162,5 +271,9 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     addRestaurantToPool,
     setRestaurants,
     setVisitedRestaurants,
+    memberAvailability,
+    userSelectedDates,
+    saveAvailability,
+    activeReservationId,
   };
 }
