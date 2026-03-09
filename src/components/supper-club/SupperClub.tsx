@@ -1514,7 +1514,7 @@ export default function SupperClub() {
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
                     .map(r => (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}
-                      onClick={() => setSelectedRestaurantDetail(r)}>
+                      onClick={() => openRestaurantDetail(r)}>
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                         <div style={{ flex:1 }}>
                           <div style={S.cardTitle}>{r.name}</div>
