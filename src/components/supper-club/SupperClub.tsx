@@ -41,6 +41,7 @@ export default function SupperClub() {
   const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
   // Track if user is awaiting initiation (joined after host booked)
   const [awaitingInitiation, setAwaitingInitiation] = useState(false);
+  const [availabilityModifying, setAvailabilityModifying] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
@@ -1188,15 +1189,30 @@ export default function SupperClub() {
           {exploreView === "search" && (
             <div style={{ padding:"16px 16px 0" }}>
               <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>Search for restaurants to add to your group pools.</div>
+              
+              <label style={S.label}>Location</label>
+              <input style={S.input} placeholder="e.g. New York, NY" value={rCity || activeGroup.city}
+                onChange={e => setRCity(e.target.value)}
+              />
+              <label style={S.label}>Search Radius</label>
+              <div style={{ display:"flex", gap:"8px", marginBottom:"16px", flexWrap:"wrap" }}>
+                {[5, 10, 15, 25, 50].map(r => (
+                  <div key={r} onClick={() => setSearchRadius(r)} style={chip(searchRadius === r)}>{r} mi</div>
+                ))}
+              </div>
+
               <label style={S.label}>Search Restaurants</label>
               <div style={{ position:"relative" }}>
                 <input style={S.input} placeholder="e.g. Le Bernardin, sushi, Italian..." value={rName}
-                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || "New York, NY", setGpResults, setGpLoading); }}
+                  onChange={e => { setRName(e.target.value); searchGooglePlaces(e.target.value, rCity || activeGroup.city, setGpResults, setGpLoading); }}
                 />
-                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants…</div>}
+                {gpLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching nearby restaurants...</div>}
                 {gpResults.length > 0 && (
                   <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
-                    {gpResults.map(r => (
+                    {gpResults
+                      .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
+                      .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
+                      .map(r => (
                       <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
                         onClick={() => {
                           const restaurant = {
@@ -1212,7 +1228,7 @@ export default function SupperClub() {
                         <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
                         <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
                           {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
-                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                          {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>* {r.googleRating}</span>}
                           {r.price && <span style={{ marginLeft:"6px" }}>{PRICE_LABELS[r.price]}</span>}
                         </div>
                       </div>
@@ -1220,10 +1236,8 @@ export default function SupperClub() {
                   </div>
                 )}
               </div>
-              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px" }}>
-                Search results will show restaurants near your groups' cities
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Filters</div>
+              
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"16px" }}>Filters</div>
               <div style={{ marginBottom:"16px" }}>
                 <label style={S.label}>Cuisine</label>
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
@@ -1241,6 +1255,12 @@ export default function SupperClub() {
                   ))}
                 </div>
               </div>
+
+              <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
+                searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
+              }}>
+                Search
+              </button>
             </div>
           )}
 
@@ -1378,439 +1398,183 @@ export default function SupperClub() {
   }
 
   // ── AVAILABILITY ──
-  if (screen === "availability") return (
+  if (screen === "availability") {
+    const datesAlreadySubmitted = selectedDates.length > 0;
+    
+    return (
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
         <div style={{ ...S.header, paddingTop: "8px" }}>
           <div style={S.headerEye}>Schedule</div>
-          <div style={S.headerTitle}>Set Availability</div>
+          <div style={S.headerTitle}>{datesAlreadySubmitted && !availabilityModifying ? "Your Dates" : "Set Availability"}</div>
         </div>
         <div style={{ padding:"16px 16px 0" }}>
-          <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-            Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
-          </div>
-          <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
-          <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
-            The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
-          </div>
-          <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
-            Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
-            {autoSubmit && <span style={{ color:"#7a9e7e" }}> · Auto-submittal on.</span>}
-            <div style={{ marginTop:"4px", fontSize:"11px", color:"#7a5a40" }}>The date is announced as soon as everyone submits — no waiting for a deadline.</div>
-          </div>
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
-          <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast}/>
-          {selectedDates.length > 0 && (
-            <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-              {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
-            </div>
-          )}
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
-          {MEMBERS.map(m => {
-            const isYou = m.name === "You";
-            const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
-            return (
-              <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                  <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                  <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                </div>
-                <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                  {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
-                </span>
-              </div>
-            );
-          })}
 
-          {/* ── Admin Override ── */}
-          <div style={{ marginTop:"20px", marginBottom:"8px" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Host Override</div>
-            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
-              <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
-              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-                Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
+          {/* ── Dates Already Submitted State ── */}
+          {datesAlreadySubmitted && !availabilityModifying ? (
+            <>
+              <div style={{ 
+                background:"linear-gradient(135deg, rgba(122,158,126,0.08), rgba(26,15,10,0.95))", 
+                border:"1px solid rgba(122,158,126,0.3)", 
+                borderRadius:"16px", 
+                padding:"28px 20px", 
+                textAlign:"center",
+                marginBottom:"20px"
+              }}>
+                <div style={{ fontSize:"20px", marginBottom:"12px", color:"#7a9e7e" }}>◈</div>
+                <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
+                  Your dates for your upcoming meal have been selected.
+                </div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6", marginBottom:"16px" }}>
+                  {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} submitted · {selectedMealTypes.join(", ")}
+                </div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"8px", justifyContent:"center", marginBottom:"20px" }}>
+                  {[...selectedDates].sort().map(d => {
+                    const date = new Date(d);
+                    return (
+                      <div key={d} style={{
+                        padding:"8px 14px", borderRadius:"10px",
+                        background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)",
+                        fontSize:"12px", color:"#f5e6d3", fontWeight:"500"
+                      }}>
+                        {date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                      </div>
+                    );
+                  })}
+                </div>
+                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"12px" }} onClick={() => setAvailabilityModifying(true)}>
+                  Modify Dates
+                </button>
               </div>
-              {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
-                <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
-                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
-                  {MEMBERS.filter(m => m.name === "Priya").map(m => (
-                    <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
-                      <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                      <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
-                      <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"auto" }}>will be marked absent</span>
+
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
+              {MEMBERS.map(m => {
+                const isYou = m.name === "You";
+                const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+                return (
+                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                      <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                     </div>
-                  ))}
+                    <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                      {isYou ? `${selectedDates.length} dates` : hasSubmitted ? "Submitted" : "Waiting"}
+                    </span>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <>
+              {availabilityModifying && (
+                <div style={{ background:"rgba(201,149,106,0.08)", borderRadius:"10px", padding:"12px 14px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", lineHeight:"1.6" }}>
+                  Modifying your dates. The host will be notified of any changes.
                 </div>
               )}
-              <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
-                onClick={() => {
-                  if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                  showToast("Date locked. Priya marked as not attending.");
-                  updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" });
-                }}>
-                Override & Lock Date
-              </button>
-              <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to the host</div>
-            </div>
-          </div>
-
-          <div style={{ height:"18px" }}/>
-          <button style={S.primaryBtn} onClick={() => { 
-            if (selectedDates.length > 0) { 
-              showToast("Availability saved. Waiting on host to pick a date."); 
-              // Check if this is the host - if so, transition to awaiting_host so they can select
-              updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
-              setScreen("club_home");
-              setActiveTab("home");
-            } 
-          }}>
-            Submit Availability
-          </button>
-        </div>
-      </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
-    </div></div>
-  );
-
-  // ── REVEAL ──
-  if (screen === "reveal") return (
-    <div style={S.app}><div style={S.phone}>
-      {toast && <div style={S.toast}>{toast}</div>}
-      <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
-        <div style={{ ...S.header, paddingTop: "8px" }}>
-          <div style={S.headerEye}>Reveal</div>
-          <div style={S.headerTitle}>Tonight's Dinner</div>
-        </div>
-        {!revealUnlocked ? (<>
-          <div style={S.revealBox}>
-            <div style={{ width:"72px", height:"72px", borderRadius:"50%", border:"1.5px solid rgba(201,149,106,0.3)", margin:"0 auto 24px", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <div style={{ width:"46px", height:"46px", borderRadius:"50%", border:"1px solid rgba(201,149,106,0.5)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", color:"#c9956a" }}>S</div>
-            </div>
-            <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"10px" }}>The Secret Awaits</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", lineHeight:"1.7", marginBottom:"28px", fontStyle:"italic" }}>Your destination is sealed until the day of the dinner. Good things come to those who don't Google it.</div>
-            <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"16px", marginBottom:"24px", textAlign:"left" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Reservation Status</div>
-              <div style={{ fontSize:"13px", color:"#7a9e7e", marginBottom:"4px" }}>Secured via Resy · {cutoffDays}+ days in advance</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40" }}>7:30 PM · Table for {MEMBERS.length}</div>
-              <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"6px", fontStyle:"italic" }}>Placed by Supper Club AI. Yes, it actually called.</div>
-            </div>
-            <button style={{ ...S.primaryBtn, background:"transparent", color:"#c9956a", border:"1px solid rgba(201,149,106,0.35)", marginBottom:0 }}
-              onClick={() => { showToast("Reveal unlocked."); setTimeout(() => setRevealUnlocked(true), 700); }}>
-              Preview Reveal (Demo)
-            </button>
-          </div>
-          <div style={S.card}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Reservation Platform</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", lineHeight:"2.1" }}>
-              <div>Attempted via Resy first, OpenTable as fallback</div>
-              <div>Booked {cutoffDays}+ days in advance</div>
-              <div>Confirmation sent to all members</div>
-              <div>Dietary notes submitted automatically</div>
-            </div>
-          </div>
-        </>) : (<>
-          <div style={{ ...S.revealBox, border:"1px solid rgba(201,149,106,0.4)" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"10px" }}>The wait is finally over...</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"6px" }}>You've been very patient. Mostly.</div>
-            <div style={{ height:"1px", background:"rgba(201,149,106,0.2)", margin:"20px 0" }}/>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"14px" }}>Tonight you're dining at</div>
-            <div style={{ fontSize:"38px", color:"#f5e6d3", fontWeight:"400", marginBottom:"6px" }}>Osteria Morini</div>
-            <div style={{ fontSize:"15px", color:"#7a5a40", marginBottom:"4px", fontStyle:"italic" }}>Northern Italian · $$$$</div>
-            <div style={{ fontSize:"13px", color:"#7a9e7e", marginBottom:"24px" }}>218 Lafayette St, New York</div>
-            <div style={{ height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 0 20px" }}/>
-            <div style={{ fontSize:"13px", color:"#c9956a" }}>7:30 PM · Reservation under "{activeGroup.name}"</div>
-            <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"8px", fontStyle:"italic" }}>Dress accordingly. They'll know if you don't.</div>
-          </div>
-          <div style={{ padding:"0 16px" }}>
-            <button style={S.primaryBtn} onClick={() => setScreen("post_dinner")}>After Dinner — Submit Review</button>
-          </div>
-        </>)}
-      </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
-    </div></div>
-  );
-
-  // ── POST DINNER ──
-  if (screen === "post_dinner") return (
-    <div style={S.app}><div style={S.phone}>
-      {toast && <div style={S.toast}>{toast}</div>}
-      <div style={S.screen}>
-        <div style={S.header}>
-          <div style={S.headerEye}>Osteria Morini · Tonight</div>
-          <div style={S.headerTitle}>Dinner Review</div>
-        </div>
-        <div style={{ padding:"20px 16px 0" }}>
-          <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>Tell us everything. Your cruelest critiques are welcome here.</div>
-
-          <div style={{ ...S.card, textAlign:"center", padding:"28px", cursor:"pointer", background:photoSubmitted?"rgba(122,158,126,0.07)":"rgba(255,255,255,0.03)", border:photoSubmitted?"1px solid rgba(122,158,126,0.25)":"1px solid rgba(201,149,106,0.1)" }}
-            onClick={() => { setPhotoSubmitted(true); showToast("Photo added."); }}>
-            {photoSubmitted ? (<>
-              <div style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1.5px solid #7a9e7e", margin:"0 auto 10px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#7a9e7e" }}>✓</div>
-              <div style={{ fontSize:"13px", color:"#7a9e7e" }}>Photo submitted</div>
-            </>) : (<>
-              <div style={{ width:"36px", height:"36px", borderRadius:"50%", border:"1.5px solid rgba(201,149,106,0.35)", margin:"0 auto 10px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px", color:"#c9956a" }}>+</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40" }}>Tap to add food photos</div>
-            </>)}
-          </div>
-
-          <div style={{ marginBottom:"22px" }}>
-            <label style={S.label}>Overall Rating</label>
-            <StarRating value={reviewRating} onChange={setReviewRating}/>
-          </div>
-
-          <label style={S.label}>Your Experience</label>
-          <textarea style={{ ...S.input, height:"100px", resize:"none" }} placeholder="The ambience, the dishes, the moment Priya ordered the wrong thing..." value={reviewText} onChange={e => setReviewText(e.target.value)}/>
-
-          <label style={S.label}>Dishes You Tried</label>
-          <input style={S.input} placeholder="e.g. Pasta al Forno, Tiramisu..."/>
-
-          <div style={{ marginBottom:"20px" }}>
-            <label style={S.label}>Who Ordered the Best Dish?</label>
-            <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"12px", lineHeight:"1.5" }}>Choose wisely. The winner earns the Best Dish badge — and the right to never let you forget it.</div>
-            <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-              {MEMBERS.map(m => (
-                <div key={m.name} onClick={() => setBestDishMember(m.name)} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"10px 14px", borderRadius:"12px", cursor:"pointer", background:bestDishMember===m.name?"rgba(201,149,106,0.15)":"rgba(255,255,255,0.03)", border:bestDishMember===m.name?"1px solid rgba(201,149,106,0.5)":"1px solid rgba(201,149,106,0.1)", transition:"all 0.15s" }}>
-                  <div style={{ width:"28px", height:"28px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                  <span style={{ fontSize:"13px", color:bestDishMember===m.name?"#c9956a":"#7a5a40" }}>{m.name}</span>
-                </div>
-              ))}
-            </div>
-            {bestDishMember && <div style={{ marginTop:"10px", fontSize:"12px", color:"#7a9e7e", fontStyle:"italic" }}>{bestDishMember==="You"?"Bold choice. We respect it.":`${bestDishMember} wins the Best Dish honor.`}</div>}
-          </div>
-
-          <label style={S.label}>Would You Return?</label>
-          <div style={{ display:"flex", gap:"8px", marginBottom:"24px" }}>
-            {["Absolutely","Maybe","Probably Not"].map(opt => (
-              <button key={opt} onClick={() => setReturnChoice(opt)} style={{ flex:1, padding:"11px 4px", borderRadius:"10px", fontSize:"11px", letterSpacing:"0.5px", background:returnChoice===opt?"rgba(201,149,106,0.15)":"rgba(255,255,255,0.03)", border:returnChoice===opt?"1px solid rgba(201,149,106,0.5)":"1px solid rgba(201,149,106,0.1)", color:returnChoice===opt?"#c9956a":"#7a5a40", cursor:"pointer", fontFamily:"Georgia,serif", transition:"all 0.15s" }}>{opt}</button>
-            ))}
-          </div>
-
-          <div style={{ ...S.card, margin:"0 0 16px", padding:"24px" }}>
-            <div style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", marginBottom:"6px" }}>Plan the Next Dinner</div>
-            <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.6" }}>While the evening is still fresh — pick your next available dates. No pressure. But also, yes pressure.</div>
-            <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
-            <CalendarGrid selectedArr={postDinnerDates} setArr={setPostDinnerDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast}/>
-            {postDinnerDates.length > 0 && (
-              <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"12px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-                {postDinnerDates.length} evening{postDinnerDates.length > 1 ? "s" : ""} selected
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
+                Select the evenings you're free. We'll find the best overlap so you don't have to negotiate in the group chat.
               </div>
-            )}
-            <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", lineHeight:"1.5" }}>
-              {postDinnerDates.length > 0 ? "Dates submitted with review. The app will propose as soon as everyone's in." : "Skip this and submit dates later from the Dates tab. No judgement. Well, a little."}
-            </div>
-          </div>
+              <MealTypeSelector selected={selectedMealTypes} onToggle={(t) => toggleMealType(t, selectedMealTypes, setSelectedMealTypes)} label="I'm open to"/>
+              <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.5" }}>
+                The app will only propose mealtimes matching both your preferences and the group's allowed types in Settings.
+              </div>
+              <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"10px", padding:"10px 14px", marginBottom:"20px", fontSize:"12px", color:"#c9956a", lineHeight:"1.7" }}>
+                Cutoff: <strong>{cutoffDays} days</strong> before the dinner. Greyed dates are no longer eligible.
+                {autoSubmit && <span style={{ color:"#7a9e7e" }}> · Auto-submittal on.</span>}
+                <div style={{ marginTop:"4px", fontSize:"11px", color:"#7a5a40" }}>The date is announced as soon as everyone submits — no waiting for a deadline.</div>
+              </div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"14px" }}>Next 3 Weeks</div>
+              <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast}/>
+              {selectedDates.length > 0 && (
+                <div style={{ background:"rgba(201,149,106,0.07)", borderRadius:"12px", padding:"11px", marginBottom:"16px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
+                  {selectedDates.length} evening{selectedDates.length > 1 ? "s" : ""} selected · {selectedMealTypes.join(", ")}
+                </div>
+              )}
 
-          <button style={S.primaryBtn} onClick={async () => {
-            showToast(bestDishMember ? `Review submitted. ${bestDishMember} gets the Best Dish badge.` : "Review submitted.");
-            if (postDinnerDates.length > 0) updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 11, 2026" });
-            // Trigger next host selection (in production this would call the edge function)
-            // For demo, show the secret host notification after a delay
-            setTimeout(() => {
-              showToast("A new host has been secretly selected...");
-            }, 3000);
-            setTimeout(() => setScreen("club_home"), 2000);
-          }}>Submit Review & Complete Dinner</button>
+              {availabilityModifying ? (
+                <div style={{ display:"flex", gap:"10px", marginBottom:"16px" }}>
+                  <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => setAvailabilityModifying(false)}>
+                    Cancel
+                  </button>
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                    showToast("Dates updated. The host has been notified.");
+                    setAvailabilityModifying(false);
+                  }}>
+                    Save Changes
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Group Status</div>
+                  {MEMBERS.map(m => {
+                    const isYou = m.name === "You";
+                    const hasSubmitted = isYou ? selectedDates.length > 0 : m.name !== "Priya";
+                    return (
+                      <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                          <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                          <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+                        </div>
+                        <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                          {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                        </span>
+                      </div>
+                    );
+                  })}
 
-          <ShareRow showToast={showToast} />
-
-          <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => { showToast("Review submitted."); setTimeout(() => setScreen("club_home"), 1800); }}>Submit Without Review</button>
-        </div>
-      </div>
-      <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
-    </div></div>
-  );
-
-  // ── FREE REVIEW ──
-  if (screen === "free_review") return (
-    <div style={S.app}><div style={S.phone}>
-      {toast && <div style={S.toast}>{toast}</div>}
-      <div style={S.screen}>
-        <div style={S.header}>
-          <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
-            <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
-            <div style={S.headerEye}>Personal Log</div>
-          </div>
-          <div style={S.headerTitle}>Log a Review</div>
-        </div>
-        <div style={{ padding:"20px 16px 0" }}>
-          <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
-            Dined somewhere outside the club? Log it here. Your personal reviews are yours alone — share them with the community or keep them private.
-          </div>
-          <label style={S.label}>Restaurant Name</label>
-          <div style={{ position:"relative" }}>
-            <input style={S.input} placeholder="e.g. Don Angie" value={freeReviewRestaurant}
-              onChange={e => {
-                setFreeReviewRestaurant(e.target.value);
-                setFreeReviewShowSuggestions(true);
-                searchGooglePlaces(e.target.value, freeReviewCity || activeGroup.city, setGpFreeResults, setGpFreeLoading);
-              }}
-              onFocus={() => setFreeReviewShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setFreeReviewShowSuggestions(false), 200)}
-            />
-            {gpFreeLoading && <div style={{ fontSize:"11px", color:"#c9956a", padding:"4px 0" }}>Searching…</div>}
-            {freeReviewShowSuggestions && (gpFreeResults.length > 0 || restaurantSuggestions.length > 0) && (
-              <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:10, background:"#2a1a10", border:"1px solid rgba(201,149,106,0.2)", borderRadius:"10px", marginTop:"4px", maxHeight:"240px", overflowY:"auto" }}>
-                {restaurantSuggestions.map(r => (
-                  <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)", fontSize:"13px", color:"#f5e6d3" }}
-                    onMouseDown={() => {
-                      setFreeReviewRestaurant(r.name);
-                      setFreeReviewCity(r.city);
-                      setFreeReviewCuisine(r.cuisine);
-                      setRPrice(r.price);
-                      setFreeReviewShowSuggestions(false);
-                      setGpFreeResults([]);
-                    }}>
-                    <span style={{ fontWeight:600 }}>{r.name}</span>
-                    <span style={{ color:"#7a5a40", marginLeft:"8px" }}>{r.cuisine} · {r.city}</span>
-                    <span style={{ color:"#c9956a", marginLeft:"6px", fontSize:"10px" }}>In pool</span>
-                  </div>
-                ))}
-                {gpFreeResults.filter(g => !restaurantSuggestions.some(r => r.name === g.name)).map(r => (
-                  <div key={r.id} style={{ padding:"10px 14px", cursor:"pointer", borderBottom:"1px solid rgba(201,149,106,0.06)" }}
-                    onMouseDown={() => {
-                      setFreeReviewRestaurant(r.name);
-                      setFreeReviewCity(r.city);
-                      setFreeReviewCuisine(r.cuisine);
-                      setRPrice(r.price);
-                      setFreeReviewShowSuggestions(false);
-                      setGpFreeResults([]);
-                    }}>
-                    <div style={{ fontSize:"13px", color:"#f5e6d3", fontWeight:600 }}>{r.name}</div>
-                    <div style={{ fontSize:"11px", color:"#7a5a40", marginTop:"2px" }}>
-                      {r.cuisine} · {r.address?.split(',').slice(0,2).join(',') || r.city}
-                      {r.googleRating && <span style={{ color:"#7a9e7e", marginLeft:"6px" }}>★ {r.googleRating}</span>}
+                  {/* ── Admin Override ── */}
+                  <div style={{ marginTop:"20px", marginBottom:"8px" }}>
+                    <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Host Override</div>
+                    <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
+                      <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Force a Date</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
+                        Tired of waiting? As host, you can lock in a date even if not everyone has submitted. Members who haven't responded will be marked as not attending.
+                      </div>
+                      {MEMBERS.filter(m => m.name !== "You" && m.name === "Priya").length > 0 && (
+                        <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"10px", padding:"10px 14px", marginBottom:"14px" }}>
+                          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", textTransform:"uppercase", marginBottom:"8px" }}>Haven't Submitted</div>
+                          {MEMBERS.filter(m => m.name === "Priya").map(m => (
+                            <div key={m.name} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"6px 0" }}>
+                              <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                              <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
+                              <span style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginLeft:"auto" }}>will be marked absent</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
+                        onClick={() => {
+                          if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
+                          showToast("Date locked. Priya marked as not attending.");
+                          updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" });
+                        }}>
+                        Override & Lock Date
+                      </button>
+                      <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px", textAlign:"center" }}>Only visible to the host</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <label style={S.label}>City</label>
-          <input style={S.input} placeholder="e.g. New York, NY" value={freeReviewCity} onChange={e => setFreeReviewCity(e.target.value)}/>
-          <label style={S.label}>Cuisine</label>
-          <input style={S.input} placeholder="e.g. Italian, Korean..." value={freeReviewCuisine} onChange={e => setFreeReviewCuisine(e.target.value)}/>
-          <div style={{ marginBottom:"16px" }}>
-            <label style={S.label}>Price Range</label>
-            <div style={{ display:"flex", gap:"8px" }}>
-              {[1,2,3,4].map(n => (
-                <div key={n} style={chip(rPrice===n)} onClick={() => setRPrice(n)}>{PRICE_LABELS[n]}</div>
-              ))}
-            </div>
-          </div>
-          <MealTypeSelector selected={[freeReviewMealType]} onToggle={(t) => setFreeReviewMealType(t)} label="Meal Type"/>
-          <label style={S.label}>Date Visited</label>
-          <input style={S.input} placeholder="e.g. March 5, 2026"/>
 
-          <div style={{ ...S.card, textAlign:"center", padding:"24px", cursor:"pointer", margin:"0 0 16px", background:freeReviewPhoto?"rgba(122,158,126,0.07)":"rgba(255,255,255,0.03)", border:freeReviewPhoto?"1px solid rgba(122,158,126,0.25)":"1px solid rgba(201,149,106,0.1)" }}
-            onClick={() => { setFreeReviewPhoto(true); showToast("Photo added."); }}>
-            {freeReviewPhoto ? (<>
-              <div style={{ width:"32px", height:"32px", borderRadius:"50%", border:"1.5px solid #7a9e7e", margin:"0 auto 8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#7a9e7e" }}>✓</div>
-              <div style={{ fontSize:"13px", color:"#7a9e7e" }}>Photo added</div>
-            </>) : (<>
-              <div style={{ width:"32px", height:"32px", borderRadius:"50%", border:"1.5px solid rgba(201,149,106,0.35)", margin:"0 auto 8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#c9956a" }}>+</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40" }}>Add photos</div>
-            </>)}
-          </div>
-
-          <div style={{ marginBottom:"18px" }}>
-            <label style={S.label}>Your Rating</label>
-            <StarRating value={freeReviewRating} onChange={setFreeReviewRating}/>
-          </div>
-          <label style={S.label}>Your Review</label>
-          <textarea style={{ ...S.input, height:"110px", resize:"none" }} placeholder="What did you order? What was memorable? Would you bring the club here?" value={freeReviewText} onChange={e => setFreeReviewText(e.target.value)}/>
-          <label style={S.label}>Dishes You Tried</label>
-          <input style={S.input} placeholder="e.g. Beef tartare, Soufflé..."/>
-
-          <div style={{ ...S.card, margin:"0 0 16px", padding:"16px" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Reservation Platform</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"12px", fontStyle:"italic" }}>Was this restaurant booked via a platform?</div>
-            <div style={{ display:"flex", gap:"8px" }}>
-              {["Resy","OpenTable","Walk-in","Other"].map(p => (
-                <div key={p} style={{ ...chip(false), fontSize:"11px", padding:"8px 12px" }}>{p}</div>
-              ))}
-            </div>
-          </div>
-
-          <div style={S.card}>
-            <Toggle on={false} onToggle={() => {}} label="Share to Community Rankings"/>
-            <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", padding:"8px 0 4px", lineHeight:"1.5" }}>
-              When on, your review will appear in the Community Rankings tab for other Supper Club groups to discover.
-            </div>
-          </div>
-
-          <div style={{ height:"16px" }}/>
-          <button style={S.primaryBtn} onClick={() => { showToast("Review logged."); setTimeout(() => setScreen("club_home"), 1500); }}>Save Review</button>
-
-          <ShareRow showToast={showToast} />
-
-          <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => setScreen("club_home")}>Cancel</button>
+                  <div style={{ height:"18px" }}/>
+                  <button style={S.primaryBtn} onClick={() => { 
+                    if (selectedDates.length > 0) { 
+                      showToast("Availability saved. Waiting on host to pick a date."); 
+                      updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+                      setScreen("club_home");
+                      setActiveTab("home");
+                    } 
+                  }}>
+                    Submit Availability
+                  </button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
       <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
     </div></div>
-  );
-
-  // ── BADGES ──
-  if (screen === "badges") {
-    const BadgeList = ({ list, earned }: { list: typeof INDIVIDUAL_BADGES; earned: boolean }) => (
-      <>
-        {list.filter(b => b.earned === earned).map(b => (
-          <div key={b.id} style={{ display:"flex", alignItems:"center", gap:"14px", background:earned?"rgba(255,255,255,0.035)":"rgba(255,255,255,0.015)", border:`1px solid rgba(201,149,106,${earned?"0.1":"0.05"})`, borderRadius:"16px", padding:"16px", marginBottom:"10px", opacity:earned?1:0.45 }}>
-            <div style={{ ...S.badgeSymbol, ...(earned?{}:{ color:"#4a2e18", border:"1px solid rgba(201,149,106,0.08)" }) }}>{b.symbol}</div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:"15px", color:earned?"#f5e6d3":"#7a5a40", fontWeight:earned?"600":"400" }}>{b.name}</div>
-              <div style={{ fontSize:"12px", color:earned?"#7a5a40":"#4a2e18", marginTop:"3px" }}>{b.desc}</div>
-            </div>
-            {earned ? <div style={{ fontSize:"13px", color:"#c9956a" }}>✓</div> : <div style={{ width:"10px", height:"10px", borderRadius:"2px", border:"1.5px solid #4a2e18" }}/>}
-          </div>
-        ))}
-      </>
-    );
-
-    return (
-      <div style={S.app}><div style={S.phone}>
-        <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
-          <div style={{ ...S.header, paddingTop: "8px" }}>
-            <div style={S.headerEye}>Collection</div>
-            <div style={S.headerTitle}>Badges</div>
-          </div>
-          <div style={{ display:"flex", gap:"6px", margin:"16px 16px 0", padding:"4px", background:"rgba(255,255,255,0.03)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.08)" }}>
-            <div style={tabPill(badgeTab==="individual")} onClick={() => setBadgeTab("individual")}>Individual</div>
-            <div style={tabPill(badgeTab==="group")} onClick={() => setBadgeTab("group")}>Group</div>
-          </div>
-
-          {badgeTab === "individual" ? (
-            <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", textAlign:"center", marginBottom:"20px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Your Personal Collection</div>
-                <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{iEarned}</div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"6px", fontStyle:"italic" }}>badge{iEarned !== 1 ? "s" : ""} earned across all your groups</div>
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Earned</div>
-              <BadgeList list={INDIVIDUAL_BADGES} earned={true}/>
-              <div style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"20px" }}>Locked</div>
-              <BadgeList list={INDIVIDUAL_BADGES} earned={false}/>
-            </div>
-          ) : (
-            <div style={{ padding:"16px 16px 0" }}>
-              <div style={{ ...S.card, background:"linear-gradient(135deg,rgba(201,149,106,0.1),rgba(201,149,106,0.03))", textAlign:"center", marginBottom:"20px" }}>
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>{activeGroup.name}</div>
-                <div style={{ fontSize:"40px", color:"#f5e6d3", fontWeight:"700", lineHeight:"1" }}>{gEarned}</div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"6px", fontStyle:"italic" }}>badge{gEarned !== 1 ? "s" : ""} earned together</div>
-              </div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Earned</div>
-              <BadgeList list={GROUP_BADGES} earned={true}/>
-              <div style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px", marginTop:"20px" }}>Locked</div>
-              <BadgeList list={GROUP_BADGES} earned={false}/>
-            </div>
-          )}
-        </div>
-        <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
-      </div></div>
     );
   }
 
