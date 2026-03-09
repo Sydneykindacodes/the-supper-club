@@ -29,7 +29,7 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
         <div style={{ padding: "16px 16px 0" }}>
           <div style={{ marginBottom: "16px" }}>
             <div style={{ fontSize: "13px", color: "#7a5a40", fontStyle: "italic" }}>
-              {earned} of {defs.length} group badge{earned !== 1 ? "s" : ""} earned
+              {earned} group badge{earned !== 1 ? "s" : ""} earned
             </div>
             <div style={{ fontSize: "11px", color: "#5a3a25", marginTop: "4px" }}>
               Achievements unlocked together as a club. Individual badges are on your profile.
