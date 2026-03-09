@@ -736,9 +736,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               }}>
                 Set Availability for Next Dinner
               </button>
-              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => {
                 resetForNextDinner();
-                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                await dbData.completeDinner();
                 setDinnerCompletedAt(null);
               }}>
                 I'll Do It Later
