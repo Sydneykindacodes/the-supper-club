@@ -46,6 +46,7 @@ export interface DBReview {
   // joined fields
   group_name?: string;
   member_name?: string;
+  member_avatar_color?: string;
 }
 
 export interface DBBadge {
