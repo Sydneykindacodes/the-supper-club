@@ -727,9 +727,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", marginBottom:"20px", lineHeight:"1.6" }}>
                 Time to start planning the next one. Your availability has been reset.
               </div>
-              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => {
+              <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={async () => {
                 resetForNextDinner();
-                updateGroup(activeGroup.id, { dinnerStatus: "no_date", nextDinner: null, pendingDate: null });
+                await dbData.completeDinner();
                 setDinnerCompletedAt(null);
                 setScreen("availability");
                 setActiveTab("schedule");
