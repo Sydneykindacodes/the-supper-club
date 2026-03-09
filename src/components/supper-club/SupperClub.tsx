@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
@@ -9,6 +9,12 @@ import {
   Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
 import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+
+interface SupperClubProps {
+  user: User;
+  signOut: () => Promise<void>;
+}
 
 interface GooglePlace {
   id: string;
