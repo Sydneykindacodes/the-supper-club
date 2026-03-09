@@ -935,7 +935,155 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     </div></div>
   );
 
-  // ── MEMBER PROFILE VIEW (other users) ──
+  // ── SEED POOL (initial restaurant picks after create/join) ──
+  if (screen === "seed_pool") {
+    const seedSearchCity = activeGroup.city || "New York, NY";
+    const canFinish = seedPoolPicks.length >= seedPoolMin;
+    const atMax = seedPoolPicks.length >= seedPoolMax;
+    const isFounder = seedPoolMin === 3;
+
+    const handleSeedSearch = () => {
+      if (!seedPoolSearch.trim()) return;
+      searchGooglePlaces(seedPoolSearch.trim(), seedSearchCity, setSeedPoolResults, setSeedPoolLoading);
+    };
+
+    const handleSeedAdd = (r: GooglePlace) => {
+      if (atMax) { showToast(`Maximum ${seedPoolMax} picks allowed.`); return; }
+      if (seedPoolPicks.some(p => p.name.toLowerCase() === r.name.toLowerCase())) { showToast("Already picked."); return; }
+      setSeedPoolPicks(prev => [...prev, r]);
+    };
+
+    const handleSeedRemove = (name: string) => {
+      setSeedPoolPicks(prev => prev.filter(p => p.name !== name));
+    };
+
+    const handleSeedFinish = async () => {
+      if (!canFinish) return;
+      setSeedPoolSaving(true);
+      for (const r of seedPoolPicks) {
+        await dbData.addRestaurantToPool({
+          name: r.name,
+          cuisine: r.cuisine,
+          city: r.city,
+          price: r.price,
+          googleRating: r.googleRating,
+          googleReviewCount: r.googleReviewCount,
+          googlePlaceId: r.googlePlaceId,
+          address: r.address,
+        }, String(activeGroup.id));
+      }
+      setSeedPoolSaving(false);
+      setScreen("club_home");
+      setActiveTab("home");
+      showToast(`${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
+    };
+
+    return (
+      <div style={S.app}><div style={S.phone}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"52px", overflowY:"auto" }}>
+          <div style={{ width:"100%", paddingBottom:"40px" }}>
+            <div style={{ ...S.mainTitle, fontSize:"30px", textAlign:"center", marginBottom:"6px" }}>
+              {isFounder ? "Seed Your Pool" : "Add to the Pool"}
+            </div>
+            <div style={{ ...S.subtitle, textAlign:"center", marginBottom:"8px" }}>
+              {isFounder
+                ? "Pick 3 restaurants to start your club's pool"
+                : "Add 1–3 restaurants to the group pool"}
+            </div>
+            <div style={{ fontSize:"11px", color:"#8c8278", textAlign:"center", marginBottom:"24px" }}>
+              {seedPoolPicks.length} of {seedPoolMax} selected
+              {!canFinish && <span style={{ color:"#c45c5c" }}> · {seedPoolMin - seedPoolPicks.length} more needed</span>}
+            </div>
+
+            {/* Current picks */}
+            {seedPoolPicks.length > 0 && (
+              <div style={{ marginBottom:"20px" }}>
+                <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Your Picks</div>
+                {seedPoolPicks.map(p => (
+                  <div key={p.name} style={{ ...S.card, margin:"0 0 8px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div>
+                      <div style={S.cardTitle}>{p.name}</div>
+                      <div style={S.cardSub}>{p.cuisine} · {p.city}</div>
+                    </div>
+                    <button onClick={() => handleSeedRemove(p.name)} style={{ background:"none", border:"none", color:"#c45c5c", fontSize:"18px", cursor:"pointer", padding:"4px 8px" }}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Search */}
+            {!atMax && (
+              <>
+                <label style={S.label}>Search Restaurants</label>
+                <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
+                  <input
+                    style={{ ...S.input, flex:1, marginBottom:0 }}
+                    placeholder={`Search in ${seedSearchCity}...`}
+                    value={seedPoolSearch}
+                    onChange={e => setSeedPoolSearch(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSeedSearch()}
+                  />
+                  <button onClick={handleSeedSearch} style={{ ...S.primaryBtn, width:"auto", padding:"12px 20px", marginBottom:0 }}>
+                    Go
+                  </button>
+                </div>
+
+                {seedPoolLoading && (
+                  <div style={{ padding:"12px 0", textAlign:"center", fontSize:"12px", color:"#8c8278" }}>Searching...</div>
+                )}
+
+                {seedPoolResults.length > 0 && (
+                  <div style={{ marginBottom:"16px" }}>
+                    <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>
+                      Results · {seedPoolResults.length}
+                    </div>
+                    {seedPoolResults.slice(0, 10).map(r => {
+                      const alreadyPicked = seedPoolPicks.some(p => p.name.toLowerCase() === r.name.toLowerCase());
+                      return (
+                        <div key={r.id} style={{ ...S.card, margin:"0 0 8px", display:"flex", justifyContent:"space-between", alignItems:"center", opacity: alreadyPicked ? 0.5 : 1 }}>
+                          <div style={{ flex:1 }}>
+                            <div style={S.cardTitle}>{r.name}</div>
+                            <div style={S.cardSub}>{r.cuisine} · {"$".repeat(r.price || 2)}</div>
+                            <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"2px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                          </div>
+                          <button
+                            onClick={() => !alreadyPicked && handleSeedAdd(r)}
+                            disabled={alreadyPicked}
+                            style={{
+                              background: alreadyPicked ? "transparent" : "rgba(201,149,106,0.15)",
+                              border: `1px solid ${alreadyPicked ? "rgba(122,158,126,0.3)" : "rgba(201,149,106,0.3)"}`,
+                              borderRadius:"8px", padding:"6px 14px",
+                              cursor: alreadyPicked ? "default" : "pointer",
+                              fontSize:"11px",
+                              color: alreadyPicked ? "#7a9e7e" : "#c9956a",
+                              fontFamily:"Georgia,serif", whiteSpace:"nowrap",
+                            }}
+                          >
+                            {alreadyPicked ? "✓ Picked" : "+ Add"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Finish button */}
+            <button
+              style={{ ...S.primaryBtn, opacity: canFinish && !seedPoolSaving ? 1 : 0.4, marginTop:"8px" }}
+              onClick={handleSeedFinish}
+              disabled={!canFinish || seedPoolSaving}
+            >
+              {seedPoolSaving ? "Saving..." : canFinish ? `Continue with ${seedPoolPicks.length} Pick${seedPoolPicks.length > 1 ? "s" : ""}` : `Select ${seedPoolMin - seedPoolPicks.length} More`}
+            </button>
+          </div>
+        </div>
+      </div></div>
+    );
+  }
+
   if (viewingMemberUserId) {
     return (
       <MemberProfileView
