@@ -362,23 +362,10 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <div style={{ padding:"22px 16px 0" }}>
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Past Dinners</div>
-            {visitedRestaurants.slice(0,2).map((d) => (
-              <div key={d.id} style={{ ...S.card, margin:"0 0 10px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <div>
-                  <div style={S.cardTitle}>{d.name}</div>
-                  <div style={S.cardSub}>{d.visitedDate} · {d.cuisine}</div>
-                </div>
-                <RatingBadge restaurant={d} large/>
-              </div>
-            ))}
-          </div>
-
           <div style={{ padding:"8px 16px 4px" }}>
+            <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("past_dinners")}>Past Dinners · {visitedRestaurants.length}</button>
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("group_pool")}>View {activeGroup.name} Pool</button>
             <button style={{ ...S.primaryBtn, fontSize:"12px", padding:"14px", marginBottom:"8px" }} onClick={() => setScreen("post_dinner")}>Submit Last Dinner Review</button>
-            <button style={{ ...S.ghostBtn, fontSize:"12px", padding:"12px" }} onClick={() => setScreen("free_review")}>Log a Personal Restaurant Review</button>
           </div>
         </div>
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
