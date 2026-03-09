@@ -2088,8 +2088,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // ── REVEAL TAB ──
   if (screen === "reveal") {
-    const ag = activeGroup;
-    const isHost = groupAdmin === "You";
+    const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
+    const hostIsYou = dbData.isHost;
     const hasScheduled = ag.dinnerStatus === "scheduled" && ag.nextDinner;
     const hasConfirmed = ag.dinnerStatus === "pending_confirm" && ag.pendingDate;
 
