@@ -34,6 +34,7 @@ interface GooglePlace {
   googleRating: number | null;
   googleReviewCount: number;
   googlePlaceId: string;
+  photoRefs?: string[];
 }
 import { S, tabPill, chip } from "./styles";
 import {
