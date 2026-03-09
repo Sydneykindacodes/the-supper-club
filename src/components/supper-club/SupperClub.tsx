@@ -4,6 +4,7 @@ import {
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
   WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
   SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES, WITTY_INITIATION_MESSAGES,
+  WITTY_SKIP_MESSAGES,
   MAX_GROUP_MEMBERS,
   Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
@@ -44,6 +45,7 @@ export default function SupperClub() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
   const [groupAdmin, setGroupAdmin] = useState("You");
+  const [groupCreator] = useState("You"); // Creator is fixed - can't change
   const [joinCode, setJoinCode] = useState("");
   const [joinName, setJoinName] = useState("");
 
@@ -353,7 +355,7 @@ export default function SupperClub() {
                 padding:"32px 24px", 
                 textAlign:"center" 
               }}>
-                <div style={{ fontSize:"48px", marginBottom:"16px" }}>🍷</div>
+                <div style={{ fontSize:"24px", marginBottom:"16px", color:"#c9956a" }}>◈</div>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"12px" }}>
                   Awaiting Initiation
                 </div>
@@ -376,7 +378,7 @@ export default function SupperClub() {
                     {ag.nextDinner || "Date TBD"}
                   </div>
                   <div style={{ fontSize:"12px", color:"#5a3a25" }}>
-                    Reservation booked • You'll join the next one
+                    Reservation booked · You'll join the next one
                   </div>
                 </div>
                 <div style={{ 
@@ -420,7 +422,7 @@ export default function SupperClub() {
             return isHost ? (
               <div style={{ ...S.card, border:"2px solid rgba(201,149,106,0.4)", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.95))" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
-                  <span style={{ fontSize:"18px" }}>🤫</span>
+                  <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>For Your Eyes Only</div>
                 </div>
                 <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"16px", lineHeight:"1.7" }}>
@@ -431,22 +433,22 @@ export default function SupperClub() {
                   <div style={{ fontSize:"24px", color:"#f5e6d3", marginBottom:"4px", fontWeight:"500" }}>{mockRestaurant.name}</div>
                   <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic" }}>{mockRestaurant.cuisine} · {mockRestaurant.city}</div>
                 </div>
-                <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>🔗 Secure the Reservation</div>
+                <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500" }}>Secure the Reservation</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"16px" }}>
                   <a href={`https://www.google.com/maps/search/${encodeURIComponent(mockRestaurant.name)}+${encodeURIComponent(mockRestaurant.city)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"16px" }}>📍</span>
+                    <span style={{ fontSize:"12px", color:"#7a9e7e" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Google Maps</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking →</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>often has direct booking</span>
                   </a>
                   <a href={`https://www.opentable.com/s?term=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"16px" }}>🍽️</span>
+                    <span style={{ fontSize:"12px", color:"#c9956a" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>OpenTable</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability →</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>real-time availability</span>
                   </a>
                   <a href={`https://resy.com/?query=${encodeURIComponent(mockRestaurant.name)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:"10px", border:"1px solid rgba(201,149,106,0.15)", textDecoration:"none", cursor:"pointer" }}>
-                    <span style={{ fontSize:"16px" }}>✨</span>
+                    <span style={{ fontSize:"12px", color:"#9b7ec8" }}>◎</span>
                     <span style={{ fontSize:"13px", color:"#f5e6d3" }}>Resy</span>
-                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots →</span>
+                    <span style={{ fontSize:"11px", color:"#5a3a25", marginLeft:"auto" }}>trending spots</span>
                   </a>
                 </div>
                 <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"12px", marginBottom:"12px" }}>
@@ -455,26 +457,29 @@ export default function SupperClub() {
                   </div>
                 </div>
                 <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
-                  showToast("🎉 Reservation confirmed! The secret is safe.");
+                  showToast("Reservation confirmed. The secret is safe.");
                   updateGroup(activeGroup.id, { dinnerStatus: "scheduled" });
                 }}>
-                  ✓ I've Booked It
+                  I've Booked It
                 </button>
-                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => showToast("Restaurant skipped. Finding next best option...")}>
-                  Skip This One (Card Required)
+                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => {
+                  const wittyMsg = WITTY_SKIP_MESSAGES[Math.floor(Math.random() * WITTY_SKIP_MESSAGES.length)];
+                  showToast(wittyMsg);
+                }}>
+                  Skip This One
                 </button>
               </div>
             ) : (
               <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.18)" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"10px" }}>
-                  <span style={{ fontSize:"16px" }}>🔒</span>
+                  <span style={{ fontSize:"12px", color:"#c9956a" }}>◇</span>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase" }}>Next Dinner</div>
                 </div>
                 <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>Destination Unknown</div>
                 <div style={{ fontSize:"13px", color:"#7a5a40" }}>{ag.nextDinner} · 7:30 PM</div>
                 <div style={{ fontSize:"12px", color:"#5a3a25", marginTop:"3px", fontStyle:"italic" }}>Only the host knows where you're going...</div>
                 <div style={{ marginTop:"14px", padding:"10px 14px", background:"rgba(201,149,106,0.07)", borderRadius:"10px", fontSize:"12px", color:"#c9956a", textAlign:"center" }}>
-                  🌅 Restaurant revealed at 8 AM on dinner day
+                  Restaurant revealed at 8 AM on dinner day
                 </div>
               </div>
             );
@@ -636,7 +641,31 @@ export default function SupperClub() {
   }
 
   // ── GROUP SETTINGS ──
-  if (screen === "group_settings") return (
+  if (screen === "group_settings") {
+    const isCreator = groupCreator === "You";
+    
+    if (!isCreator) return (
+      <div style={S.app}><div style={S.phone}>
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"4px" }}>
+              <button onClick={() => setScreen("club_home")} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"18px", cursor:"pointer", padding:0 }}>←</button>
+              <div style={S.headerEye}>{activeGroup.name}</div>
+            </div>
+            <div style={S.headerTitle}>Settings</div>
+          </div>
+          <div style={{ padding:"40px 24px", textAlign:"center" }}>
+            <div style={{ fontSize:"18px", color:"#c9956a", marginBottom:"12px" }}>◈</div>
+            <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>Creator Access Only</div>
+            <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
+              Only the group creator can modify these settings. If you need something changed, have a word with them.
+            </div>
+          </div>
+        </div>
+      </div></div>
+    );
+    
+    return (
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
@@ -729,23 +758,23 @@ export default function SupperClub() {
               </div>
             )}
             {MEMBERS.map(m => {
-              const isAdmin = m.name === groupAdmin;
+              const isHost = m.name === groupAdmin;
+              const isCreator2 = m.name === groupCreator;
               const isYou = m.name === "You";
-              const youAreAdmin = groupAdmin === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                     <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                    {isAdmin && <span style={{ fontSize:"9px", color:"#1a0f0a", background:"rgba(201,149,106,0.6)", borderRadius:"4px", padding:"2px 5px", fontWeight:"700", letterSpacing:"0.5px" }}>HOST</span>}
+                    {isCreator2 && <span style={{ fontSize:"11px", color:"#c9956a", marginLeft:"2px" }} title="Creator">⚜</span>}
+                    {isHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && youAreAdmin && !isAdmin && (
+                    {!isYou && !isHost && (
                       <span onClick={() => { setGroupAdmin(m.name); showToast(`${m.name} is now the host.`); }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
                     )}
-                    {!isYou && youAreAdmin && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
-                    {isYou && isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
-                    {isYou && !isAdmin && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
+                    {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
+                    {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
                   </div>
                 </div>
               );
@@ -763,14 +792,14 @@ export default function SupperClub() {
               Preview the secret notification a new host receives when they're randomly selected.
             </div>
             <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => setScreen("new_host_reveal")}>
-              🤫 Demo: New Host Reveal
+              Demo: New Host Reveal
             </button>
             <button style={{ ...S.primaryBtn, marginBottom:"0", background:"linear-gradient(135deg, #9b7ec8, #7a5ea8)" }} onClick={() => {
               setAwaitingInitiation(!awaitingInitiation);
               updateGroup(activeGroup.id, { dinnerStatus: "scheduled", nextDinner: "March 18, 2026" });
               showToast(awaitingInitiation ? "Initiation cleared — you're in!" : "Now viewing as new member awaiting initiation");
             }}>
-              🍷 Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
+              Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
             </button>
           </div>
 
@@ -798,7 +827,8 @@ export default function SupperClub() {
         </div>
       </div>
     </div></div>
-  );
+    );
+  }
 
   // ── HOST SELECT DATE ──
   if (screen === "host_select_date") {
@@ -1021,7 +1051,7 @@ export default function SupperClub() {
 
   // ── PAST DINNERS ──
   if (screen === "past_dinners") {
-    const mockPhotos = ["📷", "🍽️", "🍷", "🥂"];
+    const mockPhotos = ["I", "II", "III", "IV"];
     const mockReviews = [
       { member: "Marisol", rating: 4.8, text: "The pasta was transcendent. I'm still thinking about that carbonara.", photo: true },
       { member: "Derek", rating: 4.5, text: "Solid experience. The wine pairing was worth every penny.", photo: true },
@@ -1048,7 +1078,7 @@ export default function SupperClub() {
 
             {visitedRestaurants.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                <div style={{ fontSize:"36px", marginBottom:"12px" }}>🍽️</div>
+                <div style={{ fontSize:"24px", marginBottom:"12px", color:"#c9956a" }}>◈</div>
                 <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No dinners yet.</div>
                 <div style={{ fontSize:"12px", color:"#5a3a25" }}>Your dining history will appear here once you've been out together.</div>
               </div>
@@ -1115,7 +1145,7 @@ export default function SupperClub() {
                             "{rev.text}"
                           </div>
                           {rev.photo && (
-                            <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px" }}>📷 Shared a photo</div>
+                            <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px" }}>Shared a photo</div>
                           )}
                         </div>
                       );
@@ -1579,7 +1609,7 @@ export default function SupperClub() {
             // Trigger next host selection (in production this would call the edge function)
             // For demo, show the secret host notification after a delay
             setTimeout(() => {
-              showToast("🤫 A new host has been secretly selected...");
+              showToast("A new host has been secretly selected...");
             }, 3000);
             setTimeout(() => setScreen("club_home"), 2000);
           }}>Submit Review & Complete Dinner</button>
@@ -1824,9 +1854,10 @@ export default function SupperClub() {
                 display:"flex", 
                 alignItems:"center", 
                 justifyContent:"center",
-                fontSize:"32px"
+                fontSize:"24px",
+                color:"#c9956a"
               }}>
-                🤫
+                ◆
               </div>
             </div>
             
@@ -1870,7 +1901,7 @@ export default function SupperClub() {
                 setGroupAdmin("You");
                 setScreen("club_home"); 
                 setActiveTab("home");
-                showToast("🎉 You're officially the host. Keep the secret safe.");
+                showToast("You're officially the host. Keep the secret safe.");
               }}
             >
               Accept the Responsibility

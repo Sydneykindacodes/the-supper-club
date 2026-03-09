@@ -144,14 +144,14 @@ export const WITTY_NO_DATE = [
 ];
 
 export const SECRET_HOST_MESSAGES = [
-  "🤫 You've been chosen. The torch has been passed in absolute secrecy.",
-  "🕵️ Psst... you're the new keeper of the dinner secrets.",
-  "🔮 The Supper Club has spoken. You are the chosen one.",
-  "🎭 A new host emerges from the shadows. It's you.",
-  "✨ Congratulations, secret agent. Your mission: plan the next feast.",
-  "🗝️ The keys to the kingdom are now yours. Guard them wisely.",
-  "🌙 Under cover of night, you've been selected. Tell no one.",
-  "🎪 The curtain rises. You're the star of the next dinner show.",
+  "You've been chosen. The torch has been passed in absolute secrecy.",
+  "Psst... you're the new keeper of the dinner secrets.",
+  "The Supper Club has spoken. You are the chosen one.",
+  "A new host emerges from the shadows. It's you.",
+  "Congratulations, secret agent. Your mission: plan the next feast.",
+  "The keys to the kingdom are now yours. Guard them wisely.",
+  "Under cover of night, you've been selected. Tell no one.",
+  "The curtain rises. You're the star of the next dinner show.",
 ];
 
 export const HOST_PRIVILEGE_MESSAGES = [
@@ -171,6 +171,17 @@ export const WITTY_INITIATION_MESSAGES = [
   "The reservation is locked. Consider this your appetizer course — just watching.",
   "Your membership is pending initiation. Think of it as... anticipation seasoning.",
   "Welcome to the waiting list that actually means something. See you after dinner.",
+];
+
+export const WITTY_SKIP_MESSAGES = [
+  "Not this one. The universe has other plans.",
+  "Skipped. Even restaurants have bad timing.",
+  "Moving on. Some secrets weren't meant to be.",
+  "Next. That one didn't spark joy.",
+  "Passed. The cards have been reshuffled.",
+  "Onwards. Better options await.",
+  "Declined. Trust the process.",
+  "Not tonight. The stars weren't aligned.",
 ];
 
 export const MEAL_TYPES = ["Breakfast","Brunch","Lunch","Dinner"];
