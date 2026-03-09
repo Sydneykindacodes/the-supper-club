@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { UtensilsCrossed } from "lucide-react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES,
   WITTY_NO_DATE, MEAL_TYPES, WITTY_HOST_WAITING,
