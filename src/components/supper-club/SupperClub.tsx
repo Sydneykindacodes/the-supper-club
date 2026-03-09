@@ -2163,7 +2163,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
                             </div>
                             <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25", fontStyle:"italic" }}>
-                              {hasSubmitted ? `${dates.length} dates` : "Waiting"}
+                              {hasSubmitted ? `${getUniqueDates(dates).length} dates` : "Waiting"}
                             </span>
                           </div>
                         );
