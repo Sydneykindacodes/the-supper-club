@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
-  RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
+  RESTAURANT_POOL, PREVIOUSLY_VISITED,
   WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
   SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES, WITTY_INITIATION_MESSAGES,
   WITTY_SKIP_MESSAGES,
@@ -69,7 +69,7 @@ const LoadingScreen = () => (
 );
 
 export default function SupperClub({ user, signOut }: SupperClubProps) {
-  const MAX_GROUPS = 15;
+  const MAX_GROUPS = 10;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
   const [screen, setScreen] = useState<string>("loading");
   const [groups, setGroups] = useState<Group[]>([]);
@@ -253,14 +253,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
-  // Mock restaurant detail data
-  const mockRestaurantPhotos = ["I", "II", "III", "IV", "V", "VI"];
-  const mockRestaurantReviews = [
-    { group: "The Velvet Fork", member: "Marisol", rating: 4.8, text: "An extraordinary dining experience. The attention to detail in every dish was remarkable.", date: "Feb 2026", hasPhoto: true },
-    { group: "Tuesday Table", member: "Derek", rating: 4.6, text: "Perfectly charming. The sommelier remembered us from last time. Unsettling. Wonderful.", date: "Jan 2026", hasPhoto: true },
-    { group: "The Midnight Fork", member: "Priya", rating: 5.0, text: "Flawless execution. We gave it a perfect score and immediately questioned our life choices.", date: "Mar 2026", hasPhoto: false },
-    { group: "Six at the Table", member: "You", rating: 4.7, text: "The omakase was extraordinary. The presentation alone was worth the visit.", date: "Feb 2026", hasPhoto: true },
-  ];
+  // Restaurant detail reviews come from DB now
 
   const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
     if (query.length < 2) { setter([]); return; }
@@ -355,9 +348,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const openRestaurantDetail = useCallback((r: Restaurant | GooglePlace) => {
     setSelectedRestaurantDetail(r);
     const cuisine = 'cuisine' in r ? r.cuisine : 'Restaurant';
-    const reviews = PUBLIC_REVIEWS.filter(rev => rev.restaurant === r.name).map(rev => ({ text: rev.review, rating: rev.rating }));
+    const reviews = dbData.communityReviews
+      .filter(rev => rev.restaurant_name === r.name)
+      .map(rev => ({ text: rev.review_text || "", rating: rev.rating }));
     fetchRestaurantDescription(r.name, cuisine, r.city, reviews);
-  }, [fetchRestaurantDescription]);
+  }, [fetchRestaurantDescription, dbData.communityReviews]);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
@@ -375,8 +370,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
-  const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
-  const allConfirmed = confirmedCount === currentMembers.length;
 
   const sortedVisited = [...visitedRestaurants].sort((a, b) => {
     if (visitedSort === "rating") return (b.visitedRating || 0) - (a.visitedRating || 0);
@@ -898,13 +891,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
 
-          {ag.dinnerStatus === "pending_confirm" && (
+          {ag.dinnerStatus === "pending_confirm" && (() => {
+            const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+            const confirmedCount = Object.values(confirmationVotes).filter(Boolean).length;
+            const allConfirmed = confirmedCount === nonHostMembers.length;
+            const isHost = dbData.isHost;
+            
+            return (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"rgba(201,149,106,0.04)" }}>
               <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Proposed Date</div>
               <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{ag.pendingDate}</div>
-              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>Everyone must confirm before the reservation is locked.</div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"14px", fontStyle:"italic" }}>
+                {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed." : "Everyone must confirm before the reservation is locked."}
+              </div>
               <div style={{ marginBottom:"14px" }}>
-                {currentMembers.map(m => (
+                {/* Show host as auto-confirmed */}
+                {currentMembers.filter(m => m.name === dbData.hostName).map(m => (
+                  <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                      <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                      <span style={{ fontSize:"13px", color:"#f5e6d3" }}>{m.name}</span>
+                      <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>
+                    </div>
+                    <span style={{ fontSize:"12px", fontStyle:"italic", color:"#7a9e7e" }}>Auto-Confirmed</span>
+                  </div>
+                ))}
+                {nonHostMembers.map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
@@ -914,14 +926,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                 ))}
               </div>
-              {!confirmationVotes["You"] && (
+              {!isHost && !confirmationVotes["You"] && (
                 <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setConfirmationVotes(v => ({...v, You:true})); showToast("Confirmed. Reservation will be placed shortly."); }}>
                   Confirm — I'll Be There
                 </button>
               )}
-              {confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {currentMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {isHost && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
+              {!isHost && confirmationVotes["You"] && !allConfirmed && <div style={{ fontSize:"12px", color:"#7a9e7e", textAlign:"center", fontStyle:"italic", padding:"4px 0" }}>Waiting on {nonHostMembers.filter(m => !confirmationVotes[m.name]).map(m => m.name).join(", ")}.</div>}
             </div>
-          )}
+            );
+          })()}
 
           {ag.dinnerStatus === "no_date" && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.12)", textAlign:"center", padding:"28px 20px" }}>
@@ -940,7 +954,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           {ag.dinnerStatus === "awaiting_host" && (() => {
             const isHost = dbData.isHost;
             const submittedMembers = currentMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
-            const allSubmitted = submittedMembers.length === currentMembers.length;
             
             // Calculate overlapping dates
             const allDates: string[] = [];
@@ -963,7 +976,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 {isHost ? (
                   <>
                     <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px" }}>
-                      {allSubmitted ? "Everyone's in. Time to decide." : "Some dates are in — you can pick anytime."}
+                      {submittedMembers.length === currentMembers.length ? "Everyone's in. Time to decide." : `${submittedMembers.length} of ${currentMembers.length} submitted — you can pick anytime.`}
                     </div>
                     <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
                       {WITTY_HOST_WAITING[wittyHostIdx]}
@@ -1709,21 +1722,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
   if (screen === "explore") {
-    // Merge static PUBLIC_REVIEWS with DB community reviews for display
-    const allCommunityReviews = [
-      ...dbData.communityReviews.map(r => ({
-        group: "Supper Club Member",
-        restaurant: r.restaurant_name,
-        rating: r.rating,
-        review: r.review_text || "",
-        city: r.city || "Unknown",
-        date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-        photo_url: r.photo_url,
-      })),
-      ...PUBLIC_REVIEWS.map(r => ({ ...r, review: r.review, photo_url: null as string | null })),
-    ];
+    // Only use real DB community reviews — no fake/static data
+    const allCommunityReviews = dbData.communityReviews.map(r => ({
+      group: "Supper Club Member",
+      restaurant: r.restaurant_name,
+      rating: r.rating,
+      review: r.review_text || "",
+      city: r.city || "Unknown",
+      date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      photo_url: r.photo_url,
+    }));
     const uniqueRestaurants = [...new Set(allCommunityReviews.map(r => r.restaurant))];
-    const cuisines = [...new Set([...RESTAURANT_POOL, ...PREVIOUSLY_VISITED].map(r => r.cuisine))];
+    const cuisines = [...new Set(allCommunityReviews.map(r => r.city))]; // Use cities from real reviews
 
     // Restaurant Detail View
     if (selectedRestaurantDetail) {
@@ -2104,25 +2114,35 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <div style={{ padding:"16px 16px 0" }}>
                 <button onClick={() => setSelectedPublicR(null)} style={{ background:"none", border:"none", color:"#c9956a", fontSize:"14px", cursor:"pointer", padding:0, marginBottom:"16px" }}>← All Restaurants</button>
                 <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{selectedPublicR}</div>
-                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>New York, NY</div>
-                
+                {(() => {
+                  const reviews = allCommunityReviews.filter(r => r.restaurant === selectedPublicR);
+                  const city = reviews[0]?.city || "Unknown";
+                  return <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px" }}>{city}</div>;
+                })()}
+
                 {/* Photos Section */}
-                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
-                  Photos · {mockRestaurantPhotos.length}
-                </div>
-                <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
-                  {mockRestaurantPhotos.slice(0,4).map((symbol, i) => (
-                    <div key={i} style={{ 
-                      minWidth:"72px", height:"72px", borderRadius:"10px", 
-                      background:"linear-gradient(135deg, rgba(201,149,106,0.15), rgba(201,149,106,0.05))",
-                      display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:"24px", color:"#c9956a", border:"1px solid rgba(201,149,106,0.12)",
-                      flexShrink:0
-                    }}>
-                      {symbol}
-                    </div>
-                  ))}
-                </div>
+                {(() => {
+                  const reviewPhotos = allCommunityReviews
+                    .filter(r => r.restaurant === selectedPublicR && r.photo_url)
+                    .map(r => r.photo_url!);
+                  return reviewPhotos.length > 0 ? (
+                    <>
+                      <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                        Photos · {reviewPhotos.length}
+                      </div>
+                      <div style={{ display:"flex", gap:"8px", overflowX:"auto", paddingBottom:"12px", marginBottom:"16px" }}>
+                        {reviewPhotos.map((url, i) => (
+                          <div key={i} style={{ 
+                            minWidth:"72px", height:"72px", borderRadius:"10px", 
+                            overflow:"hidden", flexShrink:0
+                          }}>
+                            <img src={url} alt={`Photo ${i + 1}`} style={{ width:"72px", height:"72px", objectFit:"cover" }} />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null;
+                })()}
 
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                   Reviews · {allCommunityReviews.filter(r => r.restaurant === selectedPublicR).length}
@@ -2143,7 +2163,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                 ))}
                 <button style={{ ...S.primaryBtn, marginTop:"8px" }} onClick={() => {
-                  const restaurant: Restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city:"New York, NY", price:3, visited:false, visitedDate:null, visitedRating:null };
+                  const restaurant: Restaurant = { id:Date.now(), name:selectedPublicR!, cuisine:"—", suggested_by:"Community", city: allCommunityReviews.find(r => r.restaurant === selectedPublicR)?.city || "Unknown", price:3, visited:false, visitedDate:null, visitedRating:null };
                   setAddToGroupPicker({ restaurant, visible: true });
                   setAddToGroupSelected([activeGroup.id]);
                 }}>Add to Pool</button>
@@ -2151,23 +2171,76 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             ) : (
               <div style={{ padding:"16px 16px 0" }}>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.6" }}>
-                  Reviews from other Supper Club groups. Browse, discover, add to your pools.
+                  Reviews from Supper Club members. Only restaurants that have been reviewed appear here.
                 </div>
-                {uniqueRestaurants.map(name => {
-                  const reviews = allCommunityReviews.filter(r => r.restaurant === name);
-                  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
-                  return (
-                    <div key={name} onClick={() => setSelectedPublicR(name)} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px" }}>
-                        <div style={S.cardTitle}>{name}</div>
-                        <div style={{ fontSize:"16px", color:"#c9956a", fontWeight:"700" }}>{avg}</div>
+
+                {/* Community Filters */}
+                {allCommunityReviews.length > 0 && (
+                  <>
+                    <div style={{ marginBottom:"16px" }}>
+                      <label style={S.label}>Filter by City</label>
+                      <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
+                        <div style={chip(exploreCuisineFilter==="all")} onClick={() => setExploreCuisineFilter("all")}>All</div>
+                        {[...new Set(allCommunityReviews.map(r => r.city))].slice(0, 5).map(c => (
+                          <div key={c} style={chip(exploreCuisineFilter===c)} onClick={() => setExploreCuisineFilter(c)}>{c}</div>
+                        ))}
                       </div>
-                      <div style={S.cardSub}>New York, NY · {reviews.length} review{reviews.length > 1 ? "s" : ""}</div>
-                      <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic", marginTop:"8px" }}>"{reviews[0].review.slice(0,80)}..."</div>
-                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap to see photos and all reviews →</div>
                     </div>
-                  );
-                })}
+                    <div style={{ marginBottom:"16px" }}>
+                      <label style={S.label}>Sort By</label>
+                      <div style={{ display:"flex", gap:"8px" }}>
+                        {([["date","Most Recent"],["rating","Highest Rated"],["price","Price"]] as const).map(([id,label]) => (
+                          <div key={id} style={chip(visitedSort===id)} onClick={() => setVisitedSort(id)}>{label}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {allCommunityReviews.length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                    <div style={{ fontSize:"24px", color:"#4a2e18", marginBottom:"12px" }}>◈</div>
+                    <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", marginBottom:"4px" }}>No community reviews yet.</div>
+                    <div style={{ fontSize:"12px", color:"#5a3a25" }}>Be the first to review a restaurant and it'll appear here for all Supper Club members.</div>
+                  </div>
+                ) : (
+                  (() => {
+                    // Filter and sort restaurants
+                    let filteredRestaurants = uniqueRestaurants.map(name => {
+                      const reviews = allCommunityReviews.filter(r => r.restaurant === name);
+                      const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
+                      const city = reviews[0]?.city || "Unknown";
+                      const latestDate = reviews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date || "";
+                      return { name, reviews, avg, city, latestDate, reviewCount: reviews.length };
+                    });
+
+                    // Apply city filter
+                    if (exploreCuisineFilter !== "all") {
+                      filteredRestaurants = filteredRestaurants.filter(r => r.city === exploreCuisineFilter);
+                    }
+
+                    // Apply sort
+                    if (visitedSort === "rating") {
+                      filteredRestaurants.sort((a, b) => b.avg - a.avg);
+                    } else if (visitedSort === "date") {
+                      filteredRestaurants.sort((a, b) => new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime());
+                    }
+
+                    return filteredRestaurants.map(({ name, reviews, avg, city }) => (
+                      <div key={name} onClick={() => setSelectedPublicR(name)} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px" }}>
+                          <div style={S.cardTitle}>{name}</div>
+                          <div style={{ fontSize:"16px", color:"#c9956a", fontWeight:"700" }}>{avg.toFixed(1)}</div>
+                        </div>
+                        <div style={S.cardSub}>{city} · {reviews.length} review{reviews.length > 1 ? "s" : ""}</div>
+                        {reviews[0]?.review && (
+                          <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic", marginTop:"8px" }}>"{reviews[0].review.slice(0,80)}{reviews[0].review.length > 80 ? "..." : ""}"</div>
+                        )}
+                        <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap to see all reviews →</div>
+                      </div>
+                    ));
+                  })()
+                )}
               </div>
             )
           )}
