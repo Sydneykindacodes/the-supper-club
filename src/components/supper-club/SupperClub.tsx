@@ -42,6 +42,31 @@ import {
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
 
+// ── Restaurant Photo Strip (fetches Google Places photos) ──
+const RestaurantPhotoStrip = ({ photoRefs, fetchPhotoUrl }: { photoRefs: string[]; fetchPhotoUrl: (ref: string) => Promise<string | null> }) => {
+  const [urls, setUrls] = useState<(string | null)[]>(photoRefs.map(() => null));
+  useEffect(() => {
+    photoRefs.forEach((ref, i) => {
+      fetchPhotoUrl(ref).then(url => {
+        if (url) setUrls(prev => { const n = [...prev]; n[i] = url; return n; });
+      });
+    });
+  }, [photoRefs.join(',')]);
+  const loaded = urls.filter(Boolean);
+  if (loaded.length === 0) return (
+    <div style={{ width:"100%", height:"120px", background:"linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10,0.6))", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ width:"20px", height:"20px", border:"2px solid rgba(201,149,106,0.3)", borderTop:"2px solid #c9956a", borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+    </div>
+  );
+  return (
+    <div style={{ display:"flex", width:"100%", height:"120px", overflow:"hidden" }}>
+      {loaded.map((url, i) => (
+        <img key={i} src={url!} alt="" style={{ flex:1, objectFit:"cover", minWidth:0 }} loading="lazy" />
+      ))}
+    </div>
+  );
+};
+
 // ── Skeleton Loader ──
 const SkeletonPulse = ({ width = "100%", height = "16px", borderRadius = "8px", style }: { width?: string; height?: string; borderRadius?: string; style?: React.CSSProperties }) => (
   <div style={{
