@@ -162,6 +162,45 @@ export default function SupperClub() {
   const [bestDishMember, setBestDishMember] = useState<string | null>(null);
 
   const [revealUnlocked, setRevealUnlocked] = useState(false);
+  const [bookingDateConfirm, setBookingDateConfirm] = useState(false);
+  const [restaurantDescription, setRestaurantDescription] = useState<string | null>(null);
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
+
+  // Post-dinner reset: 2 hours after reservation time, reset for next cycle
+  const [dinnerCompletedAt, setDinnerCompletedAt] = useState<string | null>(null);
+
+  const resetForNextDinner = useCallback(() => {
+    setSelectedDates([]);
+    setPostDinnerDates([]);
+    setAvailabilityModifying(false);
+    setHostSelectedDate(null);
+    setConfirmationVotes({ Marisol: false, Derek: false, Priya: false, You: false });
+    setReviewRating(0);
+    setReviewText("");
+    setPhotoSubmitted(false);
+    setReturnChoice(null);
+    setBestDishMember(null);
+    setRevealUnlocked(false);
+    setBookingDateConfirm(false);
+    setAwaitingInitiation(false);
+    setMemberAvailability({ Marisol: [], Derek: [], Priya: [] });
+  }, []);
+
+  const fetchRestaurantDescription = useCallback(async (name: string, cuisine: string, city: string, reviews: any[]) => {
+    setDescriptionLoading(true);
+    setRestaurantDescription(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('describe-restaurant', {
+        body: { restaurantName: name, cuisine, city, reviews },
+      });
+      if (error) throw error;
+      setRestaurantDescription(data?.description || null);
+    } catch {
+      setRestaurantDescription("A distinguished establishment worthy of your attention.");
+    } finally {
+      setDescriptionLoading(false);
+    }
+  }, []);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
