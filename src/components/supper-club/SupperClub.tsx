@@ -2002,6 +2002,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── PAST DINNERS ──
   if (screen === "past_dinners") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Past Dinners" />;
+    if (isSoloGroup) return <SoloPlaceholder feature="Past Dinners" />;
     // Get reviews from DB for this group's visited restaurants
     const groupReviews = dbData.communityReviews.filter(r => r.group_id === activeGroupId);
 
