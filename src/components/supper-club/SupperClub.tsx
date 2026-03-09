@@ -1338,21 +1338,25 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         {/* Post-Dinner Review Prompt */}
         {postDinnerReviewPrompt && (
           <ReviewForm
-            restaurantName="Your Last Dinner"
-            cuisine={undefined}
-            city={activeGroup.city}
+            restaurantName={dbData.selectedRestaurantData?.name || "Your Last Dinner"}
+            cuisine={dbData.selectedRestaurantData?.cuisine}
+            city={dbData.selectedRestaurantData?.city || activeGroup.city}
             members={currentMembers}
             reservationId={dbData.activeReservation?.id}
             onSubmit={async (review) => {
               const ok = await dbData.submitReview(review);
               if (ok) {
                 setPostDinnerReviewPrompt(false);
-                showToast("Review submitted! 🎉");
+                setPostDinnerStep("availability");
+                showToast("Review submitted!");
               }
               return ok;
             }}
             onUploadPhoto={dbData.uploadReviewPhoto}
-            onClose={() => setPostDinnerReviewPrompt(false)}
+            onClose={() => {
+              setPostDinnerReviewPrompt(false);
+              setPostDinnerStep("availability");
+            }}
             showToast={showToast}
           />
         )}
