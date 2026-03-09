@@ -580,15 +580,30 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <span style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase" }}>Invite Code</span>
               <span style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600", letterSpacing:"3px" }}>{ag.code}</span>
             </div>
-            <button 
-              onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
-              style={{ 
-                background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
-                borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
-                fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
-              }}>
-              Copy
-            </button>
+            <div style={{ display:"flex", gap:"6px" }}>
+              <button 
+                onClick={() => { navigator.clipboard.writeText(ag.code); showToast("Invite code copied!"); }}
+                style={{ 
+                  background:"rgba(201,149,106,0.12)", border:"1px solid rgba(201,149,106,0.25)", 
+                  borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                  fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+                }}>
+                Code
+              </button>
+              <button 
+                onClick={() => { 
+                  const link = `${window.location.origin}/?invite=${ag.code}`;
+                  navigator.clipboard.writeText(link); 
+                  showToast("Invite link copied!"); 
+                }}
+                style={{ 
+                  background:"linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))", border:"1px solid rgba(201,149,106,0.35)", 
+                  borderRadius:"8px", padding:"6px 12px", cursor:"pointer",
+                  fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", fontFamily:"Georgia,serif"
+                }}>
+                Share Link
+              </button>
+            </div>
           </div>
 
           {ag.dinnerStatus === "scheduled" && (() => {
