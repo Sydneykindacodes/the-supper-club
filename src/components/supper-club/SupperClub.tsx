@@ -2128,16 +2128,22 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   if (screen === "explore") {
     // Only use real DB community reviews — no fake/static data
     const allCommunityReviews = dbData.communityReviews.map(r => ({
-      group: "Supper Club Member",
+      id: r.id,
+      group: r.group_name || "Supper Club Member",
+      reviewer: r.member_name || "Anonymous",
+      reviewerColor: r.member_avatar_color || "#c9956a",
       restaurant: r.restaurant_name,
       rating: r.rating,
       review: r.review_text || "",
       city: r.city || "Unknown",
-      date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      cuisine: r.cuisine || "",
+      mealType: r.meal_type || "Dinner",
+      returnChoice: r.return_choice,
+      bestDish: r.best_dish_member,
+      date: new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       photo_url: r.photo_url,
     }));
     const uniqueRestaurants = [...new Set(allCommunityReviews.map(r => r.restaurant))];
-    const cuisines = [...new Set(allCommunityReviews.map(r => r.city))]; // Use cities from real reviews
 
     // Restaurant Detail View
     if (selectedRestaurantDetail) {
