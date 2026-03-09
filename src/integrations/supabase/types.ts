@@ -147,6 +147,7 @@ export type Database = {
           phone: string | null
           push_enabled: boolean | null
           sms_enabled: boolean | null
+          user_id: string | null
         }
         Insert: {
           avatar_color?: string | null
@@ -162,6 +163,7 @@ export type Database = {
           phone?: string | null
           push_enabled?: boolean | null
           sms_enabled?: boolean | null
+          user_id?: string | null
         }
         Update: {
           avatar_color?: string | null
@@ -177,6 +179,7 @@ export type Database = {
           phone?: string | null
           push_enabled?: boolean | null
           sms_enabled?: boolean | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -235,6 +238,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_color: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+        }
+        Insert: {
+          avatar_color?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+        }
+        Update: {
+          avatar_color?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       reservation_attempts: {
         Row: {
