@@ -631,7 +631,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     <div style={{ background:"rgba(122,158,126,0.1)", borderRadius:"10px", padding:"14px", marginBottom:"16px", textAlign:"center" }}>
                       <div style={{ fontSize:"10px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>Agreed Date</div>
                       <div style={{ fontSize:"18px", color:"#f5e6d3", fontWeight:"500" }}>{ag.nextDinner}</div>
-                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {MEMBERS.length}</div>
+                      <div style={{ fontSize:"12px", color:"#7a5a40", marginTop:"4px" }}>Party of {currentMembers.length}</div>
                     </div>
                     <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => {
                       showToast("Reservation confirmed for " + ag.nextDinner + ". The secret is safe.");
