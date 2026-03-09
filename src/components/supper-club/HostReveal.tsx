@@ -5,6 +5,7 @@ interface HostRevealProps {
   isYouTheHost: boolean;
   groupName: string;
   onComplete: () => void;
+  onDecline?: () => void;
 }
 
 const CHOSEN_MESSAGES = [
