@@ -674,6 +674,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
+  const copyToClipboard = async (text: string, successMsg: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      showToast(successMsg);
+    } catch {
+      showToast("Couldn't copy — try long-pressing the code instead.");
+    }
+  };
+
   const updateGroup = (id: number, patch: Partial<Group>) => {
     const updated = groups.map(g => g.id === id ? { ...g, ...patch } : g) as Group[];
     setGroups(updated);
