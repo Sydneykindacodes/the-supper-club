@@ -145,8 +145,20 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           setActiveGroup(loadedGroups[0]);
           setScreen("club_home");
           setActiveTab("home");
-          // Clear invite param from URL
+          // If there's an invite code, auto-join that group too
           if (inviteCode) {
+            // Check if already in this group
+            const alreadyIn = loadedGroups.some(g => g.code === inviteCode.toUpperCase().trim());
+            if (alreadyIn) {
+              // Switch to that group
+              const target = loadedGroups.find(g => g.code === inviteCode.toUpperCase().trim());
+              if (target) setActiveGroup(target);
+            } else {
+              // Set up join flow
+              setJoinMode("join");
+              setJoinCode(inviteCode);
+              setScreen("join_club_inapp");
+            }
             window.history.replaceState({}, "", window.location.pathname);
           }
           return;
