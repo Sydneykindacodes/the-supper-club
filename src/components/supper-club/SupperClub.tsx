@@ -911,6 +911,18 @@ export default function SupperClub() {
             }}>
               Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
             </button>
+            <button style={{ ...S.primaryBtn, marginBottom:"0", marginTop:"8px", background:"linear-gradient(135deg, #c45c5c, #9a4040)" }} onClick={() => {
+              if (activeGroup.dinnerStatus === "scheduled") {
+                setDinnerCompletedAt(new Date().toISOString());
+                showToast("Dinner marked complete. Reset available on home screen.");
+                setScreen("club_home");
+                setActiveTab("home");
+              } else {
+                showToast("No scheduled dinner to complete.");
+              }
+            }}>
+              Demo: Complete Dinner (2hr Reset)
+            </button>
           </div>
 
           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", margin:"20px 0 14px" }}>Danger Zone</div>
