@@ -2026,6 +2026,41 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           </div>
         )}
+
+        {/* Temporary Group Farewell */}
+        {showTempFarewell && (
+          <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(6,3,2,0.95)", zIndex:250, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ maxWidth:"320px", padding:"40px 28px", textAlign:"center" }}>
+              <div style={{ fontSize:"36px", marginBottom:"20px", opacity:0.8 }}>🕯️</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"16px" }}>Farewell, Friends</div>
+              <div style={{ fontSize:"22px", color:"#f5e6d3", fontWeight:"400", lineHeight:"1.4", marginBottom:"16px" }}>
+                Every good meal ends with the check.
+              </div>
+              <div style={{ fontSize:"13px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.8", marginBottom:"12px" }}>
+                This little club of ours was never meant to last forever — and maybe that's what made it special. One evening, one table, one unrepeatable combination of people and plates.
+              </div>
+              <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 16px" }} />
+              <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.7", marginBottom:"28px", fontStyle:"italic" }}>
+                The group will dissolve at midnight, but the memories — and your badges — are yours to keep. Thank you for showing up and breaking bread with strangers who didn't stay strangers.
+              </div>
+              <button style={{ ...S.primaryBtn, maxWidth:"220px", margin:"0 auto" }} onClick={() => {
+                setShowTempFarewell(false);
+                // Remove the temp group from local state
+                const remaining = groups.filter(g => g.id !== activeGroup.id);
+                setGroups(remaining);
+                if (remaining.length > 0) {
+                  setActiveGroup(remaining[0]);
+                  setScreen("club_home");
+                } else {
+                  setActiveGroup(EMPTY_GROUP);
+                  setScreen("welcome");
+                }
+              }}>
+                Until We Eat Again
+              </button>
+            </div>
+          </div>
+        )}
         {postDinnerReviewPrompt && (
           <ReviewForm
             restaurantName={dbData.selectedRestaurantData?.name || "Your Last Dinner"}
