@@ -1429,7 +1429,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           })()}
 
           {ag.dinnerStatus === "pending_restaurant" && (() => {
-            const isHost = dbData.isHost;
             const dinnerDate = dbData.activeReservation?.dinner_date;
             const formattedDate = dinnerDate ? new Date(dinnerDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "TBD";
             return (
@@ -1437,18 +1436,32 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"12px" }}>
                   <span style={{ fontSize:"14px", color:"#c9956a" }}>◆</span>
                   <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase" }}>
-                    {isHost ? "Choose the Venue" : "Host is Choosing"}
+                    Selecting Restaurant
                   </div>
                 </div>
                 <div style={{ fontSize:"22px", color:"#f5e6d3", marginBottom:"4px" }}>{formattedDate}</div>
                 <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"16px", fontStyle:"italic", lineHeight:"1.7" }}>
-                  {isHost 
-                    ? "Date is locked in. Now pick the restaurant — the group won't know where until you reveal it."
-                    : "The date is set. The host is choosing the perfect restaurant. Patience is a virtue."}
+                  The date is locked. The app is selecting a restaurant at random from your pool. Hang tight…
                 </div>
-                {isHost && (
-                  <button style={S.primaryBtn} onClick={() => setScreen("host_select_restaurant")}>
-                    Pick the Restaurant
+                {poolRestaurants.length === 0 ? (
+                  <div>
+                    <div style={{ fontSize:"13px", color:"#c45c5c", marginBottom:"12px" }}>Your pool is empty — add restaurants first so one can be selected.</div>
+                    <button style={S.primaryBtn} onClick={() => { setActiveTab("explore"); setScreen("explore"); }}>
+                      Explore & Add Restaurants
+                    </button>
+                  </div>
+                ) : (
+                  <button style={S.primaryBtn} onClick={async () => {
+                    const success = await dbData.selectRandomRestaurant();
+                    if (success) {
+                      await sendGroupNotification("restaurant_selected");
+                      await sendHostNotification("restaurant_auto_selected");
+                      showToast("Restaurant selected! Check below to book.");
+                    } else {
+                      showToast("Failed to select restaurant. Try again.");
+                    }
+                  }}>
+                    Draw a Restaurant
                   </button>
                 )}
               </div>
