@@ -2071,8 +2071,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     if (selectedDates.length > 0) { 
                       const saved = await dbData.saveAvailability(selectedDates);
                       if (saved) {
-                        showToast("Availability saved. Waiting on host to pick a date."); 
-                        updateGroup(activeGroup.id, { dinnerStatus: "awaiting_host" });
+                        showToast("Availability saved. Waiting on host to pick a date.");
                         setScreen("club_home");
                         setActiveTab("home");
                       } else {
