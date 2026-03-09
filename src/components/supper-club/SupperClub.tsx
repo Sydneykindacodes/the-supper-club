@@ -99,7 +99,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const dbData = useSupperClubData(user, activeGroupId);
 
-  const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
+  // Sync DB-loaded availability into local state
+  useEffect(() => {
+    if (dbData.userSelectedDates.length > 0) {
+      setSelectedDates(dbData.userSelectedDates);
+    }
+  }, [dbData.userSelectedDates]);
+
+  useEffect(() => {
+    if (Object.keys(dbData.memberAvailability).length > 0) {
+      setMemberAvailability(dbData.memberAvailability);
+    }
+  }, [dbData.memberAvailability]);
+
   const [badgeTab, setBadgeTab] = useState("individual");
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
