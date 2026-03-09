@@ -624,8 +624,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
-            <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
-              {userName.charAt(0).toUpperCase()}
+            <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+              {/* Notification Bell */}
+              <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", padding:"4px" }}>
+                <span style={{ fontSize:"18px", color: notifs.unreadCount > 0 ? "#c9956a" : "#4a2e18" }}>◉</span>
+                {notifs.unreadCount > 0 && (
+                  <div style={{ position:"absolute", top:0, right:0, width:"14px", height:"14px", borderRadius:"50%", background:"#c45c5c", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"8px", color:"#fff", fontWeight:"700" }}>
+                    {notifs.unreadCount}
+                  </div>
+                )}
+              </div>
+              <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
             </div>
           </div>
 
