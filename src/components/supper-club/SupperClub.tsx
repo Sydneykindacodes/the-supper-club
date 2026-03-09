@@ -2730,6 +2730,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
               <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
                 searchGooglePlaces(rName || "restaurant", rCity || activeGroup.city, setGpResults, setGpLoading);
+                setSearchPage(1);
               }}>
                 Search
               </button>
