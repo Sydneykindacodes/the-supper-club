@@ -99,6 +99,7 @@ const LoadingScreen = () => (
 
 export default function SupperClub({ user, signOut }: SupperClubProps) {
   const MAX_GROUPS = 10;
+  const MAX_POOL_SIZE = 20;
   const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [screen, setScreen] = useState<string>("loading");
