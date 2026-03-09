@@ -127,6 +127,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const params = new URLSearchParams(window.location.search);
       const inviteCode = params.get("invite");
 
+      // Helper: set screen directly or defer if greeting is active
+      const goToScreen = (s: string) => {
+        if (greetingPhase) {
+          setPendingScreen(s);
+        } else {
+          setScreen(s);
+        }
+      };
+
       // Check if user has any groups via members table
       const { data: memberRows } = await supabase
         .from("members")
@@ -150,21 +159,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         if (loadedGroups.length > 0) {
           setGroups(loadedGroups);
           setActiveGroup(loadedGroups[0]);
-          setScreen("club_home");
+          goToScreen("club_home");
           setActiveTab("home");
           // If there's an invite code, auto-join that group too
           if (inviteCode) {
-            // Check if already in this group
             const alreadyIn = loadedGroups.some(g => g.code === inviteCode.toUpperCase().trim());
             if (alreadyIn) {
-              // Switch to that group
               const target = loadedGroups.find(g => g.code === inviteCode.toUpperCase().trim());
               if (target) setActiveGroup(target);
             } else {
-              // Set up join flow
               setJoinMode("join");
               setJoinCode(inviteCode);
-              setScreen("join_club_inapp");
+              goToScreen("join_club_inapp");
             }
             window.history.replaceState({}, "", window.location.pathname);
           }
@@ -175,7 +181,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       if (inviteCode) {
         setJoinMode("join");
         setJoinCode(inviteCode);
-        setScreen("join_create");
+        goToScreen("join_create");
         window.history.replaceState({}, "", window.location.pathname);
         return;
       }
@@ -183,11 +189,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const onboarded = localStorage.getItem("sc_onboarded");
       const notifConsent = localStorage.getItem("sc_notif_consent");
       if (!onboarded) {
-        setScreen("onboarding");
+        goToScreen("onboarding");
       } else if (!notifConsent) {
-        setScreen("notif_consent");
+        goToScreen("notif_consent");
       } else {
-        setScreen("welcome");
+        goToScreen("welcome");
       }
     };
     loadGroups();
