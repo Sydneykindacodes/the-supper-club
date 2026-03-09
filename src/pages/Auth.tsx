@@ -68,7 +68,7 @@ export default function Auth() {
           <div style={{ width: "100%", maxWidth: "320px" }}>
             {/* Tab toggle */}
             <div style={{ display: "flex", marginBottom: "24px", background: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "3px" }}>
-              {(["login", "signup"] as const).map((m) => (
+              {(["login", "signup"] as ("login" | "signup")[]).map((m) => (
                 <div
                   key={m}
                   onClick={() => { setMode(m); setError(null); setMessage(null); }}
