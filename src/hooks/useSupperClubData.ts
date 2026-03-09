@@ -116,13 +116,13 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     setLoadingRestaurants(true);
     supabase
       .from("restaurants")
-      .select("*")
+      .select("*, members:suggested_by(name)")
       .eq("group_id", activeGroupId)
       .then(({ data }) => {
         if (data) {
           const pool: Restaurant[] = [];
           const visited: Restaurant[] = [];
-          data.forEach(r => {
+          data.forEach((r: any) => {
             const rest: Restaurant = {
               id: parseInt(r.id.replace(/\D/g, '').slice(0, 8)) || Math.random() * 10000,
               name: r.name,
@@ -136,7 +136,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
               googleReviewCount: r.google_review_count || 0,
               scRating: r.sc_rating ? Number(r.sc_rating) : null,
               scReviewCount: r.sc_review_count || 0,
-              suggested_by: r.suggested_by || undefined,
+              suggested_by: r.members?.name || undefined,
             };
             if (r.visited) visited.push(rest);
             else pool.push(rest);
@@ -578,6 +578,19 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     googlePlaceId?: string;
     address?: string;
   }, groupId: string) => {
+    // Duplicate check
+    const { data: existing } = await supabase
+      .from("restaurants")
+      .select("id")
+      .eq("group_id", groupId)
+      .ilike("name", restaurant.name)
+      .eq("visited", false)
+      .maybeSingle();
+    if (existing) return "duplicate";
+
+    // Get current member ID for suggested_by
+    const currentMember = members.find(m => m.user_id === user.id);
+
     const { data, error } = await supabase
       .from("restaurants")
       .insert({
@@ -590,6 +603,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         google_review_count: restaurant.googleReviewCount || 0,
         google_place_id: restaurant.googlePlaceId || null,
         address: restaurant.address || null,
+        suggested_by: currentMember?.id || null,
       })
       .select()
       .single();
@@ -608,12 +622,13 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
         googleReviewCount: data.google_review_count || 0,
         scRating: null,
         scReviewCount: 0,
+        suggested_by: currentMember?.name || undefined,
       };
       setRestaurants(prev => [...prev, newRest]);
       return true;
     }
     return false;
-  }, []);
+  }, [members, user.id]);
 
   // Remove restaurant from pool
   const removeRestaurantFromPool = useCallback(async (restaurantName: string) => {

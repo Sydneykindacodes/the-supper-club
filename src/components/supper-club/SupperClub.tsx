@@ -243,10 +243,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const currentMembers = dbData.uiMembers;
 
   // Add restaurant to group pool(s) - DB-backed
-  const addToGroupPool = (restaurant: Restaurant, groupIds: (number | string)[]) => {
-    groupIds.forEach(gid => {
+  const addToGroupPool = async (restaurant: Restaurant, groupIds: (number | string)[]) => {
+    let added = 0;
+    let dupes = 0;
+    for (const gid of groupIds) {
       const gidStr = String(gid);
-      dbData.addRestaurantToPool({
+      const result = await dbData.addRestaurantToPool({
         name: restaurant.name,
         cuisine: restaurant.cuisine,
         city: restaurant.city,
@@ -254,7 +256,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         googleRating: restaurant.googleRating,
         googleReviewCount: restaurant.googleReviewCount,
       }, gidStr);
-    });
+      if (result === "duplicate") dupes++;
+      else if (result === true) added++;
+    }
+    if (dupes > 0 && added === 0) {
+      showToast(`${restaurant.name} is already in the pool.`);
+    } else if (added > 0 && dupes > 0) {
+      showToast(`Added to ${added} group${added > 1 ? "s" : ""}. Already in ${dupes} pool${dupes > 1 ? "s" : ""}.`);
+    } else if (added > 0) {
+      showToast(`Added to ${added} group${added > 1 ? "s" : ""}.`);
+    }
   };
 
   const [exploreView, setExploreView] = useState("search");
@@ -2157,6 +2168,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const isGooglePlace = 'googlePlaceId' in r;
       const reviews = allCommunityReviews.filter(rev => rev.restaurant === r.name);
       const avgRating = reviews.length > 0 ? (reviews.reduce((s, rev) => s + rev.rating, 0) / reviews.length).toFixed(1) : null;
+      const isAlreadyInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
       
       return (
         <div style={S.app}><div style={S.phone}>
@@ -2294,33 +2306,42 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </>);
               })()}
 
+              {/* Already in pool notice */}
+              {isAlreadyInPool && (
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginTop:"16px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", border:"1px solid rgba(122,158,126,0.2)", borderRadius:"12px" }}>
+                  <span style={{ fontSize:"14px" }}>✓</span>
+                  <div style={{ fontSize:"13px", color:"#7a9e7e", fontWeight:"500" }}>This restaurant is already in your pool</div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <button style={{ ...S.ghostBtn, marginTop:"16px", marginBottom:"8px" }} onClick={() => {
                 setShowReviewForm({ restaurant: r.name, cuisine: 'cuisine' in r ? r.cuisine : undefined, city: r.city });
               }}>
                 Write a Review
               </button>
-              <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
-                const restaurant: Restaurant = {
-                  id: Date.now(), 
-                  name: r.name, 
-                  cuisine: 'cuisine' in r ? r.cuisine : "Restaurant", 
-                  suggested_by: "You",
-                  city: r.city, 
-                  price: r.price, 
-                  visited: false, 
-                  visitedDate: null, 
-                  visitedRating: null,
-                  googleRating: 'googleRating' in r ? r.googleRating : null,
-                  googleReviewCount: 'googleReviewCount' in r ? r.googleReviewCount : 0,
-                  scRating: null, 
-                  scReviewCount: 0,
-                };
-                setAddToGroupPicker({ restaurant, visible: true });
-                setAddToGroupSelected([activeGroup.id]);
-              }}>
-                Add to Pool
-              </button>
+              {!isAlreadyInPool && (
+                <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
+                  const restaurant: Restaurant = {
+                    id: Date.now(), 
+                    name: r.name, 
+                    cuisine: 'cuisine' in r ? r.cuisine : "Restaurant", 
+                    city: r.city, 
+                    price: r.price, 
+                    visited: false, 
+                    visitedDate: null, 
+                    visitedRating: null,
+                    googleRating: 'googleRating' in r ? r.googleRating : null,
+                    googleReviewCount: 'googleReviewCount' in r ? r.googleReviewCount : 0,
+                    scRating: null, 
+                    scReviewCount: 0,
+                  };
+                  setAddToGroupPicker({ restaurant, visible: true });
+                  setAddToGroupSelected([activeGroup.id]);
+                }}>
+                  Add to Pool
+                </button>
+              )}
             </div>
           </div>
           <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
@@ -2346,10 +2367,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ display:"flex", gap:"10px" }}>
                   <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => { setAddToGroupPicker(prev => ({ ...prev, visible: false })); setAddToGroupSelected([]); setSelectedRestaurantDetail(null); }}>Cancel</button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
                     if (addToGroupSelected.length === 0) { showToast("Select at least one group."); return; }
-                    addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
-                    showToast(`Added to ${addToGroupSelected.length} group${addToGroupSelected.length > 1 ? "s" : ""}.`);
+                    await addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
                     setAddToGroupPicker(prev => ({ ...prev, visible: false }));
                     setAddToGroupSelected([]);
                     setSelectedRestaurantDetail(null);
@@ -2488,7 +2508,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {gpResults
                     .filter(r => exploreCuisineFilter === "all" || r.cuisine.toLowerCase().includes(exploreCuisineFilter.toLowerCase()))
                     .filter(r => explorePriceFilter === "all" || String(r.price) === explorePriceFilter)
-                    .map(r => (
+                    .map(r => {
+                    const isInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
+                    return (
                     <div key={r.id} style={{ ...S.card, margin:"0 0 10px", cursor:"pointer", padding:0, overflow:"hidden" }}
                       onClick={() => openRestaurantDetail(r)}>
                       {/* Restaurant photo */}
@@ -2496,6 +2518,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <RestaurantPhotoStrip photoRefs={r.photoRefs} fetchPhotoUrl={fetchPhotoUrl} />
                       )}
                       <div style={{ padding:"12px 14px" }}>
+                        {isInPool && (
+                          <div style={{ display:"inline-block", fontSize:"10px", color:"#7a9e7e", background:"rgba(122,158,126,0.12)", border:"1px solid rgba(122,158,126,0.25)", borderRadius:"6px", padding:"3px 8px", marginBottom:"8px", fontWeight:"600", letterSpacing:"0.5px" }}>
+                            ✓ Already in your pool
+                          </div>
+                        )}
                         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                           <div style={{ flex:1 }}>
                             <div style={S.cardTitle}>{r.name}</div>
@@ -2514,7 +2541,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"8px" }}>Tap for details and reviews →</div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>
@@ -2727,10 +2755,9 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
                 <div style={{ display:"flex", gap:"10px" }}>
                   <button style={{ ...S.ghostBtn, flex:1, marginBottom:0 }} onClick={() => { setAddToGroupPicker(prev => ({ ...prev, visible: false })); setAddToGroupSelected([]); }}>Cancel</button>
-                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={() => {
+                  <button style={{ ...S.primaryBtn, flex:1, marginBottom:0 }} onClick={async () => {
                     if (addToGroupSelected.length === 0) { showToast("Select at least one group."); return; }
-                    addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
-                    showToast(`Added to ${addToGroupSelected.length} group${addToGroupSelected.length > 1 ? "s" : ""}.`);
+                    await addToGroupPool(addToGroupPicker.restaurant, addToGroupSelected);
                     setAddToGroupPicker(prev => ({ ...prev, visible: false }));
                     setAddToGroupSelected([]);
                   }}>Add to {addToGroupSelected.length} Group{addToGroupSelected.length !== 1 ? "s" : ""}</button>
