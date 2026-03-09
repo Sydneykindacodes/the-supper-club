@@ -129,15 +129,13 @@ export const GlobalGroupSwitcher = ({
   groups,
   activeGroup,
   setActiveGroup,
-  showNewGroupForm,
-  setShowNewGroupForm,
+  onNewClub,
   maxGroups = 15,
 }: {
   groups: { id: number; name: string }[];
   activeGroup: { id: number; name: string };
   setActiveGroup: (g: any) => void;
-  showNewGroupForm: boolean;
-  setShowNewGroupForm: (v: boolean) => void;
+  onNewClub: () => void;
   maxGroups?: number;
 }) => (
   <div style={{ padding: "12px 0 0" }}>
@@ -145,7 +143,7 @@ export const GlobalGroupSwitcher = ({
       {groups.map(g => {
         const active = g.id === activeGroup.id;
         return (
-          <div key={g.id} onClick={() => { setActiveGroup(g); setShowNewGroupForm(false); }}
+          <div key={g.id} onClick={() => setActiveGroup(g)}
             style={{
               flexShrink: 0, padding: "8px 14px", borderRadius: "16px", cursor: "pointer",
               background: active ? "linear-gradient(135deg,rgba(201,149,106,0.2),rgba(201,149,106,0.08))" : "rgba(255,255,255,0.02)",
@@ -157,10 +155,10 @@ export const GlobalGroupSwitcher = ({
         );
       })}
       {groups.length < maxGroups && (
-        <div onClick={() => setShowNewGroupForm(true)}
+        <div onClick={onNewClub}
           style={{
             flexShrink: 0, padding: "8px 12px", borderRadius: "16px", cursor: "pointer",
-            background: showNewGroupForm ? "rgba(201,149,106,0.1)" : "transparent",
+            background: "transparent",
             border: "1px dashed rgba(201,149,106,0.2)", transition: "all 0.2s",
             display: "flex", alignItems: "center", gap: "5px",
           }}>

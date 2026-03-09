@@ -268,29 +268,7 @@ export default function SupperClub() {
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
-          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} showNewGroupForm={showNewGroupForm} setShowNewGroupForm={setShowNewGroupForm} maxGroups={MAX_GROUPS} />
-
-          {/* ── Inline New Group Form ── */}
-          {showNewGroupForm && (
-            <div style={{ ...S.card, margin:"12px 16px", border:"1px solid rgba(201,149,106,0.25)", background:"rgba(201,149,106,0.04)" }}>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Create New Club</div>
-              <input style={{ ...S.input, marginBottom:"10px" }} placeholder="Club name" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
-              <input style={S.input} placeholder="City (e.g. New York, NY)" value={newGroupCity} onChange={e => setNewGroupCity(e.target.value)} />
-              <div style={{ display:"flex", gap:"8px", marginTop:"12px" }}>
-                <button style={{ ...S.primaryBtn, flex:1, marginBottom:0, fontSize:"12px", padding:"12px" }} onClick={() => {
-                  if (!newGroupName.trim()) { showToast("Name your club first."); return; }
-                  const code = `SUPR-${Math.floor(1000 + Math.random() * 9000)}`;
-                  const newGroup: Group = { id: Date.now(), name: newGroupName.trim(), code, members: 1, city: newGroupCity.trim() || "New York, NY", dinnerStatus: "no_date", nextDinner: null, pendingDate: null };
-                  setGroups(prev => [...prev, newGroup]);
-                  setActiveGroup(newGroup);
-                  setNewGroupName(""); setNewGroupCity(""); setShowNewGroupForm(false);
-                  showToast(`${newGroup.name} created. Share code ${code}.`);
-                }}>Create</button>
-                <button style={{ ...S.ghostBtn, flex:1, marginBottom:0, fontSize:"12px", padding:"12px" }} onClick={() => { setShowNewGroupForm(false); setNewGroupName(""); setNewGroupCity(""); }}>Cancel</button>
-              </div>
-              <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginTop:"10px" }}>{groups.length} of {MAX_GROUPS} clubs used</div>
-            </div>
-          )}
+          <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
