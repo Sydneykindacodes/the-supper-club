@@ -146,7 +146,7 @@ export const WITTY_NO_DATE = [
 export const SECRET_HOST_MESSAGES = [
   "You've been chosen. The torch has been passed in absolute secrecy.",
   "Psst... you're the new keeper of the dinner secrets.",
-  "The Supper Club has spoken. You are the chosen one.",
+  "The Supper Club Social has spoken. You are the chosen one.",
   "A new host emerges from the shadows. It's you.",
   "Congratulations, secret agent. Your mission: plan the next feast.",
   "The keys to the kingdom are now yours. Guard them wisely.",

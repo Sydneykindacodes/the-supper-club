@@ -49,7 +49,7 @@ export default function BadgesScreen({ userBadges, activeGroupId, activeTab, onN
       <div style={S.screen}>
         <div style={S.header}>
           <div style={{ fontSize: "11px", color: "#c9956a", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "4px" }}>
-            {groupName || "The Supper Club"}
+            {groupName || "The Supper Club Social"}
           </div>
           <div style={{ fontSize: "30px", color: "#f5e6d3", fontWeight: "400" }}>Badges</div>
         </div>

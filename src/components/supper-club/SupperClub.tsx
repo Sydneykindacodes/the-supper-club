@@ -429,7 +429,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <div style={{ padding:"54px 24px 20px", borderBottom:"1px solid rgba(201,149,106,0.1)" }}>
-          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"4px" }}>The Supper Club</div>
+          <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"4px" }}>The Supper Club Social</div>
           <div style={{ fontSize:"30px", color:"#f5e6d3", fontWeight:"400" }}>{feature}</div>
         </div>
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"64px 32px", textAlign:"center" }}>

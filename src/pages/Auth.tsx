@@ -61,7 +61,7 @@ export default function Auth() {
         <div style={S.welcomeBg}>
           <div style={S.orb} />
           <div style={S.eyebrow}>Est. 2026</div>
-          <div style={S.mainTitle}>The Supper Club</div>
+          <div style={S.mainTitle}>The Supper Club Social</div>
           <div style={S.subtitle}>Dine together. Discover together.</div>
           <div style={S.ornament}>— · —</div>
 

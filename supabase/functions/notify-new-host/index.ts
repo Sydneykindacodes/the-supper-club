@@ -9,7 +9,7 @@ const corsHeaders = {
 const SECRET_MESSAGES = [
   "🤫 You've been chosen. The torch has been passed in secret.",
   "🕵️ Psst... you're the new keeper of the reservation secrets.",
-  "🔮 The Supper Club has spoken. You are the chosen one.",
+  "🔮 The Supper Club Social has spoken. You are the chosen one.",
   "🎭 A new host emerges from the shadows. It's you.",
   "✨ Congratulations, secret agent. Your mission: plan the next feast.",
 ];
