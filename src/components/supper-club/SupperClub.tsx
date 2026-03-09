@@ -20,6 +20,7 @@ import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
 import MemberProfileView from "./MemberProfileView";
 import RestaurantReveal from "./RestaurantReveal";
+import HostReveal from "./HostReveal";
 
 interface SupperClubProps {
   user: User;
@@ -241,6 +242,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [hostSelectedDate, setHostSelectedDate] = useState<string | null>(null);
   const [selectedRestId, setSelectedRestId] = useState<string | null>(null);
+  const [showHostRevealAnimation, setShowHostRevealAnimation] = useState(false);
+  const [hasSeenHostReveal, setHasSeenHostReveal] = useState(false);
 
   // Use DB-backed restaurants when available, else local pool
   const [groupPools, setGroupPools] = useState<Record<string | number, Restaurant[]>>({});
@@ -1191,23 +1194,27 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           })()}
 
           {/* Awaiting Next Host Reveal */}
-          {ag.dinnerStatus === "awaiting_next_host" && (
+          {ag.dinnerStatus === "awaiting_next_host" && !hasSeenHostReveal && (
             <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.3)", background:"linear-gradient(140deg, rgba(26,15,10,0.98), rgba(45,18,8,0.9))", textAlign:"center", padding:"32px 20px" }}>
-              <div style={{ fontSize:"28px", color:"#c9956a", marginBottom:"16px", opacity:0.6 }}>◉</div>
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"14px" }}>The Wait Begins</div>
+              <div style={{ fontSize:"28px", color:"#c9956a", marginBottom:"16px", opacity:0.6 }}>✉</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"14px" }}>A New Host Has Been Chosen</div>
               <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"400", lineHeight:"1.5" }}>
-                {WITTY_AWAITING_HOST[wittyAwaitingIdx]}
+                The envelope is sealed.<br/>Are you the one?
               </div>
               <div style={{ width:"40px", height:"1px", background:"rgba(201,149,106,0.3)", margin:"16px auto" }} />
-              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"16px" }}>
-                The next host will be revealed at <strong style={{ color:"#c9956a" }}>8:00 AM tomorrow</strong>. 
-                Until then, the identity remains sealed.
+              <button style={{ ...S.primaryBtn, maxWidth:"240px", margin:"0 auto" }} onClick={() => setShowHostRevealAnimation(true)}>
+                Open the Envelope
+              </button>
+            </div>
+          )}
+          {ag.dinnerStatus === "awaiting_next_host" && hasSeenHostReveal && (
+            <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", textAlign:"center", padding:"24px 20px" }}>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"10px" }}>Next Cycle</div>
+              <div style={{ fontSize:"14px", color:"#f5e6d3", marginBottom:"8px" }}>
+                {dbData.isHost ? "You are the next host. The group awaits your command." : "A new host has been chosen. Submit your availability for the next dinner."}
               </div>
-              <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"12px", padding:"14px", border:"1px solid rgba(201,149,106,0.1)" }}>
-                <div style={{ fontSize:"10px", color:"#5a3a25", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"6px" }}>What Happens Next</div>
-                <div style={{ fontSize:"12px", color:"#7a5a40", lineHeight:"1.6" }}>
-                  Once the host is revealed, submit your availability and the cycle begins anew.
-                </div>
+              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic" }}>
+                The cycle begins anew.
               </div>
             </div>
           )}
@@ -1226,8 +1233,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed." : "Everyone must confirm before the reservation is locked."}
               </div>
               <div style={{ marginBottom:"14px" }}>
-                {/* Show host as auto-confirmed */}
-                {currentMembers.filter(m => m.name === dbData.hostName).map(m => (
+                {/* Show host as auto-confirmed — only reveal identity to the host themselves */}
+                {isHost && currentMembers.filter(m => m.name === dbData.hostName).map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
@@ -1370,7 +1377,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                             <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                               <div style={{ width:"24px", height:"24px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"10px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
                               <span style={{ fontSize:"12px", color:"#f5e6d3" }}>{m.name}</span>
-                              {m.name === dbData.hostName && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
+                              {dbData.isHost && m.name === dbData.hostName && <span style={{ fontSize:"8px", color:"#1a0f0a", background:"rgba(201,149,106,0.5)", borderRadius:"3px", padding:"2px 4px", fontWeight:"700" }}>HOST</span>}
                             </div>
                             <span style={{ fontSize:"11px", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
                               {hasSubmitted ? "✓" : "..."}
@@ -1587,7 +1594,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             )}
             {currentMembers.map(m => {
-              const isMemberHost = m.name === dbData.hostName;
+              const isMemberHost = dbData.isHost && m.name === dbData.hostName;
               const isYou = m.name === "You";
               return (
                 <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
@@ -1597,16 +1604,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     {isMemberHost && <span style={{ fontSize:"11px", color:"#f5e6d3", marginLeft:"2px" }} title="Current Host">♛</span>}
                   </div>
                   <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
-                    {!isYou && !isMemberHost && (
-                      <span onClick={async () => { 
-                        const dbMember = dbData.members.find(dm => dm.name === m.name || (m.name === "You" && dm.user_id === user.id));
-                        if (dbMember) {
-                          const success = await dbData.makeHost(dbMember.id);
-                          if (success) showToast(`${m.name} is now the host.`);
-                          else showToast("Failed to update host.");
-                        }
-                      }} style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"0.5px", cursor:"pointer" }}>Make Host</span>
-                    )}
                     {!isYou && <span style={{ fontSize:"11px", color:"#4a2e18", letterSpacing:"1px", textTransform:"uppercase", cursor:"pointer" }}>Remove</span>}
                     {isYou && <span style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>You</span>}
                   </div>
@@ -3121,107 +3118,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     );
   }
 
-  // ── NEW HOST SELECTED (Secret Reveal) ──
+  // ── NEW HOST SELECTED (Secret Reveal) — now uses cinematic HostReveal ──
   if (screen === "new_host_reveal") {
-    const secretMsg = SECRET_HOST_MESSAGES[Math.floor(Math.random() * SECRET_HOST_MESSAGES.length)];
-    const privilegeMsg = HOST_PRIVILEGE_MESSAGES[Math.floor(Math.random() * HOST_PRIVILEGE_MESSAGES.length)];
-    
     return (
-      <div style={S.app}><div style={S.phone}>
-        <div style={{ ...S.welcomeBg, background:"linear-gradient(180deg, #0d0805 0%, #1a0f0a 50%, #2a1a10 100%)" }}>
-          <div style={{ 
-            position:"absolute", 
-            top:"50%", 
-            left:"50%", 
-            transform:"translate(-50%, -50%)", 
-            width:"300px", 
-            height:"300px", 
-            background:"radial-gradient(circle, rgba(201,149,106,0.1) 0%, transparent 70%)", 
-            borderRadius:"50%",
-            animation:"pulse 3s ease-in-out infinite"
-          }}/>
-          
-          <div style={{ position:"relative", zIndex:1, textAlign:"center", padding:"40px 24px" }}>
-            <div style={{ 
-              width:"100px", 
-              height:"100px", 
-              borderRadius:"50%", 
-              border:"2px solid rgba(201,149,106,0.4)", 
-              margin:"0 auto 32px",
-              display:"flex", 
-              alignItems:"center", 
-              justifyContent:"center",
-              background:"rgba(201,149,106,0.05)"
-            }}>
-              <div style={{ 
-                width:"70px", 
-                height:"70px", 
-                borderRadius:"50%", 
-                border:"1.5px solid rgba(201,149,106,0.6)",
-                display:"flex", 
-                alignItems:"center", 
-                justifyContent:"center",
-                fontSize:"24px",
-                color:"#c9956a"
-              }}>
-                ◆
-              </div>
-            </div>
-            
-            <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"20px" }}>
-              Top Secret Transmission
-            </div>
-            
-            <div style={{ fontSize:"28px", color:"#f5e6d3", marginBottom:"16px", lineHeight:"1.3" }}>
-              You've Been<br/>Chosen
-            </div>
-            
-            <div style={{ fontSize:"15px", color:"#c9956a", marginBottom:"24px", fontStyle:"italic", lineHeight:"1.7" }}>
-              {secretMsg}
-            </div>
-            
-            <div style={{ 
-              background:"rgba(201,149,106,0.08)", 
-              borderRadius:"16px", 
-              padding:"20px", 
-              marginBottom:"32px",
-              border:"1px solid rgba(201,149,106,0.2)"
-            }}>
-              <div style={{ fontSize:"12px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"600" }}>
-                You are now the Host of
-              </div>
-              <div style={{ fontSize:"20px", color:"#c9956a", marginBottom:"4px" }}>
-                {activeGroup.name}
-              </div>
-              <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic" }}>
-                {privilegeMsg}
-              </div>
-            </div>
-            
-            <div style={{ fontSize:"13px", color:"#7a5a40", lineHeight:"1.7", marginBottom:"28px" }}>
-              When the group schedules the next dinner, you'll be the one who knows where they're going — and they won't.
-            </div>
-            
-            <button 
-              style={{ ...S.primaryBtn, background:"linear-gradient(135deg, #c9956a, #9a6040)", marginBottom:"12px" }} 
-              onClick={async () => { 
-                if (dbData.currentMember) {
-                  await dbData.makeHost(dbData.currentMember.id);
-                }
-                setScreen("club_home"); 
-                setActiveTab("home");
-                showToast("You're officially the host. Keep the secret safe.");
-              }}
-            >
-              Accept the Responsibility
-            </button>
-            
-            <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>
-              This message will self-destruct... just kidding. But do keep it secret.
-            </div>
-          </div>
-        </div>
-      </div></div>
+      <HostReveal
+        isYouTheHost={true}
+        groupName={activeGroup.name}
+        onComplete={() => {
+          setScreen("club_home");
+          setActiveTab("home");
+          showToast("You're officially the host. Keep the secret safe.");
+        }}
+      />
     );
   }
 
@@ -3250,6 +3158,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         onComplete={() => {
           setShowRevealAnimation(false);
           setHasSeenReveal(true);
+        }}
+      />
+    );
+  }
+
+  // ── CINEMATIC HOST REVEAL ──
+  if (showHostRevealAnimation) {
+    const isNextHost = dbData.activeReservation?.next_host_id
+      ? dbData.members.find(m => m.id === dbData.activeReservation?.next_host_id)?.user_id === user.id
+      : dbData.isHost;
+    return (
+      <HostReveal
+        isYouTheHost={isNextHost || false}
+        groupName={activeGroup.name}
+        onComplete={() => {
+          setShowHostRevealAnimation(false);
+          setHasSeenHostReveal(true);
         }}
       />
     );
