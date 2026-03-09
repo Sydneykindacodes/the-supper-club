@@ -290,6 +290,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [visitedFilter, setVisitedFilter] = useState("all");
   const [exploreCuisineFilter, setExploreCuisineFilter] = useState("all");
   const [explorePriceFilter, setExplorePriceFilter] = useState("all");
+  const [searchPage, setSearchPage] = useState(1);
+  const [communityPage, setCommunityPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
+  const MAX_ITEMS = 50;
   const [selectedPublicR, setSelectedPublicR] = useState<string | null>(null);
   const [selectedRestaurantDetail, setSelectedRestaurantDetail] = useState<Restaurant | GooglePlace | null>(null);
   const [addToGroupPicker, setAddToGroupPicker] = useState<{ restaurant: Restaurant; visible: boolean }>({ restaurant: { id: 0, name: "", cuisine: "", city: "", price: 0, visited: false, visitedDate: null, visitedRating: null } as Restaurant, visible: false });
