@@ -1233,8 +1233,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 {isHost ? "Waiting for group members to confirm. As host, you're automatically confirmed." : "Everyone must confirm before the reservation is locked."}
               </div>
               <div style={{ marginBottom:"14px" }}>
-                {/* Show host as auto-confirmed */}
-                {currentMembers.filter(m => m.name === dbData.hostName).map(m => (
+                {/* Show host as auto-confirmed — only reveal identity to the host themselves */}
+                {isHost && currentMembers.filter(m => m.name === dbData.hostName).map(m => (
                   <div key={m.name} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
                     <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                       <div style={{ width:"26px", height:"26px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"11px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
