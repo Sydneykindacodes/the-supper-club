@@ -2901,7 +2901,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   style={S.input}
                   placeholder="e.g. Tokyo, Sushi, Le Bernardin..."
                   value={exploreCuisineFilter === "all" ? "" : exploreCuisineFilter}
-                  onChange={e => setExploreCuisineFilter(e.target.value || "all")}
+                  onChange={e => { setExploreCuisineFilter(e.target.value || "all"); setCommunityPage(1); }}
                 />
 
                 {/* Sort */}
