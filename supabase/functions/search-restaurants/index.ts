@@ -9,19 +9,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { query, city, radius = 10 } = await req.json();
+    const { query, city, radius = 10, pageToken } = await req.json();
     const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY');
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Build search query including the city for location context
-    // This avoids needing the Geocoding API
     const searchQuery = query 
       ? `${query} restaurant in ${city}`
       : `restaurant in ${city}`;
 
-    // Search for restaurants using Places API (New) Text Search
     const searchUrl = 'https://places.googleapis.com/v1/places:searchText';
     const searchBody: Record<string, unknown> = {
       textQuery: searchQuery,
@@ -29,26 +26,29 @@ Deno.serve(async (req) => {
       maxResultCount: 20,
     };
 
+    if (pageToken) {
+      searchBody.pageToken = pageToken;
+    }
+
     const placesRes = await fetch(searchUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
-        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos',
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.priceLevel,places.types,places.id,places.primaryType,places.primaryTypeDisplayName,places.photos,nextPageToken',
       },
       body: JSON.stringify(searchBody),
     });
 
     const placesData = await placesRes.json();
 
-    // Log for debugging
     if (placesData.error) {
       console.error('Places API error:', placesData.error);
       return new Response(JSON.stringify({ restaurants: [], error: placesData.error.message || 'Search failed' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     if (!placesData.places) {
-      return new Response(JSON.stringify({ restaurants: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      return new Response(JSON.stringify({ restaurants: [], nextPageToken: null }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const priceLevelMap: Record<string, number> = {
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       };
     });
 
-    return new Response(JSON.stringify({ restaurants }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ restaurants, nextPageToken: placesData.nextPageToken || null }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error('Search error:', err);
     return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

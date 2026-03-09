@@ -362,6 +362,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Google Places search state
   const [gpResults, setGpResults] = useState<GooglePlace[]>([]);
   const [gpLoading, setGpLoading] = useState(false);
+  const [gpNextPageToken, setGpNextPageToken] = useState<string | null>(null);
+  const [gpLoadingMore, setGpLoadingMore] = useState(false);
+  const [gpLastSearchTerm, setGpLastSearchTerm] = useState("");
+  const [gpLastSearchCity, setGpLastSearchCity] = useState("");
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
@@ -376,17 +380,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   // Restaurant detail reviews come from DB now
 
-  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void) => {
-    if (query.length < 2) { setter([]); return; }
+  const searchGooglePlaces = useCallback(async (query: string, city: string, setter: (r: GooglePlace[]) => void, setLoading: (b: boolean) => void, pageToken?: string) => {
+    if (query.length < 2 && !pageToken) { setter([]); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('search-restaurants', {
-        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius },
+        body: { query, city: city || activeGroup.city || "New York, NY", radius: searchRadius, pageToken },
       });
       if (error) throw error;
-      setter(data?.restaurants || []);
+      const newResults = data?.restaurants || [];
+      if (pageToken) {
+        setGpResults(prev => [...prev, ...newResults]);
+      } else {
+        setter(newResults);
+      }
+      setGpNextPageToken(data?.nextPageToken || null);
     } catch {
-      setter([]);
+      if (!pageToken) setter([]);
     } finally {
       setLoading(false);
     }
@@ -2640,7 +2650,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={() => {
                 const cuisineQuery = exploreCuisineFilter.length > 0 ? exploreCuisineFilter.join(" or ") : "";
                 const searchTerm = [rName, cuisineQuery].filter(Boolean).join(" ") || "restaurant";
-                searchGooglePlaces(searchTerm, rCity || activeGroup.city, setGpResults, setGpLoading);
+                const searchCity = rCity || activeGroup.city;
+                setGpLastSearchTerm(searchTerm);
+                setGpLastSearchCity(searchCity);
+                setGpNextPageToken(null);
+                searchGooglePlaces(searchTerm, searchCity, setGpResults, setGpLoading);
                 setSearchPage(1);
               }}>
                 Search
@@ -2716,6 +2730,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <button onClick={() => setSearchPage(p => Math.min(totalPages, p + 1))} disabled={searchPage >= totalPages}
                         style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: searchPage >= totalPages ? "#3d2010" : "#c9956a", cursor: searchPage >= totalPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: searchPage >= totalPages ? 0.4 : 1 }}>
                         Next →
+                      </button>
+                    </div>
+                  )}
+                  {gpNextPageToken && (
+                    <div style={{ display:"flex", justifyContent:"center", padding:"12px 0" }}>
+                      <button
+                        disabled={gpLoadingMore}
+                        onClick={() => {
+                          setGpLoadingMore(true);
+                          searchGooglePlaces(gpLastSearchTerm, gpLastSearchCity, setGpResults, (b: boolean) => setGpLoadingMore(b), gpNextPageToken);
+                        }}
+                        style={{ ...S.primaryBtn, opacity: gpLoadingMore ? 0.6 : 1, fontSize:"13px", padding:"10px 24px" }}>
+                        {gpLoadingMore ? "Loading..." : "Load More Results"}
                       </button>
                     </div>
                   )}
