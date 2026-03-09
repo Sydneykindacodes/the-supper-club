@@ -64,7 +64,7 @@ export interface GroupSettings {
   search_radius: number;
 }
 
-export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host";
+export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant";
 
 export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [members, setMembers] = useState<DBMember[]>([]);
@@ -75,6 +75,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [memberAvailability, setMemberAvailability] = useState<MemberAvailability>({});
   const [userSelectedDates, setUserSelectedDates] = useState<string[]>([]);
   const [activeReservation, setActiveReservation] = useState<ActiveReservation | null>(null);
+  const [selectedRestaurantData, setSelectedRestaurantData] = useState<{ id: string; name: string; cuisine: string; city: string; address: string | null; google_place_id: string | null; price: number } | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [communityReviews, setCommunityReviews] = useState<DBReview[]>([]);
   const [userBadges, setUserBadges] = useState<DBBadge[]>([]);
@@ -175,7 +176,32 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       });
   }, [activeGroupId, refreshCounter]);
 
-  // Load availability for active reservation
+  // Load selected restaurant data when reservation has a restaurant_id
+  useEffect(() => {
+    if (!activeReservation?.restaurant_id) { setSelectedRestaurantData(null); return; }
+    supabase
+      .from("restaurants")
+      .select("id, name, cuisine, city, address, google_place_id, price")
+      .eq("id", activeReservation.restaurant_id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setSelectedRestaurantData({
+            id: data.id,
+            name: data.name,
+            cuisine: data.cuisine || "Restaurant",
+            city: data.city,
+            address: data.address,
+            google_place_id: data.google_place_id,
+            price: data.price || 2,
+          });
+        } else {
+          setSelectedRestaurantData(null);
+        }
+      });
+  }, [activeReservation?.restaurant_id, refreshCounter]);
+
+
   useEffect(() => {
     if (!activeReservation || members.length === 0) {
       setMemberAvailability({});
@@ -280,12 +306,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   }, [activeGroupId, refreshCounter]);
 
   // Compute dinner status from reservation
+  const isSoloGroup = members.length <= 1;
   const dinnerStatus: DinnerStatus = (() => {
     if (!activeReservation) return "no_date";
     switch (activeReservation.status) {
       case "pending_selection": return "awaiting_host";
-      case "pending_host_booking": return "pending_confirm";
-      case "card_required_skipped": return "pending_confirm";
+      case "pending_host_booking":
+        // If no restaurant selected yet, host needs to pick one
+        if (!activeReservation.restaurant_id) return "pending_restaurant";
+        // For solo groups, skip confirmation and go straight to scheduled
+        if (isSoloGroup) return "scheduled";
+        return "pending_confirm";
+      case "card_required_skipped":
+        if (isSoloGroup) return "scheduled";
+        return "pending_confirm";
       case "confirmed":
       case "revealed":
         return "scheduled";
@@ -295,7 +329,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
 
   const nextDinner: string | null = (() => {
     if (!activeReservation || dinnerStatus === "no_date") return null;
-    if (dinnerStatus === "scheduled" || dinnerStatus === "pending_confirm") {
+    if (dinnerStatus === "scheduled" || dinnerStatus === "pending_confirm" || dinnerStatus === "pending_restaurant") {
       const d = new Date(activeReservation.dinner_date + "T00:00:00");
       return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     }
@@ -398,7 +432,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Generate booking links via edge function
+  // Select restaurant for reservation
+  const selectRestaurantForReservation = useCallback(async (restaurantId: string) => {
+    if (!activeReservation?.id) return false;
+    const { error } = await supabase
+      .from("reservations")
+      .update({ restaurant_id: restaurantId })
+      .eq("id", activeReservation.id);
+    if (error) return false;
+    refresh();
+    return true;
+  }, [activeReservation?.id, refresh]);
+
+
+
   const generateBookingLinks = useCallback(async (restaurantName: string, city: string, googlePlaceId?: string) => {
     if (!activeReservation) return null;
     try {
@@ -658,5 +705,8 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     earnBadge,
     groupSettings,
     saveGroupSettings,
+    selectRestaurantForReservation,
+    selectedRestaurantData,
+    isSoloGroup,
   };
 }
