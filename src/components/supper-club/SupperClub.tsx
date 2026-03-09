@@ -249,6 +249,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
+  const [newGroupTemporary, setNewGroupTemporary] = useState(false);
   const [groupAdmin, setGroupAdmin] = useState(userName);
   const [groupCreator] = useState(userName);
   const [joinCode, setJoinCode] = useState("");
