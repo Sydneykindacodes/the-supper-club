@@ -364,6 +364,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpLoading, setGpLoading] = useState(false);
   const [gpNextPageToken, setGpNextPageToken] = useState<string | null>(null);
   const [gpLoadingMore, setGpLoadingMore] = useState(false);
+  const [gpLastSearchTerm, setGpLastSearchTerm] = useState("");
+  const [gpLastSearchCity, setGpLastSearchCity] = useState("");
   const [gpFreeResults, setGpFreeResults] = useState<GooglePlace[]>([]);
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
