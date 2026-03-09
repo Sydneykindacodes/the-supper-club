@@ -14,6 +14,7 @@ import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
 import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
 import { useNotifications } from "@/hooks/useNotifications";
 import Onboarding from "./Onboarding";
+import NotificationConsent from "./NotificationConsent";
 import ReviewForm from "./ReviewForm";
 import BadgesScreen from "./BadgesScreen";
 import ProfileScreen from "./ProfileScreen";
@@ -150,7 +151,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       }
       // New user — show onboarding if not yet completed
       const onboarded = localStorage.getItem("sc_onboarded");
-      setScreen(onboarded ? "welcome" : "onboarding");
+      const notifConsent = localStorage.getItem("sc_notif_consent");
+      if (!onboarded) {
+        setScreen("onboarding");
+      } else if (!notifConsent) {
+        setScreen("notif_consent");
+      } else {
+        setScreen("welcome");
+      }
     };
     loadGroups();
   }, [user.id]);
@@ -452,8 +460,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       userName={userName}
       onComplete={() => {
         localStorage.setItem("sc_onboarded", "1");
-        setScreen("welcome");
+        setScreen("notif_consent");
       }}
+    />
+  );
+
+  // ── NOTIFICATION CONSENT ──
+  if (screen === "notif_consent") return (
+    <NotificationConsent
+      userId={user.id}
+      onComplete={() => setScreen("welcome")}
     />
   );
 

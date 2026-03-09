@@ -269,18 +269,27 @@ export type Database = {
           created_at: string | null
           display_name: string | null
           id: string
+          phone: string | null
+          push_enabled: boolean | null
+          sms_enabled: boolean | null
         }
         Insert: {
           avatar_color?: string | null
           created_at?: string | null
           display_name?: string | null
           id: string
+          phone?: string | null
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
         }
         Update: {
           avatar_color?: string | null
           created_at?: string | null
           display_name?: string | null
           id?: string
+          phone?: string | null
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
         }
         Relationships: []
       }
