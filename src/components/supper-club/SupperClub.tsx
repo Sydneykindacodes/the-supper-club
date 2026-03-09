@@ -2057,8 +2057,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
                         onClick={() => {
                           if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                          showToast("Date locked. Priya marked as not attending.");
-                          updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 4, 2026" });
+                          dbData.proposeDate(selectedDates[0]).then(ok => {
+                            if (ok) showToast("Date locked. Members not submitted marked as absent.");
+                            else showToast("Failed. Try again.");
+                          });
                         }}>
                         Override & Lock Date
                       </button>
