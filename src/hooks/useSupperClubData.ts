@@ -627,6 +627,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     visitedRestaurants,
     currentMember,
     isHost,
+    hostCount,
     hostName,
     loadingMembers,
     loadingRestaurants,
