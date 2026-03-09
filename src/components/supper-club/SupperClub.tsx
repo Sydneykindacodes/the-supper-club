@@ -39,7 +39,7 @@ interface GooglePlace {
   googlePlaceId: string;
   photoRefs?: string[];
 }
-import { S, tabPill, chip } from "./styles";
+import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
