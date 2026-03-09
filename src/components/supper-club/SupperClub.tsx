@@ -2373,7 +2373,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           <div style={{ display:"flex", gap:"4px", margin:"16px 16px 0", padding:"4px", background:"rgba(255,255,255,0.03)", borderRadius:"12px", border:"1px solid rgba(201,149,106,0.08)" }}>
-            {([["search","Search"],["visited","Visited"],["community","Community"]] as const).map(([id,label]) => (
+            {([["search","Search"],["community","Community"]] as const).map(([id,label]) => (
               <div key={id} style={{ ...tabPill(exploreView===id), flex:1 }} onClick={() => { setExploreView(id); setSelectedPublicR(null); }}>{label}</div>
             ))}
           </div>
