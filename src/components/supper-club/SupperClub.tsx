@@ -944,7 +944,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             // Calculate overlapping dates
             const allDates: string[] = [];
-            MEMBERS.forEach(m => {
+            currentMembers.forEach(m => {
               const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
               dates.forEach(d => allDates.push(d));
             });
