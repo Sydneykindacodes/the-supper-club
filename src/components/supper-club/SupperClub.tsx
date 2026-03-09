@@ -2157,6 +2157,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       group: r.group_name || "Supper Club Member",
       reviewer: r.member_name || "Anonymous",
       reviewerColor: r.member_avatar_color || "#c9956a",
+      reviewerAvatarUrl: r.member_avatar_url || null,
       restaurant: r.restaurant_name,
       rating: r.rating,
       review: r.review_text || "",
