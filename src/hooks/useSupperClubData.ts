@@ -46,6 +46,7 @@ export interface DBReview {
   // joined fields
   group_name?: string;
   member_name?: string;
+  member_avatar_color?: string;
 }
 
 export interface DBBadge {
@@ -242,7 +243,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
   useEffect(() => {
     supabase
       .from("reviews")
-      .select("*")
+      .select("*, members(name, avatar_color), groups(name)")
       .order("created_at", { ascending: false })
       .limit(100)
       .then(({ data }) => {
@@ -262,6 +263,9 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             group_id: r.group_id,
             reservation_id: r.reservation_id,
             created_at: r.created_at,
+            member_name: r.members?.name || null,
+            member_avatar_color: r.members?.avatar_color || null,
+            group_name: r.groups?.name || null,
           })));
         }
       });
