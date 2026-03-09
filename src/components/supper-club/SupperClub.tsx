@@ -2306,33 +2306,42 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </>);
               })()}
 
+              {/* Already in pool notice */}
+              {isAlreadyInPool && (
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", marginTop:"16px", padding:"12px 14px", background:"rgba(122,158,126,0.08)", border:"1px solid rgba(122,158,126,0.2)", borderRadius:"12px" }}>
+                  <span style={{ fontSize:"14px" }}>✓</span>
+                  <div style={{ fontSize:"13px", color:"#7a9e7e", fontWeight:"500" }}>This restaurant is already in your pool</div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <button style={{ ...S.ghostBtn, marginTop:"16px", marginBottom:"8px" }} onClick={() => {
                 setShowReviewForm({ restaurant: r.name, cuisine: 'cuisine' in r ? r.cuisine : undefined, city: r.city });
               }}>
                 Write a Review
               </button>
-              <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
-                const restaurant: Restaurant = {
-                  id: Date.now(), 
-                  name: r.name, 
-                  cuisine: 'cuisine' in r ? r.cuisine : "Restaurant", 
-                  suggested_by: "You",
-                  city: r.city, 
-                  price: r.price, 
-                  visited: false, 
-                  visitedDate: null, 
-                  visitedRating: null,
-                  googleRating: 'googleRating' in r ? r.googleRating : null,
-                  googleReviewCount: 'googleReviewCount' in r ? r.googleReviewCount : 0,
-                  scRating: null, 
-                  scReviewCount: 0,
-                };
-                setAddToGroupPicker({ restaurant, visible: true });
-                setAddToGroupSelected([activeGroup.id]);
-              }}>
-                Add to Pool
-              </button>
+              {!isAlreadyInPool && (
+                <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
+                  const restaurant: Restaurant = {
+                    id: Date.now(), 
+                    name: r.name, 
+                    cuisine: 'cuisine' in r ? r.cuisine : "Restaurant", 
+                    city: r.city, 
+                    price: r.price, 
+                    visited: false, 
+                    visitedDate: null, 
+                    visitedRating: null,
+                    googleRating: 'googleRating' in r ? r.googleRating : null,
+                    googleReviewCount: 'googleReviewCount' in r ? r.googleReviewCount : 0,
+                    scRating: null, 
+                    scReviewCount: 0,
+                  };
+                  setAddToGroupPicker({ restaurant, visible: true });
+                  setAddToGroupSelected([activeGroup.id]);
+                }}>
+                  Add to Pool
+                </button>
+              )}
             </div>
           </div>
           <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
