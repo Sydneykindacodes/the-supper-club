@@ -1494,15 +1494,20 @@ export default function SupperClub() {
             </div>
           </div>
 
-          <button style={S.primaryBtn} onClick={() => {
+          <button style={S.primaryBtn} onClick={async () => {
             showToast(bestDishMember ? `Review submitted. ${bestDishMember} gets the Best Dish badge.` : "Review submitted.");
             if (postDinnerDates.length > 0) updateGroup(activeGroup.id, { dinnerStatus:"pending_confirm", pendingDate:"April 11, 2026" });
+            // Trigger next host selection (in production this would call the edge function)
+            // For demo, show the secret host notification after a delay
+            setTimeout(() => {
+              showToast("🤫 A new host has been secretly selected...");
+            }, 3000);
             setTimeout(() => setScreen("club_home"), 2000);
-          }}>Submit Review</button>
+          }}>Submit Review & Complete Dinner</button>
 
           <ShareRow showToast={showToast} />
 
-          <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => { showToast("Review submitted."); setTimeout(() => setScreen("club_home"), 1800); }}>Submit Without Next Dates</button>
+          <button style={{ ...S.ghostBtn, marginBottom:"16px" }} onClick={() => { showToast("Review submitted."); setTimeout(() => setScreen("club_home"), 1800); }}>Submit Without Review</button>
         </div>
       </div>
       <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
