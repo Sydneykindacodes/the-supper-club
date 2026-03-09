@@ -333,6 +333,60 @@ export default function SupperClub() {
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
           </div>
 
+          {/* Awaiting Initiation - shown when user joins after host has booked */}
+          {awaitingInitiation && ag.dinnerStatus === "scheduled" && (
+            <div style={{ padding:"0 16px", marginBottom:"16px" }}>
+              <div style={{ 
+                background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", 
+                border:"1px solid rgba(201,149,106,0.25)", 
+                borderRadius:"16px", 
+                padding:"32px 24px", 
+                textAlign:"center" 
+              }}>
+                <div style={{ fontSize:"48px", marginBottom:"16px" }}>🍷</div>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"12px" }}>
+                  Awaiting Initiation
+                </div>
+                <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500", lineHeight:"1.5" }}>
+                  Welcome to {ag.name}
+                </div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px", fontStyle:"italic", lineHeight:"1.7" }}>
+                  {WITTY_INITIATION_MESSAGES[wittyInitiationIdx]}
+                </div>
+                <div style={{ 
+                  background:"rgba(201,149,106,0.08)", 
+                  borderRadius:"12px", 
+                  padding:"16px", 
+                  marginBottom:"16px" 
+                }}>
+                  <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>
+                    Current Dinner Status
+                  </div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"4px" }}>
+                    {ag.nextDinner || "Date TBD"}
+                  </div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25" }}>
+                    Reservation booked • You'll join the next one
+                  </div>
+                </div>
+                <div style={{ 
+                  background:"rgba(122,158,126,0.08)", 
+                  borderRadius:"10px", 
+                  padding:"14px", 
+                  marginBottom:"16px" 
+                }}>
+                  <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                    <strong>What happens next?</strong><br/>
+                    After the group completes their dinner, you'll be fully activated and can participate in scheduling the next one.
+                  </div>
+                </div>
+                <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>
+                  In the meantime, feel free to explore the restaurant pool and get to know the group.
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 16px", marginBottom:"4px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
               <span style={{ fontSize:"11px", color:"#7a5a40", letterSpacing:"1px", textTransform:"uppercase" }}>Invite Code</span>
