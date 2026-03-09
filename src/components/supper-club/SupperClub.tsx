@@ -1585,7 +1585,7 @@ export default function SupperClub() {
             // Trigger next host selection (in production this would call the edge function)
             // For demo, show the secret host notification after a delay
             setTimeout(() => {
-              showToast("🤫 A new host has been secretly selected...");
+              showToast("A new host has been secretly selected...");
             }, 3000);
             setTimeout(() => setScreen("club_home"), 2000);
           }}>Submit Review & Complete Dinner</button>
