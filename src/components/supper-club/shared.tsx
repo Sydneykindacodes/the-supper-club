@@ -473,7 +473,7 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
                     ...chip(active),
                     display:"flex", alignItems:"center", gap:"5px",
                   }}>
-                  <span>{MEAL_ICONS[meal]}</span> {meal}
+                  <MealIcon type={meal} size={13} color={active ? "#1a0f0a" : "#c9956a"} /> {meal}
                 </div>
               );
             })}
