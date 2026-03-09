@@ -33,10 +33,49 @@ import {
   NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
 } from "./shared";
 
-export default function SupperClub() {
+export default function SupperClub({ user, signOut }: SupperClubProps) {
   const MAX_GROUPS = 15;
-  const [screen, setScreen] = useState("welcome");
-  const [groups, setGroups] = useState(INITIAL_GROUPS);
+  const userName = user.user_metadata?.display_name || user.user_metadata?.full_name || user.email || "You";
+  const [screen, setScreen] = useState<string>("welcome");
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+  const [activeTab, setActiveTab] = useState("home");
+
+  // Load user's groups from DB on mount
+  useEffect(() => {
+    const loadGroups = async () => {
+      // Check if user has any groups via members table
+      const { data: memberRows } = await supabase
+        .from("members")
+        .select("group_id, groups(id, name, code, city)")
+        .eq("user_id", user.id);
+      
+      if (memberRows && memberRows.length > 0) {
+        const loadedGroups: Group[] = memberRows
+          .filter((m: any) => m.groups)
+          .map((m: any) => ({
+            id: m.groups.id,
+            name: m.groups.name,
+            code: m.groups.code,
+            members: 0,
+            city: m.groups.city,
+            dinnerStatus: "no_date" as const,
+            nextDinner: null,
+            pendingDate: null,
+          }));
+        if (loadedGroups.length > 0) {
+          setGroups(loadedGroups);
+          setActiveGroup(loadedGroups[0]);
+          setScreen("club_home");
+          setActiveTab("home");
+          return;
+        }
+      }
+      // New user — show welcome
+      setScreen("welcome");
+    };
+    loadGroups();
+  }, [user.id]);
   const [activeGroup, setActiveGroup] = useState(INITIAL_GROUPS[0]);
   const [activeTab, setActiveTab] = useState("home");
   const [joinMode, setJoinMode] = useState<"create" | "join" | null>(null);
