@@ -99,6 +99,7 @@ export function useNotifications(user: User, memberIds: string[]) {
       case "member_joined": return "👋 A new member has joined the club!";
       case "availability_submitted": return "📅 A member has submitted their availability.";
       case "dinner_cancelled": return "❌ The dinner has been cancelled.";
+      case "host_transferred": return "👑 You've been made the new host! Check the home screen for your tasks.";
       case "restaurant_added": return "🍴 A new restaurant has been added to the pool!";
       case "low_pool": return "⚠️ Your restaurant pool is running low — add more options!";
       default: return "📬 You have a new notification";
