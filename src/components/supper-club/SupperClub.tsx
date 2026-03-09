@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { UtensilsCrossed } from "lucide-react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES,
   WITTY_NO_DATE, MEAL_TYPES, WITTY_HOST_WAITING,
@@ -1743,7 +1744,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     <div style={{ background:"rgba(122,158,126,0.08)", borderRadius:"10px", padding:"12px", marginBottom:"16px", textAlign:"center" }}>
                       <div style={{ fontSize:"11px", color:"#7a9e7e", lineHeight:"1.5" }}>
-                        📅 <strong>{ag.nextDinner}</strong> · 🍽️ Party of {dbData.activeReservation?.party_size || currentMembers.length}
+                        📅 <strong>{ag.nextDinner}</strong> · <UtensilsCrossed size={12} style={{ display:"inline", verticalAlign:"middle", marginRight:"3px" }} /> Party of {dbData.activeReservation?.party_size || currentMembers.length}
                       </div>
                       <div style={{ fontSize:"10px", color:"#5a3a25", marginTop:"4px", fontStyle:"italic" }}>Tell them this when you call</div>
                     </div>
@@ -4065,7 +4066,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   textAlign:"center",
                   marginBottom:"20px"
                 }}>
-                  <div style={{ fontSize:"24px", marginBottom:"14px" }}>🍽️</div>
+                  <div style={{ marginBottom:"14px", display:"flex", justifyContent:"center" }}><UtensilsCrossed size={28} color="hsl(30,20%,88%)" strokeWidth={1.5} /></div>
                   <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
                     Your seat is reserved.
                   </div>
