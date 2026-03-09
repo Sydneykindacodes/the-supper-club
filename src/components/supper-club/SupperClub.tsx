@@ -1170,6 +1170,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
                           const success = await dbData.confirmBooking();
                           if (success) {
+                            await sendGroupNotification("dinner_confirmed");
                             showToast("Reservation confirmed.");
                           } else {
                             showToast("Failed to confirm. Try again.");
