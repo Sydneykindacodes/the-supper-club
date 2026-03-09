@@ -2541,9 +2541,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       </div>
                     </div>
 
-                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"14px", padding:"18px", marginBottom:"16px", border:"1px solid rgba(201,149,106,0.1)" }}>
-                      <div style={{ fontSize:"20px", color:"#f5e6d3", fontWeight:"500", marginBottom:"4px" }}>{rev.restaurant}</div>
+                    <div style={{ background:"rgba(201,149,106,0.06)", borderRadius:"14px", padding:"18px", marginBottom:"16px", border:"1px solid rgba(201,149,106,0.1)", cursor:"pointer" }}
+                      onClick={(e) => { e.stopPropagation(); const rest: Restaurant = { id:Date.now(), name:rev.restaurant, cuisine:rev.cuisine||"—", city:rev.city, price:3, visited:false, visitedDate:null, visitedRating:null }; openRestaurantDetail(rest); }}>
+                      <div style={{ fontSize:"20px", color:"#c9956a", fontWeight:"500", marginBottom:"4px", textDecoration:"underline", textDecorationColor:"rgba(201,149,106,0.3)", textUnderlineOffset:"3px" }}>{rev.restaurant}</div>
                       <div style={{ fontSize:"13px", color:"#7a5a40" }}>{rev.cuisine ? `${rev.cuisine} · ` : ""}{rev.city}</div>
+                      <div style={{ fontSize:"11px", color:"#c9956a", marginTop:"6px" }}>View restaurant details →</div>
                     </div>
 
                     {/* Star Rating */}
@@ -2668,7 +2670,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                             </div>
                           </div>
                           {/* Restaurant */}
-                          <div style={{ fontSize:"15px", color:"#f5e6d3", fontWeight:"500", marginBottom:"2px" }}>{rev.restaurant}</div>
+                          <div style={{ fontSize:"15px", color:"#c9956a", fontWeight:"500", marginBottom:"2px", cursor:"pointer", textDecoration:"underline", textDecorationColor:"rgba(201,149,106,0.3)", textUnderlineOffset:"2px" }}
+                            onClick={(e) => { e.stopPropagation(); const rest: Restaurant = { id:Date.now(), name:rev.restaurant, cuisine:rev.cuisine||"—", city:rev.city, price:3, visited:false, visitedDate:null, visitedRating:null }; openRestaurantDetail(rest); }}>{rev.restaurant}</div>
                           <div style={{ fontSize:"11px", color:"#7a5a40", marginBottom:"8px" }}>{rev.cuisine ? `${rev.cuisine} · ` : ""}{rev.city}</div>
                           {/* Review preview */}
                           {rev.review && (
