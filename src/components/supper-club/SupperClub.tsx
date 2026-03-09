@@ -1107,6 +1107,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const handleSeedAdd = (r: GooglePlace) => {
       if (atMax) { showToast(`Maximum ${seedPoolMax} picks allowed.`); return; }
       if (seedPoolPicks.some(p => p.name.toLowerCase() === r.name.toLowerCase())) { showToast("Already picked."); return; }
+      if (!isWithinRadius(r)) { showToast(`${r.name} is outside your group's ${searchRadius}-mile radius.`); return; }
       setSeedPoolPicks(prev => [...prev, r]);
     };
 
