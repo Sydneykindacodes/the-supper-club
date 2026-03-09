@@ -2182,7 +2182,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   </div>
                   <button 
                     onClick={async () => { 
-                      const success = await removeRestaurantFromPool(r.name);
+                      const success = await dbData.removeRestaurantFromPool(r.name);
                       if (success) {
                         setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
                         showToast(`${r.name} removed from pool.`);
