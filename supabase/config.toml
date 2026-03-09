@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.describe-restaurant]
 verify_jwt = false
+
+[functions.send-group-notification]
+verify_jwt = false
+
+[functions.scheduled-notifications]
+verify_jwt = false

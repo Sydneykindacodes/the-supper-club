@@ -57,10 +57,14 @@ export function useNotifications(user: User, memberIds: string[]) {
   const getNotificationMessage = (n: AppNotification): string => {
     switch (n.type) {
       case "new_host_reveal": return "🤫 You've been chosen as the next host!";
-      case "dinner_confirmed": return "🍽️ Dinner has been confirmed!";
+      case "dinner_confirmed": return "🍽️ The reservation has been booked!";
       case "restaurant_revealed": return "🎭 The restaurant has been revealed!";
       case "review_reminder": return "✍️ Don't forget to write your review!";
-      case "availability_reminder": return "📅 Submit your availability!";
+      case "availability_reminder": return "📅 The host is nudging you — submit your availability!";
+      case "date_proposed": return "📆 The host has locked in a date for dinner!";
+      case "restaurant_selected": return "🔒 The host has picked a restaurant (it's a secret)!";
+      case "morning_reveal_reminder": return "🌅 Tonight's the night! Check the app to see where you're going.";
+      case "post_dinner_review": return "✨ How was dinner? Submit your review & availability for next time!";
       default: return "📬 You have a new notification";
     }
   };

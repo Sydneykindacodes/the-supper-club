@@ -484,6 +484,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const onNavigate = (tab: string, scr: string) => { setActiveTab(tab); setScreen(scr); };
 
+  // Helper to send push notifications to all group members
+  const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
+    if (!activeGroupId) return;
+    try {
+      await supabase.functions.invoke('send-group-notification', {
+        body: {
+          group_id: activeGroupId,
+          type,
+          reservation_id: dbData.activeReservation?.id || null,
+          exclude_member_id: excludeSelf ? dbData.currentMember?.id : undefined,
+        },
+      });
+    } catch (e) {
+      console.error('Failed to send notification:', e);
+    }
+  }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
+
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
 
@@ -1153,6 +1170,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={async () => {
                           const success = await dbData.confirmBooking();
                           if (success) {
+                            await sendGroupNotification("dinner_confirmed");
                             showToast("Reservation confirmed.");
                           } else {
                             showToast("Failed to confirm. Try again.");
@@ -1383,7 +1401,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 Once everyone submits their available dates, the host will pick the perfect night.
               </div>
               <button style={{ ...S.primaryBtn, marginBottom:"8px" }} onClick={() => { setActiveTab("schedule"); setScreen("availability"); }}>Submit My Dates</button>
-              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={() => showToast("Nudge sent. They'll get the hint.")}>Nudge the Group</button>
+              <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>
             </div>
           )}
 
@@ -1967,6 +1985,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 if (!hostSelectedDate) { showToast("Select a date first."); return; }
                 const success = await dbData.proposeDate(hostSelectedDate);
                 if (success) {
+                  await sendGroupNotification("date_proposed");
                   showToast("Date locked! Now pick the restaurant.");
                   setScreen("host_select_restaurant");
                 } else {
@@ -2088,6 +2107,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     
                     const success = await dbData.selectRestaurantForReservation(restData.id);
                     if (success) {
+                      await sendGroupNotification("restaurant_selected");
                       showToast("Restaurant selected! Time to book.");
                       setScreen("club_home");
                       setActiveTab("home");
@@ -3081,8 +3101,8 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                       <button style={{ ...S.primaryBtn, marginBottom:"0", fontSize:"12px", padding:"13px", background:"linear-gradient(135deg,#9a6040,#c9956a)" }}
                         onClick={() => {
                           if (selectedDates.length === 0) { showToast("Select at least one date first."); return; }
-                          dbData.proposeDate(selectedDates[0]).then(ok => {
-                            if (ok) showToast("Date locked. Members not submitted marked as absent.");
+                          dbData.proposeDate(selectedDates[0]).then(async ok => {
+                            if (ok) { await sendGroupNotification("date_proposed"); showToast("Date locked. Members not submitted marked as absent."); }
                             else showToast("Failed. Try again.");
                           });
                         }}>
