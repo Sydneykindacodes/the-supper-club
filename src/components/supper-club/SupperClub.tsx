@@ -484,6 +484,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
   const onNavigate = (tab: string, scr: string) => { setActiveTab(tab); setScreen(scr); };
 
+  // Helper to send push notifications to all group members
+  const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
+    if (!activeGroupId) return;
+    try {
+      await supabase.functions.invoke('send-group-notification', {
+        body: {
+          group_id: activeGroupId,
+          type,
+          reservation_id: dbData.activeReservation?.id || null,
+          exclude_member_id: excludeSelf ? dbData.currentMember?.id : undefined,
+        },
+      });
+    } catch (e) {
+      console.error('Failed to send notification:', e);
+    }
+  }, [activeGroupId, dbData.activeReservation?.id, dbData.currentMember?.id]);
+
   const iEarned = INDIVIDUAL_BADGES.filter(b => b.earned).length;
   const gEarned = GROUP_BADGES.filter(b => b.earned).length;
 
