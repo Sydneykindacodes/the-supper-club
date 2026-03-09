@@ -398,12 +398,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [gpFreeLoading, setGpFreeLoading] = useState(false);
 
   // Detect dinner cancellation — show notice to non-host members
+  // Skip on initial load (prevDinnerStatus undefined) or when status was already "no_date"
   useEffect(() => {
     const current = dbData.dinnerStatus;
-    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && current === "no_date" && !dbData.isHost) {
+    if (prevDinnerStatus && prevDinnerStatus !== "no_date" && prevDinnerStatus !== undefined && current === "no_date" && !dbData.isHost) {
       setShowCancellationNotice(true);
     }
-    setPrevDinnerStatus(current);
+    if (current) setPrevDinnerStatus(current);
   }, [dbData.dinnerStatus, dbData.isHost, prevDinnerStatus]);
 
   // Restaurant detail reviews come from DB now
