@@ -324,7 +324,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setPostDinnerDates([]);
     setAvailabilityModifying(false);
     setHostSelectedDate(null);
-    setConfirmationVotes({ Marisol: false, Derek: false, Priya: false, You: false });
+    setConfirmationVotes({});
     setReviewRating(0);
     setReviewText("");
     setPhotoSubmitted(false);
