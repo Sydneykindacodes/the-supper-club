@@ -1580,6 +1580,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     resetForNextDinner();
                     setBookingLinks(null);
                     await dbData.completeDinner();
+                    checkLowPoolNotification(poolRestaurants.length - 1);
                     setPostDinnerStep(null);
                   }}>
                     Skip for Now
