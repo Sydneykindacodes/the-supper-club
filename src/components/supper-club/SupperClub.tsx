@@ -182,6 +182,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [bookingLinks, setBookingLinks] = useState<{ google: string; opentable?: string; resy?: string; yelp?: string } | null>(null);
   const [postDinnerReviewPrompt, setPostDinnerReviewPrompt] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
