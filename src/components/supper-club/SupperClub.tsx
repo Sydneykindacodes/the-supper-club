@@ -2181,9 +2181,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                   </div>
                   <button 
-                    onClick={() => { 
-                      setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
-                      showToast(`${r.name} removed from pool.`); 
+                    onClick={async () => { 
+                      const success = await dbData.removeRestaurantFromPool(r.name);
+                      if (success) {
+                        setPoolRestaurants(pool => pool.filter(rest => rest.id !== r.id)); 
+                        showToast(`${r.name} removed from pool.`);
+                      } else {
+                        showToast("Failed to remove restaurant.");
+                      }
                     }}
                     style={{ 
                       marginTop:"12px", width:"100%", padding:"10px", borderRadius:"8px",
