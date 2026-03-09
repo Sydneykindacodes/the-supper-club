@@ -11,7 +11,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useSupperClubData } from "@/hooks/useSupperClubData";
+import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
+import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
 import Onboarding from "./Onboarding";
+import ReviewForm from "./ReviewForm";
+import BadgesScreen from "./BadgesScreen";
+import ProfileScreen from "./ProfileScreen";
 
 interface SupperClubProps {
   user: User;
