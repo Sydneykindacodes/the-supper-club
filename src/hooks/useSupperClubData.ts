@@ -24,6 +24,8 @@ export interface ActiveReservation {
   revealed_at: string | null;
   reveal_at: string | null;
   booking_url: string | null;
+  next_host_id: string | null;
+  next_host_notified_at: string | null;
 }
 
 export interface DBReview {
@@ -64,7 +66,7 @@ export interface GroupSettings {
   search_radius: number;
 }
 
-export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant";
+export type DinnerStatus = "scheduled" | "pending_confirm" | "no_date" | "awaiting_host" | "pending_restaurant" | "post_dinner" | "awaiting_next_host";
 
 export function useSupperClubData(user: User, activeGroupId: string | null) {
   const [members, setMembers] = useState<DBMember[]>([]);
@@ -145,14 +147,14 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
       });
   }, [activeGroupId, refreshCounter]);
 
-  // Load active reservation for group
+  // Load active reservation for group (include "completed" for post-dinner flow)
   useEffect(() => {
     if (!activeGroupId) { setActiveReservation(null); return; }
     supabase
       .from("reservations")
       .select("*")
       .eq("group_id", activeGroupId)
-      .not("status", "in", '("completed","cancelled")')
+      .not("status", "in", '("cancelled")')
       .order("created_at", { ascending: false })
       .limit(1)
       .then(({ data }) => {
@@ -169,6 +171,8 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
             revealed_at: r.revealed_at,
             reveal_at: r.reveal_at,
             booking_url: r.booking_url,
+            next_host_id: r.next_host_id,
+            next_host_notified_at: r.next_host_notified_at,
           });
         } else {
           setActiveReservation(null);
@@ -312,17 +316,27 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     switch (activeReservation.status) {
       case "pending_selection": return "awaiting_host";
       case "pending_host_booking":
-        // If no restaurant selected yet, host needs to pick one
         if (!activeReservation.restaurant_id) return "pending_restaurant";
-        // For solo groups, skip confirmation and go straight to scheduled
         if (isSoloGroup) return "scheduled";
         return "pending_confirm";
       case "card_required_skipped":
         if (isSoloGroup) return "scheduled";
         return "pending_confirm";
       case "confirmed":
-      case "revealed":
+      case "revealed": {
+        // Auto-detect post-dinner: if dinner date has passed
+        const dinnerDate = new Date(activeReservation.dinner_date + "T23:59:59");
+        if (dinnerDate < new Date()) return "post_dinner";
         return "scheduled";
+      }
+      case "completed": {
+        // Check if next host reveal time has passed
+        if (activeReservation.next_host_notified_at) {
+          const revealTime = new Date(activeReservation.next_host_notified_at);
+          if (revealTime <= new Date()) return "no_date"; // Host revealed, cycle complete
+        }
+        return "awaiting_next_host";
+      }
       default: return "no_date";
     }
   })();
@@ -696,6 +710,19 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     color: m.color,
   }));
 
+  // Check if user has reviewed the current dinner
+  const hasUserReviewedCurrentDinner = activeReservation
+    ? communityReviews.some(r => r.user_id === user.id && r.reservation_id === activeReservation.id)
+    : false;
+
+  // Get the next host name (for awaiting_next_host display after reveal time)
+  const nextHostMember = activeReservation?.next_host_id 
+    ? members.find(m => m.id === activeReservation.next_host_id)
+    : null;
+  const nextHostName = nextHostMember 
+    ? (nextHostMember.user_id === user.id ? "You" : nextHostMember.name)
+    : null;
+
   return {
     members,
     uiMembers,
@@ -727,7 +754,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     makeHost,
     leaveGroup,
     refresh,
-    // New
     communityReviews,
     submitReview,
     uploadReviewPhoto,
@@ -738,5 +764,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null) {
     selectRestaurantForReservation,
     selectedRestaurantData,
     isSoloGroup,
+    hasUserReviewedCurrentDinner,
+    nextHostName,
   };
 }

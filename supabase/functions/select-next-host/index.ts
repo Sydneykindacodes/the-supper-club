@@ -55,11 +55,8 @@ Deno.serve(async (req) => {
     
     let nextCycleNumber = currentCycle;
     if (unhostedThisCycle.length === 0) {
-      // Everyone has hosted - start new cycle
       nextCycleNumber = currentCycle + 1;
-      // All eligible members can be selected
     } else {
-      // Prefer members who haven't hosted this cycle
       eligibleMembers = unhostedThisCycle;
     }
 
@@ -67,8 +64,7 @@ Deno.serve(async (req) => {
     const randomIndex = Math.floor(Math.random() * eligibleMembers.length);
     const nextHost = eligibleMembers[randomIndex];
 
-    // Update member records
-    // Clear current host
+    // Update member records - set new host immediately in DB
     if (currentHost) {
       await supabase
         .from('members')
@@ -76,7 +72,6 @@ Deno.serve(async (req) => {
         .eq('id', currentHost.id);
     }
 
-    // Set new host
     await supabase
       .from('members')
       .update({ 
@@ -96,16 +91,19 @@ Deno.serve(async (req) => {
         cycle_number: nextCycleNumber,
       });
 
-    // Update reservation with next host
-    if (reservation_id) {
-      // Calculate 8 AM next day for reveal
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(8, 0, 0, 0);
+    // Calculate 8 AM next day for host reveal
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(8, 0, 0, 0);
 
+    // Update reservation with next host and reveal time
+    if (reservation_id) {
       await supabase
         .from('reservations')
-        .update({ next_host_id: nextHost.id })
+        .update({ 
+          next_host_id: nextHost.id,
+          next_host_notified_at: tomorrow.toISOString(),
+        })
         .eq('id', reservation_id);
     }
 
@@ -116,6 +114,7 @@ Deno.serve(async (req) => {
         name: nextHost.name,
       },
       cycle_number: nextCycleNumber,
+      reveal_at: tomorrow.toISOString(),
       message: `🤫 ${nextHost.name} has been secretly selected as the next host!`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
