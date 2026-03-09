@@ -3984,7 +3984,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                               <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
                             </div>
                             <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                              {isYou ? (selectedDates.length > 0 ? `${selectedDates.length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
+                              {isYou ? (selectedDates.length > 0 ? `${getUniqueDates(selectedDates).length} dates` : "Not yet set") : hasSubmitted ? "Submitted" : "Waiting"}
                             </span>
                           </div>
                         );
