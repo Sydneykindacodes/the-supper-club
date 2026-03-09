@@ -576,7 +576,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Complete dinner (post-dinner) and trigger host rotation
+  // Complete dinner (post-dinner) and trigger host rotation (skip for temporary groups)
   const completeDinner = useCallback(async () => {
     if (!activeReservation?.id || !activeGroupId) return false;
     const { error } = await supabase
@@ -585,18 +585,20 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
       .eq("id", activeReservation.id);
     if (error) return false;
 
-    // Trigger host rotation via edge function
-    try {
-      await supabase.functions.invoke('select-next-host', {
-        body: { group_id: activeGroupId, reservation_id: activeReservation.id },
-      });
-    } catch (e) {
-      console.error('Host rotation failed:', e);
+    // Skip host rotation for temporary groups — they dissolve after dinner
+    if (!isTemporary) {
+      try {
+        await supabase.functions.invoke('select-next-host', {
+          body: { group_id: activeGroupId, reservation_id: activeReservation.id },
+        });
+      } catch (e) {
+        console.error('Host rotation failed:', e);
+      }
     }
 
     refresh();
     return true;
-  }, [activeReservation?.id, activeGroupId, refresh]);
+  }, [activeReservation?.id, activeGroupId, isTemporary, refresh]);
 
   // Make a member the host
   const makeHost = useCallback(async (memberId: string) => {
