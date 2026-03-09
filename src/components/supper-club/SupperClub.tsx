@@ -3,7 +3,7 @@ import {
   INDIVIDUAL_BADGES, GROUP_BADGES, MEMBERS, INITIAL_GROUPS,
   RESTAURANT_POOL, PREVIOUSLY_VISITED, PUBLIC_REVIEWS,
   WITTY_NO_DATE, MEAL_TYPES, PRICE_LABELS, WITTY_HOST_WAITING,
-  SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES,
+  SECRET_HOST_MESSAGES, HOST_PRIVILEGE_MESSAGES, WITTY_INITIATION_MESSAGES,
   MAX_GROUP_MEMBERS,
   Group, Restaurant, MemberAvailability,
 } from "@/data/supper-club-data";
@@ -37,6 +37,9 @@ export default function SupperClub() {
   const [toast, setToast] = useState<string | null>(null);
   const [wittyIdx] = useState(Math.floor(Math.random() * WITTY_NO_DATE.length));
   const [wittyHostIdx] = useState(Math.floor(Math.random() * WITTY_HOST_WAITING.length));
+  const [wittyInitiationIdx] = useState(Math.floor(Math.random() * WITTY_INITIATION_MESSAGES.length));
+  // Track if user is awaiting initiation (joined after host booked)
+  const [awaitingInitiation, setAwaitingInitiation] = useState(false);
   const [showNewGroupForm, setShowNewGroupForm] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupCity, setNewGroupCity] = useState("");
@@ -289,21 +292,31 @@ export default function SupperClub() {
           <button style={S.primaryBtn} onClick={() => {
             if (!joinCode.trim()) { showToast("Please enter an invite code."); return; }
             if (!joinName.trim()) { showToast("Please enter your name."); return; }
+            // Check if the group has an active booking (simulate by checking if code matches scheduled group)
+            const existingGroup = groups.find(g => g.code === joinCode.trim());
+            const hasActiveBooking = existingGroup?.dinnerStatus === "scheduled";
             // Create a mock joined group (in production this would validate the code)
             const newGroup: Group = { 
               id: Date.now(), 
-              name: `Club ${joinCode}`, 
+              name: existingGroup?.name || `Club ${joinCode}`, 
               code: joinCode.trim(), 
-              members: 4, 
-              city: "New York, NY", 
-              dinnerStatus: "no_date", 
-              nextDinner: null, 
-              pendingDate: null 
+              members: (existingGroup?.members || 3) + 1, 
+              city: existingGroup?.city || "New York, NY", 
+              dinnerStatus: existingGroup?.dinnerStatus || "no_date", 
+              nextDinner: existingGroup?.nextDinner || null, 
+              pendingDate: existingGroup?.pendingDate || null 
             };
             setGroups(prev => [...prev, newGroup]);
             setGroupPools(prev => ({ ...prev, [newGroup.id]: [] }));
             setActiveGroup(newGroup);
-            showToast(`Welcome to ${newGroup.name}!`);
+            // If joining a group with an active booking, set awaiting initiation
+            if (hasActiveBooking) {
+              setAwaitingInitiation(true);
+              showToast(`Welcome! You'll be initiated after the current dinner.`);
+            } else {
+              setAwaitingInitiation(false);
+              showToast(`Welcome to ${newGroup.name}!`);
+            }
             setJoinCode(""); setJoinName("");
             setScreen("club_home"); 
             setActiveTab("home"); 
@@ -320,10 +333,6 @@ export default function SupperClub() {
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
     
-    // Dynamic greeting based on time of day
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? "Good morning." : hour < 17 ? "Good afternoon." : "Good evening.";
-    
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
@@ -331,11 +340,62 @@ export default function SupperClub() {
           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
           <div style={{ padding:"16px 24px 12px" }}>
-            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>{greeting}</div>
-            <div style={{ fontSize:"13px", color:"#7a5a40", marginTop:"4px", fontStyle:"italic" }}>
-              {noDate ? WITTY_NO_DATE[wittyIdx] : pending ? "Your group has a proposed date. Waiting on confirmations." : "Your next supper is coming. Try not to look up the restaurant."}
-            </div>
+            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
           </div>
+
+          {/* Awaiting Initiation - shown when user joins after host has booked */}
+          {awaitingInitiation && ag.dinnerStatus === "scheduled" && (
+            <div style={{ padding:"0 16px", marginBottom:"16px" }}>
+              <div style={{ 
+                background:"linear-gradient(135deg, rgba(201,149,106,0.06), rgba(26,15,10,0.95))", 
+                border:"1px solid rgba(201,149,106,0.25)", 
+                borderRadius:"16px", 
+                padding:"32px 24px", 
+                textAlign:"center" 
+              }}>
+                <div style={{ fontSize:"48px", marginBottom:"16px" }}>🍷</div>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"3px", textTransform:"uppercase", marginBottom:"12px" }}>
+                  Awaiting Initiation
+                </div>
+                <div style={{ fontSize:"18px", color:"#f5e6d3", marginBottom:"12px", fontWeight:"500", lineHeight:"1.5" }}>
+                  Welcome to {ag.name}
+                </div>
+                <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"20px", fontStyle:"italic", lineHeight:"1.7" }}>
+                  {WITTY_INITIATION_MESSAGES[wittyInitiationIdx]}
+                </div>
+                <div style={{ 
+                  background:"rgba(201,149,106,0.08)", 
+                  borderRadius:"12px", 
+                  padding:"16px", 
+                  marginBottom:"16px" 
+                }}>
+                  <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"8px" }}>
+                    Current Dinner Status
+                  </div>
+                  <div style={{ fontSize:"16px", color:"#f5e6d3", marginBottom:"4px" }}>
+                    {ag.nextDinner || "Date TBD"}
+                  </div>
+                  <div style={{ fontSize:"12px", color:"#5a3a25" }}>
+                    Reservation booked • You'll join the next one
+                  </div>
+                </div>
+                <div style={{ 
+                  background:"rgba(122,158,126,0.08)", 
+                  borderRadius:"10px", 
+                  padding:"14px", 
+                  marginBottom:"16px" 
+                }}>
+                  <div style={{ fontSize:"12px", color:"#7a9e7e", lineHeight:"1.6" }}>
+                    <strong>What happens next?</strong><br/>
+                    After the group completes their dinner, you'll be fully activated and can participate in scheduling the next one.
+                  </div>
+                </div>
+                <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic" }}>
+                  In the meantime, feel free to explore the restaurant pool and get to know the group.
+                </div>
+              </div>
+            </div>
+          )}
 
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"8px 16px", marginBottom:"4px" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
@@ -704,6 +764,13 @@ export default function SupperClub() {
             </div>
             <button style={{ ...S.primaryBtn, marginBottom:"8px", background:"linear-gradient(135deg, #7a9e7e, #5a7a5e)" }} onClick={() => setScreen("new_host_reveal")}>
               🤫 Demo: New Host Reveal
+            </button>
+            <button style={{ ...S.primaryBtn, marginBottom:"0", background:"linear-gradient(135deg, #9b7ec8, #7a5ea8)" }} onClick={() => {
+              setAwaitingInitiation(!awaitingInitiation);
+              updateGroup(activeGroup.id, { dinnerStatus: "scheduled", nextDinner: "March 18, 2026" });
+              showToast(awaitingInitiation ? "Initiation cleared — you're in!" : "Now viewing as new member awaiting initiation");
+            }}>
+              🍷 Demo: {awaitingInitiation ? "Clear" : "Awaiting"} Initiation
             </button>
           </div>
 

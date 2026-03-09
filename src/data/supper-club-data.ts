@@ -162,6 +162,17 @@ export const HOST_PRIVILEGE_MESSAGES = [
   "With great hosting comes great responsibility.",
 ];
 
+export const WITTY_INITIATION_MESSAGES = [
+  "You've joined mid-feast. The table is set, but your seat awaits the next round.",
+  "Welcome, newcomer. The current dinner is spoken for — your initiation begins after.",
+  "The group is mid-adventure. Patience. Your turn at the table is coming.",
+  "A new face! Unfortunately, this dinner's already in motion. Your time will come.",
+  "You've arrived fashionably late. The next supper is when your journey truly begins.",
+  "The reservation is locked. Consider this your appetizer course — just watching.",
+  "Your membership is pending initiation. Think of it as... anticipation seasoning.",
+  "Welcome to the waiting list that actually means something. See you after dinner.",
+];
+
 export const MEAL_TYPES = ["Breakfast","Brunch","Lunch","Dinner"];
 export const PRICE_LABELS: Record<number, string> = { 1:"$", 2:"$$", 3:"$$$", 4:"$$$$" };
 
