@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     let eligibleMembers = members.filter(m => m.id !== currentHost?.id);
     
     // If everyone except current host has hosted this cycle, start new cycle
-    const unhostdThisCycle = eligibleMembers.filter(m => !membersHostedThisCycle.has(m.id));
+    const unhostedThisCycle = eligibleMembers.filter(m => !membersHostedThisCycle.has(m.id));
     
     let nextCycleNumber = currentCycle;
     if (unhostedThisCycle.length === 0) {
