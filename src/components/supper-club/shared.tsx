@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import React, { useState, type CSSProperties } from "react";
 import { Restaurant, getRatingInfo, MEAL_TYPES, PRICE_LABELS } from "@/data/supper-club-data";
 import { S, chip } from "./styles";
 
