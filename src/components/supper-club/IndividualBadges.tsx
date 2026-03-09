@@ -1,5 +1,5 @@
 import { S } from "./styles";
-import { INDIVIDUAL_BADGE_DEFS } from "./badgeDefs";
+import { INDIVIDUAL_BADGE_DEFS, BADGE_ICONS } from "./badgeDefs";
 
 interface BadgeData {
   badge_key: string;
