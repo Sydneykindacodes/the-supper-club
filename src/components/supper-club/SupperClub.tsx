@@ -764,9 +764,14 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setGroups(prev => [...prev, newGroup]);
     setActiveGroup(newGroup);
     setGroupAdmin(userName);
-    setScreen("club_home");
-    setActiveTab("home");
-    showToast(`${name} created! Share code ${code} to invite friends.`);
+    // Founder must seed pool with 3 restaurants
+    setSeedPoolMin(3);
+    setSeedPoolMax(3);
+    setSeedPoolPicks([]);
+    setSeedPoolSearch("");
+    setSeedPoolResults([]);
+    setScreen("seed_pool");
+    showToast(`${name} created! Now add 3 restaurants to your pool.`);
   };
 
   // Helper: join group by code
