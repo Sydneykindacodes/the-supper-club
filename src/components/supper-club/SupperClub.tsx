@@ -1916,12 +1916,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
                   Reviews · {allCommunityReviews.filter(r => r.restaurant === selectedPublicR).length}
                 </div>
-                {PUBLIC_REVIEWS.filter(r => r.restaurant === selectedPublicR).map((rev, i) => (
+                {allCommunityReviews.filter(r => r.restaurant === selectedPublicR).map((rev, i) => (
                   <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"8px" }}>
                       <div style={{ fontSize:"14px", color:"#f5e6d3", fontWeight:"600" }}>{rev.group}</div>
                       <div style={{ fontSize:"14px", color:"#c9956a", fontWeight:"700" }}>{rev.rating}</div>
                     </div>
+                    {rev.photo_url && (
+                      <div style={{ marginBottom:"10px", borderRadius:"10px", overflow:"hidden", maxHeight:"160px" }}>
+                        <img src={rev.photo_url} alt="Review photo" style={{ width:"100%", height:"auto", objectFit:"cover", borderRadius:"10px" }} />
+                      </div>
+                    )}
                     <div style={{ fontSize:"13px", color:"#9a7a60", lineHeight:"1.5", fontStyle:"italic" }}>"{rev.review}"</div>
                     <div style={{ fontSize:"11px", color:"#4a2e18", marginTop:"8px" }}>{rev.date}</div>
                   </div>
