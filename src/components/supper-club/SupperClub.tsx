@@ -1189,10 +1189,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const canFinish = seedPoolPicks.length >= seedPoolMin;
     const atMax = seedPoolPicks.length >= seedPoolMax;
     const isFounder = seedPoolMin === 3;
+    const SEED_PER_PAGE = 15;
 
     const handleSeedSearch = () => {
-      if (!seedPoolSearch.trim()) return;
-      searchGooglePlaces(seedPoolSearch.trim(), seedSearchCity, setSeedPoolResults, setSeedPoolLoading);
+      const cuisineQuery = seedCuisineFilter.length > 0 ? seedCuisineFilter.join(" or ") : "";
+      const searchTerm = [seedPoolSearch.trim(), cuisineQuery].filter(Boolean).join(" ") || "restaurant";
+      setSeedLastSearchTerm(searchTerm);
+      setSeedLastSearchCity(seedSearchCity);
+      setSeedNextPageToken(null);
+      setSeedSearchPage(1);
+      searchGooglePlaces(searchTerm, seedSearchCity, setSeedPoolResults, setSeedPoolLoading);
     };
 
     const handleSeedAdd = (r: GooglePlace) => {
@@ -1227,20 +1233,29 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       showToast(`${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
     };
 
+    // Filter results
+    const filteredSeedResults = seedPoolResults
+      .filter(r => seedCuisineFilter.length === 0 || seedCuisineFilter.some(c => r.cuisine.toLowerCase().includes(c.toLowerCase())))
+      .filter(r => seedPriceFilter === "all" || String(r.price) === seedPriceFilter);
+    const totalSeedPages = Math.ceil(filteredSeedResults.length / SEED_PER_PAGE);
+    const pageSeedItems = filteredSeedResults.slice((seedSearchPage - 1) * SEED_PER_PAGE, seedSearchPage * SEED_PER_PAGE);
+
     return (
       <div style={S.app}><div style={S.phone}>
         {toast && <div style={S.toast}>{toast}</div>}
-        <div style={{ ...S.welcomeBg, justifyContent:"flex-start", paddingTop:"52px", overflowY:"auto" }}>
-          <div style={{ width:"100%", paddingBottom:"40px" }}>
-            <div style={{ ...S.mainTitle, fontSize:"30px", textAlign:"center", marginBottom:"6px" }}>
-              {isFounder ? "Seed Your Pool" : "Add to the Pool"}
-            </div>
-            <div style={{ ...S.subtitle, textAlign:"center", marginBottom:"8px" }}>
+        <div style={S.screen}>
+          <div style={S.header}>
+            <div style={S.headerEye}>{activeGroup.name}</div>
+            <div style={S.headerTitle}>{isFounder ? "Seed Your Pool" : "Add to the Pool"}</div>
+          </div>
+
+          <div style={{ padding:"0 16px", overflowY:"auto", flex:1, paddingBottom:"120px" }}>
+            <div style={{ fontSize:"13px", color:"#7a5a40", marginBottom:"8px", fontStyle:"italic", lineHeight:"1.6" }}>
               {isFounder
                 ? "Pick 3 restaurants to start your club's pool"
                 : "Add 1–3 restaurants to the group pool"}
             </div>
-            <div style={{ fontSize:"11px", color:"#8c8278", textAlign:"center", marginBottom:"24px" }}>
+            <div style={{ fontSize:"11px", color:"#8c8278", marginBottom:"16px" }}>
               {seedPoolPicks.length} of {seedPoolMax} selected
               {!canFinish && <span style={{ color:"#c45c5c" }}> · {seedPoolMin - seedPoolPicks.length} more needed</span>}
             </div>
@@ -1253,7 +1268,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   <div key={p.name} style={{ ...S.card, margin:"0 0 8px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
                       <div style={S.cardTitle}>{p.name}</div>
-                      <div style={S.cardSub}>{p.cuisine} · {p.city}</div>
+                      <div style={S.cardSub}>{p.cuisine} · {"$".repeat(p.price || 2)}</div>
                     </div>
                     <button onClick={() => handleSeedRemove(p.name)} style={{ background:"none", border:"none", color:"#c45c5c", fontSize:"18px", cursor:"pointer", padding:"4px 8px" }}>×</button>
                   </div>
@@ -1261,67 +1276,144 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               </div>
             )}
 
-            {/* Search */}
+            {/* Search & Filters (explore-like) */}
             {!atMax && (
               <>
-                <label style={S.label}>Search Restaurants</label>
-                <div style={{ display:"flex", gap:"8px", marginBottom:"12px" }}>
-                  <input
-                    style={{ ...S.input, flex:1, marginBottom:0 }}
-                    placeholder={`Search in ${seedSearchCity}...`}
-                    value={seedPoolSearch}
-                    onChange={e => setSeedPoolSearch(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSeedSearch()}
-                  />
-                  <button onClick={handleSeedSearch} style={{ ...S.primaryBtn, width:"auto", padding:"12px 20px", marginBottom:0 }}>
-                    Go
-                  </button>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", marginBottom:"6px" }}>📍 {seedSearchCity}</div>
+
+                <label style={S.label}>Cuisine</label>
+                <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"16px" }}>
+                  {["All","American","Mexican","Italian","Mediterranean","Chinese","Seafood","Indian","Thai","Sushi","Japanese","BBQ","Korean"].map(c => {
+                    const isAll = c === "All";
+                    const isActive = isAll ? seedCuisineFilter.length === 0 : seedCuisineFilter.includes(c);
+                    return (
+                      <div key={c} style={chip(isActive)} onClick={() => {
+                        if (isAll) setSeedCuisineFilter([]);
+                        else setSeedCuisineFilter(prev => isActive ? prev.filter(x => x !== c) : [...prev, c]);
+                        setSeedSearchPage(1);
+                      }}>{c}</div>
+                    );
+                  })}
                 </div>
 
+                <label style={S.label}>Search Restaurants</label>
+                <input style={S.input} placeholder="e.g. Le Bernardin, steakhouse..."
+                  value={seedPoolSearch}
+                  onChange={e => setSeedPoolSearch(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSeedSearch()}
+                />
+
+                <div style={{ marginBottom:"16px" }}>
+                  <label style={S.label}>Price Range</label>
+                  <div style={{ display:"flex", gap:"8px" }}>
+                    {([["all","All"],["1","$"],["2","$$"],["3","$$$"],["4","$$$$"]] as const).map(([id,label]) => (
+                      <div key={id} style={chip(seedPriceFilter===id)} onClick={() => { setSeedPriceFilter(id); setSeedSearchPage(1); }}>{label}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <button style={{ ...S.primaryBtn, marginBottom:"16px" }} onClick={handleSeedSearch}>
+                  Search
+                </button>
+
                 {seedPoolLoading && (
-                  <div style={{ padding:"12px 0", textAlign:"center", fontSize:"12px", color:"#8c8278" }}>Searching...</div>
+                  <div style={{ padding:"12px 0" }}>
+                    {[1,2,3].map(i => (
+                      <div key={i} style={{ ...S.card, margin:"0 0 10px" }}>
+                        <SkeletonPulse width="60%" height="16px" style={{ marginBottom:"8px" }} />
+                        <SkeletonPulse width="40%" height="12px" style={{ marginBottom:"6px" }} />
+                        <SkeletonPulse width="30%" height="10px" />
+                      </div>
+                    ))}
+                  </div>
                 )}
 
-                {seedPoolResults.length > 0 && (
-                  <div style={{ marginBottom:"16px" }}>
-                    <div style={{ fontSize:"10px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>
-                      Results · {seedPoolResults.length}
+                {/* Search Results with photos */}
+                {filteredSeedResults.length > 0 && (
+                  <>
+                    <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>
+                      Results · {filteredSeedResults.length}
                     </div>
-                    {seedPoolResults.slice(0, 10).map(r => {
+                    {pageSeedItems.map(r => {
                       const alreadyPicked = seedPoolPicks.some(p => p.name.toLowerCase() === r.name.toLowerCase());
                       return (
-                        <div key={r.id} style={{ ...S.card, margin:"0 0 8px", display:"flex", justifyContent:"space-between", alignItems:"center", opacity: alreadyPicked ? 0.5 : 1 }}>
-                          <div style={{ flex:1 }}>
-                            <div style={S.cardTitle}>{r.name}</div>
-                            <div style={S.cardSub}>{r.cuisine} · {"$".repeat(r.price || 2)}</div>
-                            <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"2px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                        <div key={r.id} style={{ ...S.card, margin:"0 0 10px", padding:0, overflow:"hidden", opacity: alreadyPicked ? 0.5 : 1 }}>
+                          {r.photoRefs && r.photoRefs.length > 0 && (
+                            <RestaurantPhotoStrip photoRefs={r.photoRefs} fetchPhotoUrl={fetchPhotoUrl} />
+                          )}
+                          <div style={{ padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                            <div style={{ flex:1 }}>
+                              <div style={S.cardTitle}>{r.name}</div>
+                              <div style={S.cardSub}>{r.cuisine}</div>
+                              <div style={{ fontSize:"11px", color:"#5a3a25", marginTop:"3px" }}>{r.address?.split(',').slice(0,2).join(',') || r.city}</div>
+                              {r.googleRating && (
+                                <div style={{ fontSize:"12px", color:"#7a9e7e", fontWeight:"700", marginTop:"4px" }}>
+                                  {r.googleRating} <span style={{ fontWeight:"400", color:"#5a3a25" }}>Google · {r.googleReviewCount} reviews</span>
+                                </div>
+                              )}
+                            </div>
+                            <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"6px" }}>
+                              <PriceTag price={r.price}/>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); if (!alreadyPicked) handleSeedAdd(r); }}
+                                disabled={alreadyPicked}
+                                style={{
+                                  background: alreadyPicked ? "transparent" : "rgba(201,149,106,0.15)",
+                                  border: `1px solid ${alreadyPicked ? "rgba(122,158,126,0.3)" : "rgba(201,149,106,0.3)"}`,
+                                  borderRadius:"8px", padding:"6px 14px",
+                                  cursor: alreadyPicked ? "default" : "pointer",
+                                  fontSize:"11px",
+                                  color: alreadyPicked ? "#7a9e7e" : "#c9956a",
+                                  fontFamily:"Georgia,serif", whiteSpace:"nowrap",
+                                }}
+                              >
+                                {alreadyPicked ? "✓ Picked" : "+ Add"}
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => !alreadyPicked && handleSeedAdd(r)}
-                            disabled={alreadyPicked}
-                            style={{
-                              background: alreadyPicked ? "transparent" : "rgba(201,149,106,0.15)",
-                              border: `1px solid ${alreadyPicked ? "rgba(122,158,126,0.3)" : "rgba(201,149,106,0.3)"}`,
-                              borderRadius:"8px", padding:"6px 14px",
-                              cursor: alreadyPicked ? "default" : "pointer",
-                              fontSize:"11px",
-                              color: alreadyPicked ? "#7a9e7e" : "#c9956a",
-                              fontFamily:"Georgia,serif", whiteSpace:"nowrap",
-                            }}
-                          >
-                            {alreadyPicked ? "✓ Picked" : "+ Add"}
-                          </button>
                         </div>
                       );
                     })}
-                  </div>
+
+                    {/* Pagination */}
+                    {totalSeedPages > 1 && (
+                      <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:"16px", padding:"16px 0 8px" }}>
+                        <button onClick={() => setSeedSearchPage(p => Math.max(1, p - 1))} disabled={seedSearchPage <= 1}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: seedSearchPage <= 1 ? "#3d2010" : "#c9956a", cursor: seedSearchPage <= 1 ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: seedSearchPage <= 1 ? 0.4 : 1 }}>
+                          ← Prev
+                        </button>
+                        <span style={{ fontSize:"12px", color:"#7a5a40" }}>{seedSearchPage} / {totalSeedPages}</span>
+                        <button onClick={() => setSeedSearchPage(p => Math.min(totalSeedPages, p + 1))} disabled={seedSearchPage >= totalSeedPages}
+                          style={{ background:"none", border:"1px solid rgba(201,149,106,0.3)", borderRadius:"10px", padding:"10px 16px", color: seedSearchPage >= totalSeedPages ? "#3d2010" : "#c9956a", cursor: seedSearchPage >= totalSeedPages ? "default" : "pointer", fontSize:"13px", fontFamily:"Georgia,serif", opacity: seedSearchPage >= totalSeedPages ? 0.4 : 1 }}>
+                          Next →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Load More */}
+                    {seedNextPageToken && seedSearchPage >= totalSeedPages && (
+                      <div style={{ display:"flex", justifyContent:"center", padding:"12px 0" }}>
+                        <button
+                          disabled={seedLoadingMore}
+                          onClick={() => {
+                            setSeedLoadingMore(true);
+                            searchGooglePlaces(seedLastSearchTerm, seedLastSearchCity, setSeedPoolResults, (b: boolean) => setSeedLoadingMore(b), seedNextPageToken);
+                          }}
+                          style={{ ...S.primaryBtn, opacity: seedLoadingMore ? 0.6 : 1, fontSize:"13px", padding:"10px 24px" }}>
+                          {seedLoadingMore ? "Loading..." : "Load More Results"}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
+          </div>
 
-            {/* Finish button */}
+          {/* Sticky finish button */}
+          <div style={{ position:"sticky", bottom:0, padding:"16px", background:"linear-gradient(transparent, #1a0f0a 30%)", zIndex:10 }}>
             <button
-              style={{ ...S.primaryBtn, opacity: canFinish && !seedPoolSaving ? 1 : 0.4, marginTop:"8px" }}
+              style={{ ...S.primaryBtn, opacity: canFinish && !seedPoolSaving ? 1 : 0.4, marginBottom:0 }}
               onClick={handleSeedFinish}
               disabled={!canFinish || seedPoolSaving}
             >
