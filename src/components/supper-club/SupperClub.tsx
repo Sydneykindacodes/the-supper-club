@@ -591,7 +591,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     fetchOtherAvail();
   }, [activeGroupId, groups.length, user.id]);
   const [selectedMealTypes, setSelectedMealTypes] = useState(["Dinner"]);
-  const [confirmationVotes, setConfirmationVotes] = useState<Record<string, boolean>>({});
+  // confirmationVotes now come from dbData.dateConfirmations
 
   const [autoSubmit, setAutoSubmit] = useState(false);
   const [noRepeats, setNoRepeats] = useState(true);
