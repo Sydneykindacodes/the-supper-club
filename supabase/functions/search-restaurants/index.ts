@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     const searchBody: Record<string, unknown> = {
       textQuery: searchQuery,
       includedType: 'restaurant',
-      maxResultCount: 15,
+      maxResultCount: 20,
     };
 
     const placesRes = await fetch(searchUrl, {
