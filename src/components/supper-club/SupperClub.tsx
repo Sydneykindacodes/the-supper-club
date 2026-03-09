@@ -2654,7 +2654,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                     </div>
                   ))}
                 </div>
-              }
+              )}
 
               {/* Search Results */}
               {gpResults.length > 0 && (
