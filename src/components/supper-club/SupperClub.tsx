@@ -2253,8 +2253,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             
             <button 
               style={{ ...S.primaryBtn, background:"linear-gradient(135deg, #c9956a, #9a6040)", marginBottom:"12px" }} 
-              onClick={() => { 
-                setGroupAdmin("You");
+              onClick={async () => { 
+                if (dbData.currentMember) {
+                  await dbData.makeHost(dbData.currentMember.id);
+                }
                 setScreen("club_home"); 
                 setActiveTab("home");
                 showToast("You're officially the host. Keep the secret safe.");
