@@ -11,7 +11,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useSupperClubData } from "@/hooks/useSupperClubData";
+import { useRealtimeSubscriptions } from "@/hooks/useRealtimeSubscriptions";
+import { useBadgeTriggers } from "@/hooks/useBadgeTriggers";
 import Onboarding from "./Onboarding";
+import ReviewForm from "./ReviewForm";
+import BadgesScreen from "./BadgesScreen";
+import ProfileScreen from "./ProfileScreen";
 
 interface SupperClubProps {
   user: User;
@@ -100,6 +105,23 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Data hook for DB-backed members, restaurants
   const activeGroupId = typeof activeGroup.id === 'string' ? activeGroup.id : null;
   const dbData = useSupperClubData(user, activeGroupId);
+
+  // Realtime subscriptions for live updates
+  useRealtimeSubscriptions(activeGroupId, dbData.refresh);
+
+  // Auto-earn badges based on activity
+  useBadgeTriggers(
+    dbData.communityReviews,
+    dbData.userBadges,
+    user.id,
+    dbData.isHost,
+    dbData.earnBadge,
+    activeGroupId
+  );
+
+  // Review form and profile state
+  const [showReviewForm, setShowReviewForm] = useState<{ restaurant: string; cuisine?: string; city?: string; reservationId?: string } | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   // Sync DB-loaded availability into local state
   useEffect(() => {
@@ -592,8 +614,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <div style={S.screen}>
           <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} maxGroups={MAX_GROUPS} />
 
-          <div style={{ padding:"16px 24px 12px" }}>
+          <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400" }}>Good evening.</div>
+            <div onClick={() => setShowProfile(true)} style={{ width:"36px", height:"36px", borderRadius:"50%", background: user.user_metadata?.avatar_color || "#c9956a", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", color:"#fff", fontWeight:"700", cursor:"pointer", border:"2px solid rgba(201,149,106,0.3)" }}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
 
           {/* Awaiting Initiation - shown when user joins after host has booked */}
@@ -1512,10 +1537,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                           <div style={{ marginTop:"6px", borderRadius:"6px", overflow:"hidden", maxHeight:"80px" }}>
                             <img src={rev.photo_url} alt="Review" style={{ width:"100%", height:"auto", objectFit:"cover" }} />
                           </div>
-                        )}
+                         )}
                       </div>
                     ))}
                   </div>
+
+                  {/* Write Review Button */}
+                  <button 
+                    style={{ ...S.ghostBtn, marginBottom: 0, fontSize: "11px", padding: "10px", marginTop: "8px" }}
+                    onClick={() => setShowReviewForm({ restaurant: d.name, cuisine: d.cuisine, city: d.city })}
+                  >
+                    Write a Review
+                  </button>
                 </div>
                 );
               })
@@ -1523,6 +1556,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
         </div>
         <NavBar activeTab={activeTab} onNavigate={onNavigate}/>
+        {showReviewForm && (
+          <ReviewForm
+            restaurantName={showReviewForm.restaurant}
+            cuisine={showReviewForm.cuisine}
+            city={showReviewForm.city}
+            members={currentMembers}
+            reservationId={showReviewForm.reservationId}
+            onSubmit={dbData.submitReview}
+            onUploadPhoto={dbData.uploadReviewPhoto}
+            onClose={() => setShowReviewForm(null)}
+            showToast={showToast}
+          />
+        )}
       </div></div>
     );
   }
@@ -1682,8 +1728,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </>);
               })()}
 
-              {/* Add to Pool Button */}
-              <button style={{ ...S.primaryBtn, marginTop:"16px", marginBottom:"24px" }} onClick={() => {
+              {/* Action Buttons */}
+              <button style={{ ...S.ghostBtn, marginTop:"16px", marginBottom:"8px" }} onClick={() => {
+                setShowReviewForm({ restaurant: r.name, cuisine: 'cuisine' in r ? r.cuisine : undefined, city: r.city });
+              }}>
+                Write a Review
+              </button>
+              <button style={{ ...S.primaryBtn, marginBottom:"24px" }} onClick={() => {
                 const restaurant: Restaurant = {
                   id: Date.now(), 
                   name: r.name, 
@@ -1740,6 +1791,18 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                 </div>
               </div>
             </div>
+          )}
+          {showReviewForm && (
+            <ReviewForm
+              restaurantName={showReviewForm.restaurant}
+              cuisine={showReviewForm.cuisine}
+              city={showReviewForm.city}
+              members={currentMembers}
+              onSubmit={dbData.submitReview}
+              onUploadPhoto={dbData.uploadReviewPhoto}
+              onClose={() => setShowReviewForm(null)}
+              showToast={showToast}
+            />
           )}
         </div></div>
       );
@@ -2369,6 +2432,31 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
         </div>
       </div></div>
+    );
+  }
+
+  // ── BADGES ──
+  if (screen === "badges") {
+    return (
+      <BadgesScreen
+        userBadges={dbData.userBadges}
+        activeGroupId={activeGroupId}
+        activeTab={activeTab}
+        onNavigate={onNavigate}
+        groupName={activeGroup.name || undefined}
+      />
+    );
+  }
+
+  // ── PROFILE ──
+  if (showProfile) {
+    return (
+      <ProfileScreen
+        user={user}
+        onClose={() => setShowProfile(false)}
+        showToast={showToast}
+        signOut={signOut}
+      />
     );
   }
 
