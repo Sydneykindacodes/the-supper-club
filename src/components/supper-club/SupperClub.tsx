@@ -722,7 +722,10 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} isHost={dbData.isHost} />
   );
 
-  const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
+  // Host theme: pick light styles when user is host
+  const T = dbData.isHost ? SHost : S;
+  const hostMode = dbData.isHost;
+
     if (!activeGroupId) return;
     try {
       // Send to other members
