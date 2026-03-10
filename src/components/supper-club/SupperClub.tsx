@@ -1254,6 +1254,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
     const handleSeedFinish = async () => {
       if (!canFinish) return;
+      const wasOwingRestaurant = dbData.hostOwesRestaurant;
       setSeedPoolSaving(true);
       for (const r of seedPoolPicks) {
         await dbData.addRestaurantToPool({
@@ -1267,10 +1268,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           address: r.address,
         }, String(activeGroup.id));
       }
+      // If host was replenishing the pool after hosting, now trigger host rotation
+      if (wasOwingRestaurant && !isTemporaryGroup) {
+        await dbData.triggerHostRotation();
+      }
       setSeedPoolSaving(false);
       setScreen("club_home");
       setActiveTab("home");
-      showToast(`${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
+      showToast(wasOwingRestaurant
+        ? "Restaurant added! The torch has been passed."
+        : `${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
     };
 
     // Filter results
@@ -2338,7 +2345,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           {/* Relinquish host duties */}
-          {dbData.isHost && currentMembers.length > 1 && (
+          {dbData.isHost && currentMembers.length > 1 && !dbData.hostOwesRestaurant && (
             <div style={{ padding:"8px 16px 0", textAlign:"center" }}>
               <button
                 onClick={() => setScreen("relinquish_host")}
@@ -2721,6 +2728,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── RELINQUISH HOST ──
   if (screen === "relinquish_host") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Host Transfer" />;
+    if (dbData.hostOwesRestaurant) {
+      setScreen("club_home"); setActiveTab("home");
+      showToast("Add a restaurant to the pool first — host's duty!");
+      return null;
+    }
     const otherMembers = currentMembers.filter(m => m.name !== "You");
 
     // Build a summary of what's been done and what's left
