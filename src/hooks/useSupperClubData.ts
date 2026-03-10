@@ -938,5 +938,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     hasUserReviewedCurrentDinner,
     nextHostName,
     isAwaitingInitiation,
+    hostOwesRestaurant,
   };
 }
