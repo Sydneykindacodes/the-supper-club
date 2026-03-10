@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { S } from "@/components/supper-club/styles";
 
 export default function Auth() {
@@ -59,8 +58,9 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
-    const { error: oauthError } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
     if (oauthError) {
       setError(oauthError.message);
