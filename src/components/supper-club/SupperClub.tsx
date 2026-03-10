@@ -2802,7 +2802,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const summary = buildHandoffSummary();
 
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       <div style={S.screen}>
         <div style={{ padding:"54px 20px 24px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"24px" }}>
