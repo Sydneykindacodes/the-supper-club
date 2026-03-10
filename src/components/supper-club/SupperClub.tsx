@@ -1530,7 +1530,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (dbData.isAwaitingInitiation) {
       const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner };
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
            <GGS />
           <div style={S.screen}>
