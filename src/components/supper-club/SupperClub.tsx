@@ -2345,7 +2345,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           </div>
 
           {/* Relinquish host duties */}
-          {dbData.isHost && currentMembers.length > 1 && (
+          {dbData.isHost && currentMembers.length > 1 && !dbData.hostOwesRestaurant && (
             <div style={{ padding:"8px 16px 0", textAlign:"center" }}>
               <button
                 onClick={() => setScreen("relinquish_host")}
