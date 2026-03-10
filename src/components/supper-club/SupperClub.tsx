@@ -717,7 +717,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setScreen(scr);
   };
 
-  // Helper to send push notifications to all group members + in-app for self
+  // Shorthand for GlobalGroupSwitcher with host badge
+  const GGS = () => (
+    <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} isHost={dbData.isHost} />
+  );
+
   const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
     if (!activeGroupId) return;
     try {
