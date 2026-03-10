@@ -22,7 +22,7 @@ export default function MemberProfileView({ userId, allReviews, onClose, isOwnPr
       if (profileRes.data) { setDisplayName(profileRes.data.display_name || "Member"); setAvatarColor(profileRes.data.avatar_color || "#d4cdc4"); setAvatarUrl(profileRes.data.avatar_url || null); setBio(profileRes.data.bio || ""); setCity(profileRes.data.city || ""); }
       if (badgesRes.data) setBadges(badgesRes.data);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [userId]);
 
   const userReviews = allReviews.filter(r => r.user_id === userId);

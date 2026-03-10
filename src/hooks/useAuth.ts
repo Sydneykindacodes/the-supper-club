@@ -18,23 +18,27 @@ export function useAuth() {
         // Create profile on first sign-in
         if (session?.user) {
           const u = session.user;
-          setTimeout(async () => {
-            const { data: existing } = await supabase
-              .from("profiles")
-              .select("id")
-              .eq("id", u.id)
-              .maybeSingle();
-            if (!existing) {
-              await supabase.from("profiles").insert({
-                id: u.id,
-                display_name:
-                  u.user_metadata?.display_name ||
-                  u.user_metadata?.full_name ||
-                  u.email ||
-                  "Member",
-              });
+          (async () => {
+            try {
+              const { data: existing } = await supabase
+                .from("profiles")
+                .select("id")
+                .eq("id", u.id)
+                .maybeSingle();
+              if (!existing) {
+                await supabase.from("profiles").insert({
+                  id: u.id,
+                  display_name:
+                    u.user_metadata?.display_name ||
+                    u.user_metadata?.full_name ||
+                    u.email ||
+                    "Member",
+                });
+              }
+            } catch (e) {
+              console.error("Profile creation failed:", e);
             }
-          }, 0);
+          })();
         }
       }
     );

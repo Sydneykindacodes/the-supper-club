@@ -855,8 +855,10 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
 
   // ── BADGES ──
   const earnBadge = useCallback(async (badgeKey: string, badgeType: string = "individual") => {
-    // Check if already earned
-    if (userBadges.some(b => b.badge_key === badgeKey && (b.group_id === activeGroupId || !activeGroupId))) return;
+    // Check if already earned (individual badges have group_id=null; group badges are scoped to activeGroupId)
+    if (userBadges.some(b => b.badge_key === badgeKey && (
+      badgeType === "group" ? b.group_id === activeGroupId : b.group_id === null
+    ))) return;
     
     await supabase.from("user_badges").insert({
       user_id: user.id,

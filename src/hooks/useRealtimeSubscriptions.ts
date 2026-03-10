@@ -7,23 +7,35 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export function useRealtimeSubscriptions(
   activeGroupId: string | null,
-  onUpdate: () => void
+  onUpdate: () => void,
+  activeReservationId?: string | null
 ) {
   useEffect(() => {
     if (!activeGroupId) return;
 
-    const channel = supabase
+    let availabilityListener = supabase
       .channel(`group-${activeGroupId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "reservations", filter: `group_id=eq.${activeGroupId}` },
         () => onUpdate()
-      )
-      .on(
+      );
+
+    if (activeReservationId) {
+      availabilityListener = availabilityListener.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "member_availability", filter: `reservation_id=eq.${activeReservationId}` },
+        () => onUpdate()
+      );
+    } else {
+      availabilityListener = availabilityListener.on(
         "postgres_changes",
         { event: "*", schema: "public", table: "member_availability" },
         () => onUpdate()
-      )
+      );
+    }
+
+    const channel = availabilityListener
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "reviews" },
@@ -44,5 +56,5 @@ export function useRealtimeSubscriptions(
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeGroupId, onUpdate]);
+  }, [activeGroupId, onUpdate, activeReservationId]);
 }

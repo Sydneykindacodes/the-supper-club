@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import {
   INDIVIDUAL_BADGES, GROUP_BADGES,
@@ -242,7 +242,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const dbData = useSupperClubData(user, activeGroupId, isTemporaryGroup);
 
   // Realtime subscriptions for live updates
-  useRealtimeSubscriptions(activeGroupId, dbData.refresh);
+  useRealtimeSubscriptions(activeGroupId, dbData.refresh, dbData.activeReservation?.id);
 
   // Auto-earn badges based on activity
   useBadgeTriggers(
@@ -309,13 +309,19 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // City autocomplete for group creation
   const [newGroupCitySuggestions, setNewGroupCitySuggestions] = useState<{ description: string; placeId: string }[]>([]);
   const [showNewGroupCitySuggestions, setShowNewGroupCitySuggestions] = useState(false);
-  const [newGroupCityTimeout, setNewGroupCityTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const newGroupCityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (newGroupCityTimeoutRef.current) clearTimeout(newGroupCityTimeoutRef.current);
+    };
+  }, []);
 
   const handleNewGroupCityChange = useCallback((value: string) => {
     setNewGroupCity(value);
-    if (newGroupCityTimeout) clearTimeout(newGroupCityTimeout);
+    if (newGroupCityTimeoutRef.current) clearTimeout(newGroupCityTimeoutRef.current);
     if (value.length < 2) { setNewGroupCitySuggestions([]); return; }
-    const timeout = setTimeout(async () => {
+    newGroupCityTimeoutRef.current = setTimeout(async () => {
       try {
         const { data, error } = await supabase.functions.invoke('autocomplete-city', { body: { input: value } });
         if (!error && data?.suggestions) {
@@ -324,8 +330,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         }
       } catch { setNewGroupCitySuggestions([]); }
     }, 300);
-    setNewGroupCityTimeout(timeout);
-  }, [newGroupCityTimeout]);
+  }, []);
 
   // Seed pool filter state
   const [seedCuisineFilter, setSeedCuisineFilter] = useState<string[]>([]);
