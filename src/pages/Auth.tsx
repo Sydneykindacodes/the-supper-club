@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { S } from "@/components/supper-club/styles";
 
 export default function Auth() {
@@ -30,7 +31,7 @@ export default function Auth() {
     }
 
     if (mode === "signup") {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -40,6 +41,8 @@ export default function Auth() {
       });
       if (signUpError) {
         setError(signUpError.message);
+      } else if (signUpData.session) {
+        // Email confirmation is off — user is logged in immediately, nothing to do
       } else {
         setMessage("Check your email for a verification link.");
       }
@@ -58,12 +61,15 @@ export default function Auth() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
-    if (oauthError) {
-      setError(oauthError.message);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError(result.error.message || "Google sign-in failed. Try email instead.");
+      }
+    } catch (e: any) {
+      setError(e?.message || "Google sign-in is unavailable in this environment. Please use email instead.");
     }
     setLoading(false);
   };
