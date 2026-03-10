@@ -51,10 +51,10 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
+import { S, SHost, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
-  NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
+  NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher, HostStarBadge,
   parseDateMeal, getUniqueDates, getMealsForDate,
 } from "./shared";
 
@@ -722,8 +722,29 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} isHost={dbData.isHost} />
   );
 
+  // Host theme: pick light styles when user is host
+  const T = dbData.isHost ? SHost : S;
+  const hostMode = dbData.isHost;
+  // Color helpers for host light mode
+  const c = {
+    fg: hostMode ? "#2a2520" : "#f5e6d3",        // main text
+    fg2: hostMode ? "#3d352d" : "#e5ded5",       // secondary text
+    muted: hostMode ? "#7a7068" : "#7a5a40",     // muted/italic text
+    faint: hostMode ? "#a09890" : "#5a3a25",     // faint text
+    accent: hostMode ? "#8a6e50" : "#c9956a",    // accent/gold
+    green: hostMode ? "#4a7a4e" : "#7a9e7e",     // success green
+    red: hostMode ? "#b04040" : "#c45c5c",       // error red
+    cardBg: hostMode ? "rgba(42,37,32,0.04)" : "rgba(255,255,255,0.035)",
+    cardBorder: hostMode ? "rgba(42,37,32,0.08)" : "rgba(201,149,106,0.1)",
+    accentBg: hostMode ? "rgba(138,110,80,0.08)" : "rgba(201,149,106,0.08)",
+    accentBorder: hostMode ? "rgba(138,110,80,0.2)" : "rgba(201,149,106,0.2)",
+    greenBg: hostMode ? "rgba(74,122,78,0.08)" : "rgba(122,158,126,0.08)",
+    greenBorder: hostMode ? "rgba(74,122,78,0.2)" : "rgba(122,158,126,0.2)",
+    phoneBg: hostMode ? "#f5f0e8" : "#2a2a2a",
+    navBorder: hostMode ? "rgba(42,37,32,0.08)" : "rgba(201,149,106,0.1)",
+  };
+
   const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
-    if (!activeGroupId) return;
     try {
       // Send to other members
       await supabase.functions.invoke('send-group-notification', {
@@ -1509,7 +1530,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     if (dbData.isAwaitingInitiation) {
       const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner };
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
            <GGS />
           <div style={S.screen}>
@@ -1604,7 +1625,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     // ── HOST OWES RESTAURANT: must add 1 to the pool before proceeding ──
     if (dbData.hostOwesRestaurant) {
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
           <div style={S.screen}>
             <GGS />
@@ -1651,13 +1672,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const pending = ag.dinnerStatus === "pending_confirm";
     
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
            <GGS />
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
+            <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+              {hostMode && <HostStarBadge light={hostMode} />}
+              <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
+            </div>
             <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
               {/* Notification Envelope */}
               <div onClick={() => setShowNotifications(true)} style={{ position:"relative", cursor:"pointer", padding:"4px" }}>
@@ -2531,7 +2555,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     
     
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <div style={S.header}>
@@ -2778,7 +2802,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const summary = buildHandoffSummary();
 
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       <div style={S.screen}>
         <div style={{ padding:"54px 20px 24px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"24px" }}>
@@ -2918,7 +2942,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     };
     
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={S.header}>
@@ -3055,7 +3079,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   if (screen === "group_pool") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Restaurant Pool" />;
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={S.header}>
@@ -3124,7 +3148,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const groupReviews = dbData.communityReviews.filter(r => r.group_id === activeGroupId);
 
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
           <div style={S.header}>
@@ -3273,7 +3297,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const isAlreadyInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
       
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
           <div style={S.screen}>
             <div style={S.header}>
@@ -3497,12 +3521,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
 
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
            <GGS />
           <div style={{ ...S.header, paddingTop: "8px" }}>
-            <div style={S.headerEye}>Discover</div>
+            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}><div style={S.headerEye}>Discover</div>{hostMode && <HostStarBadge light />}</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
           </div>
 
@@ -3944,12 +3968,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const datesAlreadySubmitted = selectedDates.length > 0;
     
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <GGS />
         <div style={{ ...S.header, paddingTop: "8px" }}>
-          <div style={S.headerEye}>Schedule</div>
+          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}><div style={S.headerEye}>Schedule</div>{hostMode && <HostStarBadge light />}</div>
           <div style={S.headerTitle}>{dbData.isHost ? "Host Dashboard" : (datesAlreadySubmitted && !availabilityModifying ? "Your Dates" : "Set Availability")}</div>
         </div>
         <div style={{ padding:"16px 16px 0" }}>
@@ -4347,7 +4371,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const hasConfirmed = ag.dinnerStatus === "pending_confirm" && ag.pendingDate;
 
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.header}>
           <div style={S.headerEye}>{ag.name}</div>

@@ -77,6 +77,176 @@
   }
 }
 
+/* ── Host Light Mode ── */
+.host-mode {
+  background: #f5f0e8 !important;
+  box-shadow: 0 0 0 2px #d4cdc4, 0 30px 80px rgba(0,0,0,0.15), inset 0 0 40px rgba(42,37,32,0.02) !important;
+}
+
+.host-mode [style] {
+  --host-active: 1;
+}
+
+/* Invert backgrounds */
+.host-mode > div:last-child {
+  /* bottom nav */
+}
+
+/* Override all text and background colors inside host-mode phone */
+.host-mode,
+.host-mode div,
+.host-mode span,
+.host-mode button,
+.host-mode label,
+.host-mode input,
+.host-mode textarea {
+  color-scheme: light;
+}
+
+/* Background overrides */
+.host-mode [style*="background:rgba(36,36,36"] {
+  background: rgba(245,240,232,0.97) !important;
+}
+.host-mode [style*="background:#2a2a2a"],
+.host-mode [style*="background: #2a2a2a"] {
+  background: #f5f0e8 !important;
+}
+.host-mode [style*="background:#2e2e2e"],
+.host-mode [style*="background: #2e2e2e"] {
+  background: #ebe5dc !important;
+}
+
+/* Text color overrides — main foreground */
+.host-mode [style*="color:#f5e6d3"],
+.host-mode [style*="color: #f5e6d3"] {
+  color: #2a2520 !important;
+}
+.host-mode [style*="color:#e5ded5"],
+.host-mode [style*="color: #e5ded5"] {
+  color: #3d352d !important;
+}
+
+/* Muted text */
+.host-mode [style*="color:#7a5a40"],
+.host-mode [style*="color: #7a5a40"] {
+  color: #7a7068 !important;
+}
+.host-mode [style*="color:#5a3a25"],
+.host-mode [style*="color: #5a3a25"] {
+  color: #a09890 !important;
+}
+.host-mode [style*="color:#8c8278"],
+.host-mode [style*="color: #8c8278"] {
+  color: #7a7068 !important;
+}
+
+/* Accent/gold */
+.host-mode [style*="color:#c9956a"],
+.host-mode [style*="color: #c9956a"] {
+  color: #8a6e50 !important;
+}
+
+/* Green */
+.host-mode [style*="color:#7a9e7e"],
+.host-mode [style*="color: #7a9e7e"] {
+  color: #4a7a4e !important;
+}
+
+/* Faint */
+.host-mode [style*="color:#4a2e18"],
+.host-mode [style*="color: #4a2e18"] {
+  color: #b0a898 !important;
+}
+.host-mode [style*="color:#565250"],
+.host-mode [style*="color: #565250"] {
+  color: #a09890 !important;
+}
+
+/* Border overrides */
+.host-mode [style*="border-top:1px solid rgba(212,205,196"] {
+  border-top-color: rgba(42,37,32,0.08) !important;
+}
+.host-mode [style*="border-bottom:1px solid rgba(212,205,196"] {
+  border-bottom-color: rgba(42,37,32,0.08) !important;
+}
+
+/* Card backgrounds */
+.host-mode [style*="background:rgba(255,255,255,0.03"] {
+  background: rgba(42,37,32,0.03) !important;
+}
+.host-mode [style*="background:rgba(255,255,255,0.04"] {
+  background: rgba(42,37,32,0.04) !important;
+}
+.host-mode [style*="background:rgba(255,255,255,0.02"] {
+  background: rgba(42,37,32,0.03) !important;
+}
+
+/* Accent backgrounds */
+.host-mode [style*="background:rgba(201,149,106"] {
+  background: rgba(138,110,80,0.08) !important;
+}
+.host-mode [style*="background:linear-gradient(135deg, rgba(201,149,106"] {
+  background: linear-gradient(135deg, rgba(138,110,80,0.08), rgba(138,110,80,0.02)) !important;
+}
+
+/* Green backgrounds */
+.host-mode [style*="background:rgba(122,158,126"] {
+  background: rgba(74,122,78,0.08) !important;
+}
+.host-mode [style*="background:linear-gradient(135deg, rgba(122,158,126"] {
+  background: linear-gradient(135deg, rgba(74,122,78,0.08), rgba(245,240,232,0.95)) !important;
+}
+
+/* Gradient backgrounds */
+.host-mode [style*="background:linear-gradient(135deg, rgba(201,149,106,0.08), rgba(26,15,10"] {
+  background: linear-gradient(135deg, rgba(138,110,80,0.06), rgba(245,240,232,0.95)) !important;
+}
+.host-mode [style*="background:linear-gradient(140deg"] {
+  background: linear-gradient(140deg, #ebe5dc, #f5f0e8) !important;
+}
+
+/* Toast override */
+.host-mode [style*="background:rgba(36,36,36,0.94)"] {
+  background: rgba(245,240,232,0.94) !important;
+  color: #3d352d !important;
+}
+
+/* Accent borders */
+.host-mode [style*="border:1px solid rgba(201,149,106"] {
+  border-color: rgba(138,110,80,0.2) !important;
+}
+.host-mode [style*="border:1px solid rgba(212,205,196"] {
+  border-color: rgba(42,37,32,0.1) !important;
+}
+.host-mode [style*="border:1.5px solid rgba(212,205,196"] {
+  border-color: rgba(42,37,32,0.15) !important;
+}
+
+/* Button gradients */
+.host-mode [style*="background:linear-gradient(135deg,#d4cdc4"] {
+  background: linear-gradient(135deg, #3d352d, #5a4f44) !important;
+  color: #f5f0e8 !important;
+}
+
+/* Nav bar background */
+.host-mode [style*="background:rgba(212,205,196,0.12)"] {
+  background: rgba(42,37,32,0.08) !important;
+}
+.host-mode [style*="background:linear-gradient(135deg,rgba(212,205,196,0.15)"] {
+  background: linear-gradient(135deg, rgba(42,37,32,0.1), rgba(42,37,32,0.04)) !important;
+}
+
+/* White text on dark buttons stays */
+.host-mode [style*="color:#fff"],
+.host-mode [style*="color: #fff"] {
+  color: #fff !important;
+}
+
+/* Input background */
+.host-mode [style*="background:rgba(255,255,255,0.05)"] {
+  background: rgba(42,37,32,0.05) !important;
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
