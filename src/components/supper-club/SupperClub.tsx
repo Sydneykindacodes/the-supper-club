@@ -3947,7 +3947,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     <div style={S.app}><div style={S.phone}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
-        <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
+        <GGS />
         <div style={{ ...S.header, paddingTop: "8px" }}>
           <div style={S.headerEye}>Schedule</div>
           <div style={S.headerTitle}>{dbData.isHost ? "Host Dashboard" : (datesAlreadySubmitted && !availabilityModifying ? "Your Dates" : "Set Availability")}</div>
