@@ -4061,12 +4061,13 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   {selectedDates.length > 0 && (
                     <button style={{ ...S.primaryBtn, marginTop:"12px", marginBottom:0, fontSize:"12px" }}
                       onClick={() => {
-                        dbData.proposeDate(selectedDates[0]).then(async ok => {
+                        const dateOnly = parseDateMeal(selectedDates[0]).date;
+                        dbData.proposeDate(dateOnly).then(async ok => {
                           if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
                           else showToast("Failed. Try again.");
                         });
                       }}>
-                      Propose {new Date(selectedDates[0]).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                      Propose {new Date(parseDateMeal(selectedDates[0]).date + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
                     </button>
                   )}
                 </div>
