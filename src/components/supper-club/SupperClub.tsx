@@ -3521,12 +3521,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     }
 
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.screen}>
            <GGS />
           <div style={{ ...S.header, paddingTop: "8px" }}>
-            <div style={S.headerEye}>Discover</div>
+            <div style={{ display:"flex", alignItems:"center", gap:"8px" }}><div style={S.headerEye}>Discover</div>{hostMode && <HostStarBadge light />}</div>
             <div style={S.headerTitle}>Explore Restaurants</div>
           </div>
 
