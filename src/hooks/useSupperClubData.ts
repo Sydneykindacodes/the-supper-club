@@ -654,7 +654,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     return true;
   }, [activeReservation?.id, refresh]);
 
-  // Complete dinner (post-dinner) and trigger host rotation (skip for temporary groups)
+  // Complete dinner (post-dinner): mark restaurant visited, defer host rotation until host adds replacement
   const completeDinner = useCallback(async () => {
     if (!activeReservation?.id || !activeGroupId) return false;
     const { error } = await supabase
@@ -663,20 +663,54 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
       .eq("id", activeReservation.id);
     if (error) return false;
 
-    // Skip host rotation for temporary groups — they dissolve after dinner
-    if (!isTemporary) {
-      try {
-        await supabase.functions.invoke('select-next-host', {
-          body: { group_id: activeGroupId, reservation_id: activeReservation.id },
-        });
-      } catch (e) {
-        console.error('Host rotation failed:', e);
-      }
+    // Mark the restaurant as visited
+    if (activeReservation.restaurant_id) {
+      await supabase
+        .from("restaurants")
+        .update({
+          visited: true,
+          visited_date: activeReservation.dinner_date,
+        })
+        .eq("id", activeReservation.restaurant_id);
     }
+
+    // For temporary groups, skip host rotation (they dissolve)
+    // For permanent groups, host rotation is deferred until the host adds a replacement restaurant
+    if (isTemporary) {
+      // no rotation needed
+    }
+    // else: rotation triggered after host adds replacement (see triggerHostRotation)
 
     refresh();
     return true;
-  }, [activeReservation?.id, activeGroupId, isTemporary, refresh]);
+  }, [activeReservation?.id, activeReservation?.restaurant_id, activeGroupId, isTemporary, refresh]);
+
+  // Trigger host rotation — called after host adds their replacement restaurant
+  const triggerHostRotation = useCallback(async () => {
+    if (!activeGroupId) return false;
+    // Find the most recent completed reservation
+    const { data: latestRes } = await supabase
+      .from("reservations")
+      .select("id")
+      .eq("group_id", activeGroupId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!latestRes) return false;
+
+    try {
+      await supabase.functions.invoke('select-next-host', {
+        body: { group_id: activeGroupId, reservation_id: latestRes.id },
+      });
+    } catch (e) {
+      console.error('Host rotation failed:', e);
+      return false;
+    }
+    refresh();
+    return true;
+  }, [activeGroupId, refresh]);
 
   // Make a member the host
   const makeHost = useCallback(async (memberId: string) => {
