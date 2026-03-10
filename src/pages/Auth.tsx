@@ -44,7 +44,13 @@ export default function Auth() {
       } else if (signUpData.session) {
         // Email confirmation is off — user is logged in immediately, nothing to do
       } else {
-        setMessage("Check your email for a verification link.");
+        // Try signing in directly in case email confirmation is disabled but session wasn't returned
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (!signInError) {
+          // Signed in successfully
+        } else {
+          setMessage("Check your email for a verification link.");
+        }
       }
     } else {
       const { error: signInError } = await supabase.auth.signInWithPassword({
