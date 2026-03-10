@@ -705,7 +705,17 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     setArr(p => p.includes(type) ? (p.length > 1 ? p.filter(x => x !== type) : p) : [...p, type]);
   };
 
-  const onNavigate = (tab: string, scr: string) => { setActiveTab(tab); setScreen(scr); };
+  const onNavigate = (tab: string, scr: string) => {
+    // If host owes a restaurant, block navigation to other tabs (except seed_pool)
+    if (dbData.hostOwesRestaurant && scr !== "seed_pool" && scr !== "club_home") {
+      setActiveTab("home");
+      setScreen("club_home");
+      showToast("Add a restaurant to the pool first — host's duty!");
+      return;
+    }
+    setActiveTab(tab);
+    setScreen(scr);
+  };
 
   // Helper to send push notifications to all group members + in-app for self
   const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
