@@ -86,6 +86,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
   const [communityReviews, setCommunityReviews] = useState<DBReview[]>([]);
   const [userBadges, setUserBadges] = useState<DBBadge[]>([]);
   const [groupSettings, setGroupSettings] = useState<GroupSettings | null>(null);
+  const [hostOwesRestaurant, setHostOwesRestaurant] = useState(false);
 
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
@@ -165,7 +166,38 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
       });
   }, [activeGroupId, refreshCounter]);
 
-  // Load active reservation for group (include "completed" for post-dinner flow)
+  // Check if user owes a restaurant after hosting a completed dinner
+  useEffect(() => {
+    if (!activeGroupId) { setHostOwesRestaurant(false); return; }
+    const currentMember = members.find(m => m.user_id === user.id);
+    if (!currentMember) { setHostOwesRestaurant(false); return; }
+
+    (async () => {
+      // Get the user's last completed hosting in this group
+      const { data: lastHosting } = await supabase
+        .from("host_rotation_history")
+        .select("hosted_at")
+        .eq("group_id", activeGroupId)
+        .eq("member_id", currentMember.id)
+        .order("hosted_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!lastHosting?.hosted_at) { setHostOwesRestaurant(false); return; }
+
+      // Check if they've added a restaurant after their last hosting
+      const { count } = await supabase
+        .from("restaurants")
+        .select("id", { count: "exact", head: true })
+        .eq("group_id", activeGroupId)
+        .eq("suggested_by", currentMember.id)
+        .gt("created_at", lastHosting.hosted_at);
+
+      setHostOwesRestaurant((count ?? 0) === 0);
+    })();
+  }, [activeGroupId, members, user.id, refreshCounter]);
+
+
   useEffect(() => {
     if (!activeGroupId) { setActiveReservation(null); return; }
     supabase
@@ -906,5 +938,6 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     hasUserReviewedCurrentDinner,
     nextHostName,
     isAwaitingInitiation,
+    hostOwesRestaurant,
   };
 }
