@@ -1254,6 +1254,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
 
     const handleSeedFinish = async () => {
       if (!canFinish) return;
+      const wasOwingRestaurant = dbData.hostOwesRestaurant;
       setSeedPoolSaving(true);
       for (const r of seedPoolPicks) {
         await dbData.addRestaurantToPool({
@@ -1267,10 +1268,16 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
           address: r.address,
         }, String(activeGroup.id));
       }
+      // If host was replenishing the pool after hosting, now trigger host rotation
+      if (wasOwingRestaurant && !isTemporaryGroup) {
+        await dbData.triggerHostRotation();
+      }
       setSeedPoolSaving(false);
       setScreen("club_home");
       setActiveTab("home");
-      showToast(`${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
+      showToast(wasOwingRestaurant
+        ? "Restaurant added! The torch has been passed."
+        : `${seedPoolPicks.length} restaurant${seedPoolPicks.length > 1 ? "s" : ""} added to the pool!`);
     };
 
     // Filter results
