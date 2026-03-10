@@ -1580,6 +1580,51 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       );
     }
 
+    // ── HOST OWES RESTAURANT: must add 1 to the pool before proceeding ──
+    if (dbData.hostOwesRestaurant) {
+      return (
+        <div style={S.app}><div style={S.phone}>
+          {toast && <div style={S.toast}>{toast}</div>}
+          <div style={S.screen}>
+            <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
+            <div style={{ padding:"60px 28px 40px", textAlign:"center" }}>
+              <div style={{ 
+                width:"80px", height:"80px", borderRadius:"50%", margin:"0 auto 24px",
+                background:"radial-gradient(circle, rgba(201,149,106,0.12) 0%, transparent 70%)",
+                border:"2px solid rgba(201,149,106,0.25)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:"28px", color:"#c9956a",
+              }}>🍴</div>
+              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"4px", textTransform:"uppercase", marginBottom:"12px" }}>
+                Host's Duty
+              </div>
+              <div style={{ fontSize:"22px", color:"#f5e6d3", fontWeight:"400", lineHeight:"1.4", marginBottom:"16px" }}>
+                Replenish the Pool
+              </div>
+              <div style={{ fontSize:"14px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.7", marginBottom:"28px", maxWidth:"300px", margin:"0 auto 28px" }}>
+                Every host who completes a dinner adds a new restaurant to the pool — it's the circle of supper life.
+              </div>
+              <div style={{ width:"60px", height:"1px", background:"rgba(201,149,106,0.2)", margin:"0 auto 24px" }} />
+              <div style={{ fontSize:"12px", color:"#5a3a25", lineHeight:"1.6", marginBottom:"28px" }}>
+                Add one restaurant to continue.
+              </div>
+              <button style={S.primaryBtn} onClick={() => {
+                setSeedPoolMin(1);
+                setSeedPoolMax(1);
+                setSeedPoolPicks([]);
+                setSeedPoolResults([]);
+                setSeedPoolSearch("");
+                setScreen("seed_pool");
+              }}>
+                Find a Restaurant
+              </button>
+            </div>
+          </div>
+          <NavBar activeTab={activeTab} onNavigate={onNavigate} hidebadges={isTemporaryGroup}/>
+        </div></div>
+      );
+    }
+
     const ag = { ...activeGroup, dinnerStatus: dbData.dinnerStatus, nextDinner: dbData.nextDinner, pendingDate: dbData.pendingDate };
     const noDate = ag.dinnerStatus === "no_date";
     const pending = ag.dinnerStatus === "pending_confirm";
