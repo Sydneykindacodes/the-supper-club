@@ -725,6 +725,24 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // Host theme: pick light styles when user is host
   const T = dbData.isHost ? SHost : S;
   const hostMode = dbData.isHost;
+  // Color helpers for host light mode
+  const c = {
+    fg: hostMode ? "#2a2520" : "#f5e6d3",        // main text
+    fg2: hostMode ? "#3d352d" : "#e5ded5",       // secondary text
+    muted: hostMode ? "#7a7068" : "#7a5a40",     // muted/italic text
+    faint: hostMode ? "#a09890" : "#5a3a25",     // faint text
+    accent: hostMode ? "#8a6e50" : "#c9956a",    // accent/gold
+    green: hostMode ? "#4a7a4e" : "#7a9e7e",     // success green
+    red: hostMode ? "#b04040" : "#c45c5c",       // error red
+    cardBg: hostMode ? "rgba(42,37,32,0.04)" : "rgba(255,255,255,0.035)",
+    cardBorder: hostMode ? "rgba(42,37,32,0.08)" : "rgba(201,149,106,0.1)",
+    accentBg: hostMode ? "rgba(138,110,80,0.08)" : "rgba(201,149,106,0.08)",
+    accentBorder: hostMode ? "rgba(138,110,80,0.2)" : "rgba(201,149,106,0.2)",
+    greenBg: hostMode ? "rgba(74,122,78,0.08)" : "rgba(122,158,126,0.08)",
+    greenBorder: hostMode ? "rgba(74,122,78,0.2)" : "rgba(122,158,126,0.2)",
+    phoneBg: hostMode ? "#f5f0e8" : "#2a2a2a",
+    navBorder: hostMode ? "rgba(42,37,32,0.08)" : "rgba(201,149,106,0.1)",
+  };
 
   const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
     try {
