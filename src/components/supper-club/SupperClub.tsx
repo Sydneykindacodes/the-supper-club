@@ -1672,15 +1672,15 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const pending = ag.dinnerStatus === "pending_confirm";
     
     return (
-      <div style={T.app}><div style={T.phone}>
-        {toast && <div style={T.toast}>{toast}</div>}
-        <div style={T.screen}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
+        {toast && <div style={S.toast}>{toast}</div>}
+        <div style={S.screen}>
            <GGS />
 
           <div style={{ padding:"16px 24px 12px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
               {hostMode && <HostStarBadge light={hostMode} />}
-              <div style={{ fontSize:"28px", color:c.fg, fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
+              <div style={{ fontSize:"28px", color:"#f5e6d3", fontWeight:"400", fontFamily:"'Bristol', cursive" }}>Good evening.</div>
             </div>
             <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
               {/* Notification Envelope */}
