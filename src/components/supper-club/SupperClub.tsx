@@ -3297,7 +3297,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
       const isAlreadyInPool = poolRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase()) || visitedRestaurants.some(p => p.name.toLowerCase() === r.name.toLowerCase());
       
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
           <div style={S.screen}>
             <div style={S.header}>
