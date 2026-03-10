@@ -86,6 +86,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
   const [communityReviews, setCommunityReviews] = useState<DBReview[]>([]);
   const [userBadges, setUserBadges] = useState<DBBadge[]>([]);
   const [groupSettings, setGroupSettings] = useState<GroupSettings | null>(null);
+  const [hostOwesRestaurant, setHostOwesRestaurant] = useState(false);
 
   const refresh = useCallback(() => setRefreshCounter(c => c + 1), []);
 
