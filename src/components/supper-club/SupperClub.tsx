@@ -51,10 +51,10 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-import { S, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
+import { S, SHost, tabPill, chip, FONT_DISPLAY_FAMILY } from "./styles";
 import {
   StarRating, Toggle, PriceTag, RatingBadge,
-  NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher,
+  NavBar, CalendarGrid, MealTypeSelector, ShareRow, GlobalGroupSwitcher, HostStarBadge,
   parseDateMeal, getUniqueDates, getMealsForDate,
 } from "./shared";
 
