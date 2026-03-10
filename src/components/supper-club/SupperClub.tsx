@@ -3968,12 +3968,12 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const datesAlreadySubmitted = selectedDates.length > 0;
     
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <GGS />
         <div style={{ ...S.header, paddingTop: "8px" }}>
-          <div style={S.headerEye}>Schedule</div>
+          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}><div style={S.headerEye}>Schedule</div>{hostMode && <HostStarBadge light />}</div>
           <div style={S.headerTitle}>{dbData.isHost ? "Host Dashboard" : (datesAlreadySubmitted && !availabilityModifying ? "Your Dates" : "Set Availability")}</div>
         </div>
         <div style={{ padding:"16px 16px 0" }}>
