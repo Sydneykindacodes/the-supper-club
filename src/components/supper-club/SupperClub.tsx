@@ -1607,7 +1607,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
         <div style={S.app}><div style={S.phone}>
           {toast && <div style={S.toast}>{toast}</div>}
           <div style={S.screen}>
-            <GlobalGroupSwitcher groups={groups} activeGroup={activeGroup} setActiveGroup={setActiveGroup} onNewClub={() => setScreen("new_club")} onJoinClub={() => setScreen("join_club_inapp")} onGroupSelect={() => { setScreen("club_home"); setActiveTab("home"); }} maxGroups={MAX_GROUPS} />
+            <GGS />
             <div style={{ padding:"60px 28px 40px", textAlign:"center" }}>
               <div style={{ 
                 width:"80px", height:"80px", borderRadius:"50%", margin:"0 auto 24px",
