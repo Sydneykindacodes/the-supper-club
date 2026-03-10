@@ -955,6 +955,7 @@ export function useSupperClubData(user: User, activeGroupId: string | null, isTe
     revealRestaurant,
     cancelDinner,
     completeDinner,
+    triggerHostRotation,
     makeHost,
     leaveGroup,
     refresh,
