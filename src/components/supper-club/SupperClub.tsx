@@ -4036,7 +4036,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               {/* ── Pick a Date (primary action, first) ── */}
               <div style={{ marginBottom:"20px" }}>
                 <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Choose a Date</div>
-                <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
+                <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates} hostMode={true} memberAvailability={memberAvailability}/>
                 {selectedDates.length > 0 && (
                   <button style={{ ...S.primaryBtn, marginTop:"12px", marginBottom:0, fontSize:"12px" }}
                     onClick={() => {
