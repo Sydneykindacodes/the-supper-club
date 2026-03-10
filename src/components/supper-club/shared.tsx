@@ -355,13 +355,15 @@ const MealIcon = ({ type, size = 14, color = "currentColor" }: { type: string; s
 const MEAL_COLORS: Record<string, string> = { Breakfast: "#c9956a", Brunch: "#c9956a", Lunch: "#c9956a", Dinner: "#c9956a" };
 
 // ── CalendarGrid with per-date meal selection ──
-export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast, otherGroupDates = [] }: {
+export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showToast, otherGroupDates = [], hostMode = false, memberAvailability = {} }: {
   selectedArr: string[];
   setArr: React.Dispatch<React.SetStateAction<string[]>>;
   weeks?: number;
   cutoffDays: number;
   showToast: (msg: string) => void;
   otherGroupDates?: string[];
+  hostMode?: boolean;
+  memberAvailability?: Record<string, string[]>;
 }) => {
   const [expandedDate, setExpandedDate] = React.useState<string | null>(null);
   const today = new Date();
@@ -381,6 +383,20 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
     return { day: days[d.getDay()], date: d.getDate(), month: months[d.getMonth()], isPast: d < cutoffDate };
   };
 
+  // Host-mode: compute member overlap data
+  const memberNames = Object.keys(memberAvailability);
+  const submittedMembers = memberNames.filter(n => (memberAvailability[n]?.length || 0) > 0);
+
+  const getDateMemberCount = (dateKey: string) => {
+    let count = 0;
+    submittedMembers.forEach(n => {
+      if (getUniqueDates(memberAvailability[n] || []).includes(dateKey)) count++;
+    });
+    return count;
+  };
+
+  const isFullOverlap = (dateKey: string) => submittedMembers.length > 0 && getDateMemberCount(dateKey) === submittedMembers.length;
+
   const CONFLICT_QUIPS = [
     "Two-timing your supper clubs? Bold move.",
     "Playing both sides of the dinner table, are we?",
@@ -396,11 +412,9 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
     const existingMeals = getMealsForDate(selectedArr, key);
     
     if (existingMeals.length > 0 && expandedDate === key) {
-      // If already expanded and has meals, collapse — clicking again removes all meals for this date
       setArr(p => p.filter(e => parseDateMeal(e).date !== key));
       setExpandedDate(null);
     } else {
-      // Check for cross-group conflicts
       const otherDates = otherGroupDates.map(e => parseDateMeal(e).date);
       if (existingMeals.length === 0 && otherDates.includes(key)) {
         const quip = CONFLICT_QUIPS[Math.floor(Math.random() * CONFLICT_QUIPS.length)];
@@ -408,7 +422,6 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
       }
       
       if (existingMeals.length === 0) {
-        // First tap: add "Dinner" by default and expand
         setArr(p => [...p, encodeDateMeal(key, "Dinner")]);
       }
       setExpandedDate(key);
@@ -416,10 +429,17 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
   };
 
   const toggleMealForDate = (date: string, meal: string) => {
+    if (hostMode) {
+      // Host: single-select only — replace any existing meal for this date
+      setArr(p => {
+        const withoutDate = p.filter(e => parseDateMeal(e).date !== date);
+        return [...withoutDate, encodeDateMeal(date, meal)];
+      });
+      return;
+    }
     const entry = encodeDateMeal(date, meal);
     const has = selectedArr.includes(entry);
     if (has) {
-      // Don't allow removing the last meal — instead remove the whole date
       const mealsForDate = getMealsForDate(selectedArr, date);
       if (mealsForDate.length <= 1) {
         setArr(p => p.filter(e => parseDateMeal(e).date !== date));
@@ -444,24 +464,63 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
           const sel = mealsSelected.length > 0;
           const isExpanded = expandedDate === key;
           const inOtherGroup = otherGroupDates.map(e => parseDateMeal(e).date).includes(key);
+
+          // Host-mode visual indicators
+          const hasAnyMember = hostMode && !fd.isPast && getDateMemberCount(key) > 0;
+          const allOverlap = hostMode && !fd.isPast && isFullOverlap(key);
+
+          // Border logic for host mode
+          let border: string;
+          if (isExpanded) {
+            border = "none";
+          } else if (sel) {
+            border = "none";
+          } else if (hostMode && allOverlap) {
+            border = "3px solid #c9956a";
+          } else if (hostMode && hasAnyMember) {
+            border = "3px solid rgba(212,205,196,0.5)";
+          } else {
+            border = `1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`;
+          }
+
+          // Background logic
+          let background: string;
+          if (isExpanded) {
+            background = "linear-gradient(135deg,#c9956a,#a47a50)";
+          } else if (sel) {
+            background = "linear-gradient(135deg,#d4cdc4,#a49a8e)";
+          } else if (hostMode && allOverlap) {
+            background = "rgba(201,149,106,0.12)";
+          } else if (hostMode && hasAnyMember) {
+            background = "rgba(255,255,255,0.05)";
+          } else {
+            background = fd.isPast ? "rgba(255,255,255,0.01)" : "rgba(255,255,255,0.03)";
+          }
+
           return (
             <div key={key} onClick={() => toggleDate(key, fd.isPast)} style={{
               borderRadius:"10px", padding:"8px 4px", textAlign:"center",
               cursor:fd.isPast?"not-allowed":"pointer",
-              background: isExpanded ? "linear-gradient(135deg,#c9956a,#a47a50)" : sel?"linear-gradient(135deg,#d4cdc4,#a49a8e)":fd.isPast?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.03)",
-              border: isExpanded ? "none" : sel?"none":`1px solid rgba(212,205,196,${fd.isPast?"0.04":"0.1"})`,
+              background,
+              border,
               opacity:fd.isPast?0.3:1, transition:"all 0.15s",
               position:"relative",
             }}>
-              <div style={{ fontSize:"9px", color:sel?"#2a2a2a":"#8c8278", marginBottom:"2px" }}>{fd.day}</div>
-              <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a":"#e5ded5" }}>{fd.date}</div>
-              <div style={{ fontSize:"8px", color:sel?"#2a2a2a":"#3d3d3d" }}>{fd.month}</div>
+              <div style={{ fontSize:"9px", color:sel?"#2a2a2a": allOverlap ? "#c9956a" : "#8c8278", marginBottom:"2px" }}>{fd.day}</div>
+              <div style={{ fontSize:"15px", fontWeight:"700", color:sel?"#2a2a2a": allOverlap ? "#c9956a" : "#e5ded5" }}>{fd.date}</div>
+              <div style={{ fontSize:"8px", color:sel?"#2a2a2a": allOverlap ? "#c9956a" : "#3d3d3d" }}>{fd.month}</div>
               {/* Meal dots */}
               {sel && !isExpanded && (
                 <div style={{ display:"flex", justifyContent:"center", gap:"2px", marginTop:"3px" }}>
                   {mealsSelected.map(m => (
                     <div key={m} style={{ width:"4px", height:"4px", borderRadius:"50%", background: MEAL_COLORS[m] || "#c9956a" }} />
                   ))}
+                </div>
+              )}
+              {/* Member count indicator for host */}
+              {hostMode && hasAnyMember && !sel && !isExpanded && (
+                <div style={{ fontSize:"7px", color: allOverlap ? "#c9956a" : "#8c8278", marginTop:"2px", fontWeight:"700" }}>
+                  {getDateMemberCount(key)}/{submittedMembers.length}
                 </div>
               )}
               {inOtherGroup && !fd.isPast && (
@@ -484,7 +543,7 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
           borderRadius:"12px", padding:"12px 14px", marginBottom:"6px",
         }}>
           <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"1px", marginBottom:"10px" }}>
-            {new Date(expandedDate + "T12:00:00").toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })} — pick meal types:
+            {new Date(expandedDate + "T12:00:00").toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })} — {hostMode ? "pick one meal type:" : "pick meal types:"}
           </div>
           <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
             {["Breakfast","Brunch","Lunch","Dinner"].map(meal => {
@@ -501,7 +560,7 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
             })}
           </div>
           <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"8px" }}>
-            Tap a meal to toggle. Removing all meals removes the date.
+            {hostMode ? "Select one meal type for this date." : "Tap a meal to toggle. Removing all meals removes the date."}
           </div>
         </div>
       )}
@@ -514,7 +573,20 @@ export const CalendarGrid = ({ selectedArr, setArr, weeks = 3, cutoffDays, showT
       )}
 
       {/* Legend */}
-      {uniqueSelectedDates.length > 0 && (
+      {hostMode && submittedMembers.length > 0 && (
+        <div style={{ display:"flex", gap:"12px", flexWrap:"wrap", marginBottom:"10px", fontSize:"10px", color:"#8c8278" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"4px" }}>
+            <div style={{ width:"14px", height:"14px", borderRadius:"4px", border:"3px solid rgba(212,205,196,0.5)" }} />
+            Some available
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:"4px" }}>
+            <div style={{ width:"14px", height:"14px", borderRadius:"4px", border:"3px solid #c9956a", background:"rgba(201,149,106,0.12)" }} />
+            All available
+          </div>
+        </div>
+      )}
+
+      {uniqueSelectedDates.length > 0 && !hostMode && (
         <div style={{ display:"flex", gap:"10px", flexWrap:"wrap", marginBottom:"10px", fontSize:"10px", color:"#8c8278" }}>
           {Object.entries(MEAL_COLORS).map(([meal, color]) => (
             <div key={meal} style={{ display:"flex", alignItems:"center", gap:"4px" }}>
