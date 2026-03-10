@@ -124,6 +124,29 @@ export const RatingBadge = ({ restaurant, large }: { restaurant: Restaurant; lar
   );
 };
 
+// ── Host Badge ──
+export const HostBadge = () => (
+  <div style={{
+    width: "24px", height: "24px", borderRadius: "7px",
+    background: "linear-gradient(135deg, #e5ded5, #c9b99a)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: "11px", fontWeight: "800", color: "#2a2a2a",
+    letterSpacing: "0.5px", fontFamily: "'Cormorant Garamond', serif",
+    flexShrink: 0,
+    boxShadow: "0 2px 8px rgba(212,205,196,0.25)",
+  }}>H</div>
+);
+
+// ── Host accent bar (thin line at top of phone) ──
+export const HostAccentBar = () => (
+  <div style={{
+    height: "2px",
+    background: "linear-gradient(90deg, transparent 0%, rgba(212,205,196,0.5) 30%, rgba(212,205,196,0.7) 50%, rgba(212,205,196,0.5) 70%, transparent 100%)",
+    width: "100%",
+    borderRadius: "0 0 2px 2px",
+  }} />
+);
+
 // ── GlobalGroupSwitcher ──
 export const GlobalGroupSwitcher = ({
   groups,
@@ -133,6 +156,7 @@ export const GlobalGroupSwitcher = ({
   onJoinClub,
   onGroupSelect,
   maxGroups = 15,
+  isHost = false,
 }: {
   groups: { id: number; name: string }[];
   activeGroup: { id: number; name: string };
@@ -141,12 +165,15 @@ export const GlobalGroupSwitcher = ({
   onJoinClub: () => void;
   onGroupSelect?: (g: any) => void;
   maxGroups?: number;
+  isHost?: boolean;
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   
   return (
     <div style={{ padding: "12px 0 0", position: "relative" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 16px", overflowX: "auto", overflowY: "visible", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
+      {isHost && <HostAccentBar />}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: isHost ? "4px 16px 0" : "0 16px", overflowX: "auto", overflowY: "visible", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
+        {isHost && <HostBadge />}
         {groups.map(g => {
           const active = g.id === activeGroup.id;
           return (
