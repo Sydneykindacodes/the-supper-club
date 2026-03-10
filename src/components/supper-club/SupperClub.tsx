@@ -726,7 +726,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   const T = dbData.isHost ? SHost : S;
   const hostMode = dbData.isHost;
 
-    if (!activeGroupId) return;
+  const sendGroupNotification = useCallback(async (type: string, excludeSelf = true) => {
     try {
       // Send to other members
       await supabase.functions.invoke('send-group-notification', {
