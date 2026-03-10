@@ -124,27 +124,22 @@ export const RatingBadge = ({ restaurant, large }: { restaurant: Restaurant; lar
   );
 };
 
-// ── Host Badge ──
-export const HostBadge = () => (
-  <div style={{
-    width: "24px", height: "24px", borderRadius: "7px",
-    background: "linear-gradient(135deg, #e5ded5, #c9b99a)",
-    display: "flex", alignItems: "center", justifyContent: "center",
-    fontSize: "11px", fontWeight: "800", color: "#2a2a2a",
-    letterSpacing: "0.5px", fontFamily: "'Cormorant Garamond', serif",
-    flexShrink: 0,
-    boxShadow: "0 2px 8px rgba(212,205,196,0.25)",
-  }}>H</div>
-);
-
-// ── Host accent bar (thin line at top of phone) ──
-export const HostAccentBar = () => (
-  <div style={{
-    height: "2px",
-    background: "linear-gradient(90deg, transparent 0%, rgba(212,205,196,0.5) 30%, rgba(212,205,196,0.7) 50%, rgba(212,205,196,0.5) 70%, transparent 100%)",
-    width: "100%",
-    borderRadius: "0 0 2px 2px",
-  }} />
+// ── Host Star Badge (star-shaped H for page headers) ──
+export const HostStarBadge = ({ light = false }: { light?: boolean }) => (
+  <div style={{ position:"relative", width:"32px", height:"32px", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <path d="M16 2l4.2 8.5L30 12l-7 6.8L24.6 29 16 24.5 7.4 29 9 18.8 2 12l9.8-1.5z"
+        fill={light ? "rgba(42,37,32,0.12)" : "rgba(212,205,196,0.15)"}
+        stroke={light ? "#3d352d" : "#d4cdc4"}
+        strokeWidth="1"
+      />
+    </svg>
+    <span style={{
+      position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)",
+      fontSize:"10px", fontWeight:"800", color: light ? "#3d352d" : "#d4cdc4",
+      fontFamily:"'Cormorant Garamond', serif", lineHeight:1,
+    }}>H</span>
+  </div>
 );
 
 // ── GlobalGroupSwitcher ──
@@ -171,9 +166,7 @@ export const GlobalGroupSwitcher = ({
   
   return (
     <div style={{ padding: "12px 0 0", position: "relative" }}>
-      {isHost && <HostAccentBar />}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: isHost ? "4px 16px 0" : "0 16px", overflowX: "auto", overflowY: "visible", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
-        {isHost && <HostBadge />}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 16px", overflowX: "auto", overflowY: "visible", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", msOverflowStyle: "none" }}>
         {groups.map(g => {
           const active = g.id === activeGroup.id;
           return (
