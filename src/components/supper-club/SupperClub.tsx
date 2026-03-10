@@ -2728,6 +2728,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
   // ── RELINQUISH HOST ──
   if (screen === "relinquish_host") {
     if (!hasGroup) return <NoGroupPlaceholder feature="Host Transfer" />;
+    if (dbData.hostOwesRestaurant) {
+      setScreen("club_home"); setActiveTab("home");
+      showToast("Add a restaurant to the pool first — host's duty!");
+      return null;
+    }
     const otherMembers = currentMembers.filter(m => m.name !== "You");
 
     // Build a summary of what's been done and what's left
