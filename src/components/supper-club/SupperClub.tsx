@@ -3918,7 +3918,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
             </div>
           )}
 
-          {/* ── HOST DASHBOARD (host doesn't submit dates, they pick the final date) ── */}
+          {/* ── HOST DASHBOARD ── */}
           {dbData.isHost ? (
             <>
               <div style={{
@@ -3931,60 +3931,38 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
               }}>
                 <div style={{ fontSize:"18px", marginBottom:"10px", color:"#c9956a" }}>◇</div>
                 <div style={{ fontSize:"15px", color:"#f5e6d3", marginBottom:"8px", fontWeight:"500", lineHeight:"1.5" }}>
-                  You're the host — you pick the date.
+                  You're the host — pick a date.
                 </div>
                 <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", lineHeight:"1.6" }}>
-                  Review your crew's availability below, then choose the best evening for everyone.
+                  Choose any date that works for you. Member availability below is just a guide — you don't need to wait.
                 </div>
               </div>
 
-              <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Member Availability</div>
-              {(() => {
-                const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
-                return nonHostMembers.map(m => {
-                  const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-                  const hasSubmitted = dates.length > 0;
-                  return (
-                    <div key={m.name} style={{ marginBottom:"10px" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                          <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
-                          <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
-                        </div>
-                        <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
-                          {hasSubmitted ? `${getUniqueDates(dates).length} date${getUniqueDates(dates).length > 1 ? "s" : ""}` : "Waiting"}
-                        </span>
-                      </div>
-                      {hasSubmitted && (
-                        <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"8px 0 4px 42px" }}>
-                          {[...getUniqueDates(dates)].sort().map(d => {
-                            const meals = getMealsForDate(dates, d);
-                            return (
-                              <div key={d} style={{
-                                padding:"4px 10px", borderRadius:"8px",
-                                background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
-                                fontSize:"11px", color:"#7a9e7e"
-                              }}>
-                                {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                                <span style={{ color:"#5a3a25", marginLeft:"6px" }}>{meals.join(", ")}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                });
-              })()}
+              {/* ── Pick a Date (primary action, first) ── */}
+              <div style={{ marginBottom:"20px" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Choose a Date</div>
+                <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
+                {selectedDates.length > 0 && (
+                  <button style={{ ...S.primaryBtn, marginTop:"12px", marginBottom:0, fontSize:"12px" }}
+                    onClick={() => {
+                      const dateOnly = parseDateMeal(selectedDates[0]).date;
+                      dbData.proposeDate(dateOnly).then(async ok => {
+                        if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
+                        else showToast("Failed. Try again.");
+                      });
+                    }}>
+                    Propose {new Date(parseDateMeal(selectedDates[0]).date + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                  </button>
+                )}
+              </div>
 
-              {/* ── Overlapping dates summary ── */}
+              {/* ── Overlapping dates (quick-pick shortcuts) ── */}
               {(() => {
                 const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
                 const submittedMembers = nonHostMembers.filter(m => m.name === "You" ? selectedDates.length > 0 : (memberAvailability[m.name]?.length || 0) > 0);
                 const allEntries: string[] = [];
                 nonHostMembers.forEach(m => {
                   const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
-                  // Extract unique dates (ignoring meal type for overlap)
                   getUniqueDates(dates).forEach(d => allEntries.push(d));
                 });
                 const dateCount: Record<string, number> = {};
@@ -3994,7 +3972,6 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   .map(([date]) => date)
                   .sort();
 
-                // For overlapping dates, find common meal types
                 const getCommonMeals = (date: string) => {
                   const memberMeals = submittedMembers.map(m => {
                     const entries = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
@@ -4004,16 +3981,11 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                   return memberMeals[0].filter(meal => memberMeals.every(mm => mm.includes(meal)));
                 };
                 
-                if (overlappingDates.length === 0 && submittedMembers.length > 0) return (
-                  <div style={{ fontSize:"12px", color:"#5a3a25", fontStyle:"italic", textAlign:"center", marginTop:"16px", marginBottom:"16px" }}>
-                    No overlapping dates yet. You can still override and pick any date.
-                  </div>
-                );
                 if (overlappingDates.length === 0) return null;
                 
                 return (
-                  <div style={{ marginTop:"16px", marginBottom:"16px" }}>
-                    <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Overlapping Dates</div>
+                  <div style={{ marginBottom:"20px" }}>
+                    <div style={{ fontSize:"11px", color:"#7a9e7e", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"10px" }}>Dates Everyone Can Make</div>
                     <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
                       {overlappingDates.map(d => {
                         const commonMeals = getCommonMeals(d);
@@ -4041,36 +4013,55 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
                         );
                       })}
                     </div>
-                    <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"6px" }}>Tap a date to propose it to the group.</div>
+                    <div style={{ fontSize:"10px", color:"#5a3a25", fontStyle:"italic", marginTop:"6px" }}>Tap to quick-propose.</div>
                   </div>
                 );
               })()}
 
-              <div style={{ marginTop:"16px" }}>
-                <button style={{ ...S.ghostBtn, marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>
-              </div>
-
-              {/* Host Override — pick any date */}
-              <div style={{ marginTop:"20px" }}>
-                <div style={{ ...S.card, border:"1px solid rgba(201,149,106,0.15)", background:"rgba(201,149,106,0.03)" }}>
-                  <div style={{ fontSize:"13px", color:"#f5e6d3", marginBottom:"6px", fontWeight:"500" }}>Pick Any Date</div>
-                  <div style={{ fontSize:"12px", color:"#7a5a40", fontStyle:"italic", marginBottom:"14px", lineHeight:"1.6" }}>
-                    Don't want to wait? Choose a date from the calendar and lock it in.
-                  </div>
-                  <CalendarGrid selectedArr={selectedDates} setArr={setSelectedDates} weeks={3} cutoffDays={cutoffDays} showToast={showToast} otherGroupDates={otherGroupDates}/>
-                  {selectedDates.length > 0 && (
-                    <button style={{ ...S.primaryBtn, marginTop:"12px", marginBottom:0, fontSize:"12px" }}
-                      onClick={() => {
-                        const dateOnly = parseDateMeal(selectedDates[0]).date;
-                        dbData.proposeDate(dateOnly).then(async ok => {
-                          if (ok) { await sendGroupNotification("date_proposed"); showToast("Date proposed! Waiting for confirmations."); }
-                          else showToast("Failed. Try again.");
-                        });
-                      }}>
-                      Propose {new Date(parseDateMeal(selectedDates[0]).date + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
-                    </button>
-                  )}
+              {/* ── Member Availability (reference only) ── */}
+              <div style={{ marginBottom:"16px" }}>
+                <div style={{ fontSize:"11px", color:"#c9956a", letterSpacing:"2px", textTransform:"uppercase", marginBottom:"12px" }}>Member Availability</div>
+                <div style={{ fontSize:"11px", color:"#5a3a25", fontStyle:"italic", marginBottom:"12px" }}>
+                  Use this as a guide — you don't need to wait for anyone.
                 </div>
+                {(() => {
+                  const nonHostMembers = currentMembers.filter(m => m.name !== dbData.hostName);
+                  return nonHostMembers.map(m => {
+                    const dates = m.name === "You" ? selectedDates : (memberAvailability[m.name] || []);
+                    const hasSubmitted = dates.length > 0;
+                    return (
+                      <div key={m.name} style={{ marginBottom:"10px" }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"11px 0", borderBottom:"1px solid rgba(201,149,106,0.07)" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                            <div style={{ width:"32px", height:"32px", borderRadius:"50%", background:m.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", color:"#fff", fontWeight:"700" }}>{m.avatar}</div>
+                            <span style={{ fontSize:"14px", color:"#f5e6d3" }}>{m.name}</span>
+                          </div>
+                          <span style={{ fontSize:"12px", fontStyle:"italic", color: hasSubmitted ? "#7a9e7e" : "#5a3a25" }}>
+                            {hasSubmitted ? `${getUniqueDates(dates).length} date${getUniqueDates(dates).length > 1 ? "s" : ""}` : "Waiting"}
+                          </span>
+                        </div>
+                        {hasSubmitted && (
+                          <div style={{ display:"flex", flexDirection:"column", gap:"6px", padding:"8px 0 4px 42px" }}>
+                            {[...getUniqueDates(dates)].sort().map(d => {
+                              const meals = getMealsForDate(dates, d);
+                              return (
+                                <div key={d} style={{
+                                  padding:"4px 10px", borderRadius:"8px",
+                                  background:"rgba(122,158,126,0.1)", border:"1px solid rgba(122,158,126,0.2)",
+                                  fontSize:"11px", color:"#7a9e7e"
+                                }}>
+                                  {new Date(d + "T12:00:00").toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                                  <span style={{ color:"#5a3a25", marginLeft:"6px" }}>{meals.join(", ")}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+                <button style={{ ...S.ghostBtn, marginTop:"8px", marginBottom:0, fontSize:"11px" }} onClick={async () => { await sendGroupNotification("availability_reminder"); showToast("Nudge sent. They'll get the hint."); }}>Nudge the Group</button>
               </div>
             </>
           ) : (
