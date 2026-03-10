@@ -1625,7 +1625,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     // ── HOST OWES RESTAURANT: must add 1 to the pool before proceeding ──
     if (dbData.hostOwesRestaurant) {
       return (
-        <div style={S.app}><div style={S.phone}>
+        <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
           {toast && <div style={S.toast}>{toast}</div>}
           <div style={S.screen}>
             <GGS />
