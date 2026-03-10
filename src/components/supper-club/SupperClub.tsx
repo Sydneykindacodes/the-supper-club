@@ -2555,7 +2555,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     
     
     return (
-    <div style={S.app}><div style={S.phone}>
+    <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
       {toast && <div style={S.toast}>{toast}</div>}
       <div style={S.screen}>
         <div style={S.header}>
