@@ -4371,7 +4371,7 @@ export default function SupperClub({ user, signOut }: SupperClubProps) {
     const hasConfirmed = ag.dinnerStatus === "pending_confirm" && ag.pendingDate;
 
     return (
-      <div style={S.app}><div style={S.phone}>
+      <div style={S.app}><div style={S.phone} className={hostMode ? "host-mode" : ""}>
         {toast && <div style={S.toast}>{toast}</div>}
         <div style={S.header}>
           <div style={S.headerEye}>{ag.name}</div>
