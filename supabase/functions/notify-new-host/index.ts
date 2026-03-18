@@ -56,11 +56,11 @@ Deno.serve(async (req) => {
       // Only notify if it's past 8 AM the day after dinner
       if (now < notifyAt) continue;
 
-      const nextHost = res.members;
+      const nextHost = Array.isArray(res.members) ? res.members[0] : res.members;
       if (!nextHost) continue;
 
       const secretMessage = SECRET_MESSAGES[Math.floor(Math.random() * SECRET_MESSAGES.length)];
-      const groupName = res.groups?.name || 'your Supper Club';
+      const groupName = Array.isArray(res.groups) ? res.groups[0]?.name : res.groups?.name || 'your Supper Club';
 
       // Create notifications for each enabled channel
       const notifications = [];
